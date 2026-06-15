@@ -43,3 +43,60 @@ export const formatDate = (dateString: string): string => {
     day: '2-digit',
   });
 };
+
+export const exportData = (): string => {
+  const records = getRecords();
+  return JSON.stringify(records, null, 2);
+};
+
+export const importData = (jsonString: string): { success: boolean; message: string } => {
+  try {
+    const data = JSON.parse(jsonString);
+    
+    if (!Array.isArray(data)) {
+      return { success: false, message: '导入数据格式错误，应为数组' };
+    }
+    
+    const validRecords: Record[] = [];
+    let skippedCount = 0;
+    
+    for (const item of data) {
+      if (isValidRecord(item)) {
+        validRecords.push(item as Record);
+      } else {
+        skippedCount++;
+      }
+    }
+    
+    if (validRecords.length === 0) {
+      return { success: false, message: '没有有效数据可导入' };
+    }
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(validRecords));
+    
+    const message = skippedCount > 0
+      ? `成功导入 ${validRecords.length} 条记录，跳过 ${skippedCount} 条无效记录`
+      : `成功导入 ${validRecords.length} 条记录`;
+    
+    return { success: true, message };
+  } catch (error) {
+    return { success: false, message: 'JSON 解析错误：' + (error as Error).message };
+  }
+};
+
+const isValidRecord = (item: unknown): boolean => {
+  if (typeof item !== 'object' || item === null) return false;
+  
+  const record = item as Record;
+  return (
+    typeof record.id === 'string' &&
+    (record.type === 'income' || record.type === 'expense') &&
+    typeof record.amount === 'number' && record.amount > 0 &&
+    typeof record.category === 'string' &&
+    typeof record.date === 'string'
+  );
+};
+
+export const clearAllData = (): void => {
+  localStorage.removeItem(STORAGE_KEY);
+};

@@ -1,4 +1,4 @@
-import { LayoutDashboard, PlusCircle } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Settings } from 'lucide-react';
 import type { PageType } from '../types';
 
 interface SidebarProps {
@@ -9,6 +9,7 @@ interface SidebarProps {
 const menuItems = [
   { id: 'dashboard' as PageType, label: '总览', icon: LayoutDashboard },
   { id: 'add-record' as PageType, label: '记账', icon: PlusCircle },
+  { id: 'settings' as PageType, label: '设置', icon: Settings },
 ];
 
 export const Sidebar = ({ currentPage, onPageChange }: SidebarProps) => {

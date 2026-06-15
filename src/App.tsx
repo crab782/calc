@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { AddRecord } from './pages/AddRecord';
+import { Settings } from './pages/Settings';
 import type { PageType } from './types';
 
 function App() {
@@ -21,6 +22,9 @@ function App() {
         )}
         {currentPage === 'add-record' && (
           <AddRecord onSave={handleRecordsChange} />
+        )}
+        {currentPage === 'settings' && (
+          <Settings onDataChange={handleRecordsChange} />
         )}
       </main>
     </div>
