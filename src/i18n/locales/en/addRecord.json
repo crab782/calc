@@ -1,0 +1,30 @@
+{
+  "title": "Add Transaction",
+  "type": "Type",
+  "income": "Income",
+  "expense": "Expense",
+  "amount": "Amount",
+  "category": "Category",
+  "selectCategory": "Select a category",
+  "date": "Date",
+  "note": "Note",
+  "notePlaceholder": "Add a note (optional)",
+  "addRecord": "Add Record",
+  "saved": "Saved!",
+  "categories": {
+    "salary": "Salary",
+    "bonus": "Bonus",
+    "investment": "Investment",
+    "partTime": "Part-time",
+    "otherIncome": "Other Income",
+    "dining": "Dining",
+    "transport": "Transport",
+    "shopping": "Shopping",
+    "entertainment": "Entertainment",
+    "medical": "Medical",
+    "education": "Education",
+    "rent": "Rent",
+    "utilities": "Utilities",
+    "otherExpense": "Other Expense"
+  }
+}

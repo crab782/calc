@@ -1,0 +1,14 @@
+{
+  "title": "Transaction History",
+  "noRecords": "No transactions yet",
+  "addFirstRecord": "Click \"Add Record\" on the left to add your first entry",
+  "time": "Time",
+  "category": "Category",
+  "amount": "Amount",
+  "type": "Type",
+  "description": "Description",
+  "income": "Income",
+  "expense": "Expense",
+  "incomeType": "Income",
+  "expenseType": "Expense"
+}

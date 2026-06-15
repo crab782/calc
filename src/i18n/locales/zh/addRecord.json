@@ -1,0 +1,30 @@
+{
+  "title": "添加记账记录",
+  "type": "类型",
+  "income": "收入",
+  "expense": "支出",
+  "amount": "金额",
+  "category": "分类",
+  "selectCategory": "请选择分类",
+  "date": "日期",
+  "note": "备注",
+  "notePlaceholder": "添加备注（可选）",
+  "addRecord": "添加记录",
+  "saved": "保存成功",
+  "categories": {
+    "salary": "工资",
+    "bonus": "奖金",
+    "investment": "投资收益",
+    "partTime": "兼职",
+    "otherIncome": "其他收入",
+    "dining": "餐饮",
+    "transport": "交通",
+    "shopping": "购物",
+    "entertainment": "娱乐",
+    "medical": "医疗",
+    "education": "教育",
+    "rent": "房租",
+    "utilities": "水电费",
+    "otherExpense": "其他支出"
+  }
+}

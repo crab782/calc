@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import zh from '../i18n/locales/zh.json';
-import en from '../i18n/locales/en.json';
+import zh from '../i18n/locales/zh';
+import en from '../i18n/locales/en';
 
 type Language = 'zh' | 'en';
 type TranslationType = typeof zh;

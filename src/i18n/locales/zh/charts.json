@@ -1,0 +1,24 @@
+{
+  "chart": {
+    "title": "月度收支趋势",
+    "noData": "暂无数据",
+    "noDataHint": "添加交易记录后将显示月度趋势图表",
+    "income": "收入",
+    "expense": "支出",
+    "monthSuffix": "年{month}月",
+    "predicted": "预测数据",
+    "actual": "实际数据"
+  },
+  "balanceChart": {
+    "title": "结余趋势",
+    "legend": "累计结余"
+  },
+  "expenseChart": {
+    "title": "支出趋势",
+    "legend": "支出"
+  },
+  "incomeChart": {
+    "title": "收入趋势",
+    "legend": "收入"
+  }
+}

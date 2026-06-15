@@ -1,0 +1,24 @@
+{
+  "chart": {
+    "title": "Monthly Income & Expense",
+    "noData": "No data available",
+    "noDataHint": "Monthly trend chart will appear after adding transactions",
+    "income": "Income",
+    "expense": "Expense",
+    "monthSuffix": "{month}, {year}",
+    "predicted": "Predicted",
+    "actual": "Actual"
+  },
+  "balanceChart": {
+    "title": "Balance Trend",
+    "legend": "Cumulative Balance"
+  },
+  "expenseChart": {
+    "title": "Expense Trend",
+    "legend": "Expense"
+  },
+  "incomeChart": {
+    "title": "Income Trend",
+    "legend": "Income"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Dashboard",
+  "totalIncome": "Total Income",
+  "totalExpense": "Total Expense",
+  "balance": "Balance",
+  "recentTransactions": "Recent Transactions",
+  "noRecords": "No transactions yet",
+  "addFirstRecord": "Click \"Add Record\" on the left to add your first entry",
+  "income": "Income",
+  "expense": "Expense",
+  "deleteRecord": "Delete record"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "总览",
+  "totalIncome": "总收入",
+  "totalExpense": "总支出",
+  "balance": "结余",
+  "recentTransactions": "最近交易",
+  "noRecords": "暂无交易记录",
+  "addFirstRecord": "点击左侧\"记账\"添加第一条记录",
+  "income": "收入",
+  "expense": "支出",
+  "deleteRecord": "删除记录"
+}
