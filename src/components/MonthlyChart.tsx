@@ -1,12 +1,19 @@
 import ReactECharts from 'echarts-for-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useStatistics } from '../hooks/useStatistics';
 
 export const MonthlyChart = () => {
+  const { t, language } = useLanguage();
   const { monthlyData } = useStatistics();
 
   const formatMonth = (month: string) => {
     const [year, m] = month.split('-');
-    return `${year}年${parseInt(m)}月`;
+    const monthNum = parseInt(m);
+    if (language === 'zh') {
+      return `${year}年${monthNum}月`;
+    }
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${monthNames[monthNum - 1]} ${year}`;
   };
 
   const option = {
@@ -30,7 +37,7 @@ export const MonthlyChart = () => {
       },
     },
     legend: {
-      data: ['收入', '支出'],
+      data: [t.chart.income, t.chart.expense],
       textStyle: {
         color: '#6b7280',
       },
@@ -82,7 +89,7 @@ export const MonthlyChart = () => {
     },
     series: [
       {
-        name: '收入',
+        name: t.chart.income,
         type: 'line',
         smooth: true,
         data: monthlyData.map((item) => item.income),
@@ -113,7 +120,7 @@ export const MonthlyChart = () => {
         },
       },
       {
-        name: '支出',
+        name: t.chart.expense,
         type: 'line',
         smooth: true,
         data: monthlyData.map((item) => item.expense),
@@ -150,8 +157,8 @@ export const MonthlyChart = () => {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
         <div className="text-center text-gray-500">
-          <p>暂无数据</p>
-          <p className="text-sm mt-1">添加交易记录后将显示月度趋势图表</p>
+          <p>{t.chart.noData}</p>
+          <p className="text-sm mt-1">{t.chart.noDataHint}</p>
         </div>
       </div>
     );
@@ -159,7 +166,7 @@ export const MonthlyChart = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">月度收支趋势</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.chart.title}</h2>
       <div className="h-80">
         <ReactECharts
           option={option}

@@ -1,4 +1,5 @@
 import { LayoutDashboard, PlusCircle, Settings } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import type { PageType } from '../types';
 
 interface SidebarProps {
@@ -6,16 +7,18 @@ interface SidebarProps {
   onPageChange: (page: PageType) => void;
 }
 
-const menuItems = [
-  { id: 'dashboard' as PageType, label: '总览', icon: LayoutDashboard },
-  { id: 'add-record' as PageType, label: '记账', icon: PlusCircle },
-  { id: 'settings' as PageType, label: '设置', icon: Settings },
-];
-
 export const Sidebar = ({ currentPage, onPageChange }: SidebarProps) => {
+  const { t } = useLanguage();
+
+  const menuItems = [
+    { id: 'dashboard' as PageType, label: t.sidebar.dashboard, icon: LayoutDashboard },
+    { id: 'add-record' as PageType, label: t.sidebar.addRecord, icon: PlusCircle },
+    { id: 'settings' as PageType, label: t.sidebar.settings, icon: Settings },
+  ];
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen p-4">
-      <div className="text-xl font-bold text-gray-800 mb-8">记账工具</div>
+      <div className="text-xl font-bold text-gray-800 mb-8">{t.sidebar.title}</div>
       <nav className="space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;

@@ -1,0 +1,86 @@
+{
+  "sidebar": {
+    "title": "Account Book",
+    "dashboard": "Dashboard",
+    "addRecord": "Add Record",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalIncome": "Total Income",
+    "totalExpense": "Total Expense",
+    "balance": "Balance",
+    "recentTransactions": "Recent Transactions",
+    "noRecords": "No transactions yet",
+    "addFirstRecord": "Click \"Add Record\" on the left to add your first entry",
+    "income": "Income",
+    "expense": "Expense",
+    "deleteRecord": "Delete record"
+  },
+  "addRecord": {
+    "title": "Add Transaction",
+    "type": "Type",
+    "income": "Income",
+    "expense": "Expense",
+    "amount": "Amount",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "date": "Date",
+    "note": "Note",
+    "notePlaceholder": "Add a note (optional)",
+    "addRecord": "Add Record",
+    "saved": "Saved!",
+    "categories": {
+      "salary": "Salary",
+      "bonus": "Bonus",
+      "investment": "Investment",
+      "partTime": "Part-time",
+      "otherIncome": "Other Income",
+      "dining": "Dining",
+      "transport": "Transport",
+      "shopping": "Shopping",
+      "entertainment": "Entertainment",
+      "medical": "Medical",
+      "education": "Education",
+      "rent": "Rent",
+      "utilities": "Utilities",
+      "otherExpense": "Other Expense"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "dataManagement": "Data Management",
+    "currentRecords": "Current Records",
+    "exportData": "Export Data",
+    "importData": "Import Data",
+    "clearData": "Clear All Data",
+    "exportSuccess": "Data exported successfully!",
+    "importSuccess": "Data imported successfully!",
+    "importError": "Import failed",
+    "importConfirm": "You have {count} records. Importing will overwrite existing data. Continue?",
+    "clearSuccess": "All data cleared",
+    "clearConfirm": "Confirm Clear Data",
+    "clearMessage": "This action will clear all transaction records and cannot be undone. Continue?",
+    "cancel": "Cancel",
+    "confirmClear": "Confirm",
+    "importExportInfo": "Import & Export Info",
+    "info1": "Exported data is in JSON format with complete structure and version info",
+    "info2": "Importing will overwrite all current records. Please proceed with caution",
+    "info3": "We recommend regular data backups to prevent data loss",
+    "info4": "Import automatically validates data format and version compatibility"
+  },
+  "chart": {
+    "title": "Monthly Income & Expense",
+    "noData": "No data available",
+    "noDataHint": "Monthly trend chart will appear after adding transactions",
+    "income": "Income",
+    "expense": "Expense",
+    "monthSuffix": "{month}, {year}"
+  },
+  "common": {
+    "language": "English",
+    "switchToEnglish": "EN",
+    "switchToChinese": "中文",
+    "yen": "¥"
+  }
+}

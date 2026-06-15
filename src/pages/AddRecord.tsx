@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { PlusCircle, CheckCircle } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../types/record';
 
 export const AddRecord = () => {
+  const { t } = useLanguage();
   const { addRecord } = useRecords();
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
@@ -43,12 +45,12 @@ export const AddRecord = () => {
 
   return (
     <div className="p-6 flex-1">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">添加记账记录</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.addRecord.title}</h1>
       
       <div className="max-w-2xl mx-auto">
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">类型</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.type}</label>
             <div className="flex gap-4">
               <button
                 type="button"
@@ -62,7 +64,7 @@ export const AddRecord = () => {
                     : 'border-gray-200 hover:border-green-300'
                 }`}
               >
-                <span className="font-medium">收入</span>
+                <span className="font-medium">{t.addRecord.income}</span>
               </button>
               <button
                 type="button"
@@ -76,13 +78,13 @@ export const AddRecord = () => {
                     : 'border-gray-200 hover:border-red-300'
                 }`}
               >
-                <span className="font-medium">支出</span>
+                <span className="font-medium">{t.addRecord.expense}</span>
               </button>
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">金额</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.amount}</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">¥</span>
               <input
@@ -98,13 +100,13 @@ export const AddRecord = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">分类</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.category}</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
             >
-              <option value="">请选择分类</option>
+              <option value="">{t.addRecord.selectCategory}</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -114,7 +116,7 @@ export const AddRecord = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">日期</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.date}</label>
             <input
               type="date"
               value={date}
@@ -124,11 +126,11 @@ export const AddRecord = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">备注</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.note}</label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="添加备注（可选）"
+              placeholder={t.addRecord.notePlaceholder}
               className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               rows={3}
             />
@@ -148,12 +150,12 @@ export const AddRecord = () => {
             {saved ? (
               <>
                 <CheckCircle className="w-5 h-5" />
-                <span>保存成功</span>
+                <span>{t.addRecord.saved}</span>
               </>
             ) : (
               <>
                 <PlusCircle className="w-5 h-5" />
-                <span>添加记录</span>
+                <span>{t.addRecord.addRecord}</span>
               </>
             )}
           </button>

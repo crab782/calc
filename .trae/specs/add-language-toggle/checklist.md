@@ -1,0 +1,12 @@
+- [x] 翻译文件 `zh.json` 和 `en.json` 包含所有文本翻译
+- [x] LanguageContext 正确提供语言切换功能
+- [x] 语言偏好正确存储在 localStorage
+- [x] 刷新页面后语言偏好保持
+- [x] 总览页有语言切换按钮
+- [x] Sidebar 组件使用 i18n 文本
+- [x] Dashboard 组件使用 i18n 文本
+- [x] AddRecord 组件使用 i18n 文本
+- [x] Settings 组件使用 i18n 文本
+- [x] MonthlyChart 组件使用 i18n 文本
+- [x] `npm run build` 构建成功
+- [x] 语言切换功能正常工作
