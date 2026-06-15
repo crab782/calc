@@ -1,19 +1,16 @@
 import { useState, useRef } from 'react';
-import { exportData, importData, clearAllData, getRecords } from '../utils/storage';
 import { Download, Upload, Trash2, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
+import { useRecords } from '../hooks/useRecords';
+import { recordService } from '../lib/record';
 
-interface SettingsProps {
-  onDataChange: () => void;
-}
-
-export const Settings = ({ onDataChange }: SettingsProps) => {
+export const Settings = () => {
+  const { count, refresh } = useRecords();
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const recordsCount = getRecords().length;
 
   const handleExport = () => {
-    const jsonData = exportData();
+    const jsonData = recordService.exportData();
     const blob = new Blob([jsonData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -32,8 +29,8 @@ export const Settings = ({ onDataChange }: SettingsProps) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (recordsCount > 0) {
-      if (!confirm(`当前有 ${recordsCount} 条记录，导入将覆盖现有数据，确定继续？`)) {
+    if (count > 0) {
+      if (!confirm(`当前有 ${count} 条记录，导入将覆盖现有数据，确定继续？`)) {
         e.target.value = '';
         return;
       }
@@ -42,11 +39,11 @@ export const Settings = ({ onDataChange }: SettingsProps) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const result = event.target?.result as string;
-      const importResult = importData(result);
+      const importResult = recordService.importData(result);
       
       if (importResult.success) {
         setMessage({ type: 'success', text: importResult.message });
-        onDataChange();
+        refresh();
       } else {
         setMessage({ type: 'error', text: importResult.message });
       }
@@ -62,8 +59,8 @@ export const Settings = ({ onDataChange }: SettingsProps) => {
   };
 
   const handleClearData = () => {
-    clearAllData();
-    onDataChange();
+    recordService.deleteAllRecords();
+    refresh();
     setMessage({ type: 'success', text: '所有数据已清除' });
     setShowConfirmClear(false);
     setTimeout(() => setMessage(null), 3000);
@@ -110,7 +107,7 @@ export const Settings = ({ onDataChange }: SettingsProps) => {
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
                 <p className="text-sm text-gray-500">当前记录数</p>
-                <p className="text-xl font-bold text-gray-800">{recordsCount}</p>
+                <p className="text-xl font-bold text-gray-800">{count}</p>
               </div>
             </div>
 
@@ -147,10 +144,10 @@ export const Settings = ({ onDataChange }: SettingsProps) => {
         <div className="bg-blue-50 rounded-xl p-6">
           <h3 className="font-medium text-blue-800 mb-2">导入导出说明</h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• 导出的数据为 JSON 格式，可以用记事本或任何文本编辑器打开</li>
+            <li>• 导出的数据为 JSON 格式，包含完整的数据结构和版本信息</li>
             <li>• 导入数据会覆盖当前所有记录，请谨慎操作</li>
             <li>• 建议定期导出数据备份，防止数据丢失</li>
-            <li>• 导入时会自动验证数据格式，无效记录将被跳过</li>
+            <li>• 导入时会自动验证数据格式和版本兼容性</li>
           </ul>
         </div>
       </div>

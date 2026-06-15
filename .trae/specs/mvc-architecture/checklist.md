@@ -1,0 +1,10 @@
+- [ ] Checkpoint 1: 数据模型层创建完成（src/model/）
+- [ ] Checkpoint 2: 数据访问层（DAO）创建完成（src/dao/）
+- [ ] Checkpoint 3: 服务层（Service）创建完成（src/service/）
+- [ ] Checkpoint 4: 数据版本管理实现完成
+- [ ] Checkpoint 5: 导入导出功能实现完成
+- [ ] Checkpoint 6: UI 组件更新完成
+- [ ] Checkpoint 7: 项目构建成功
+- [ ] Checkpoint 8: 数据导入导出格式一致
+- [ ] Checkpoint 9: 数据版本迁移正常
+- [ ] Checkpoint 10: 所有页面功能正常

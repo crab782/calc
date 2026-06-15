@@ -1,0 +1,12 @@
+- [x] `src/types/record.ts` exists with ExpenseRecord, Category, DataSchema interfaces
+- [x] `src/lib/storage.ts` exists with localStorage CRUD operations
+- [x] `src/lib/record.ts` exists with business logic utilities
+- [x] `src/model/` directory has been removed
+- [x] `src/dao/` directory has been removed
+- [x] `src/service/` directory has been removed
+- [x] All imports in Dashboard.tsx use new paths (`../lib/record`, `../types/record`)
+- [x] All imports in AddRecord.tsx use new paths
+- [x] All imports in Settings.tsx use new paths
+- [x] All imports in MonthlyChart.tsx use new paths
+- [x] `npm run build` succeeds without TypeScript errors
+- [x] Application runs correctly with refactored structure

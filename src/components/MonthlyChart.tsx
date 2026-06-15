@@ -1,31 +1,8 @@
 import ReactECharts from 'echarts-for-react';
-import { getRecords } from '../utils/storage';
-
-interface MonthlyData {
-  month: string;
-  income: number;
-  expense: number;
-}
+import { useStatistics } from '../hooks/useStatistics';
 
 export const MonthlyChart = () => {
-  const records = getRecords();
-  
-  const monthlyData = records.reduce((acc, record) => {
-    const month = record.date.substring(0, 7);
-    if (!acc[month]) {
-      acc[month] = { month, income: 0, expense: 0 };
-    }
-    if (record.type === 'income') {
-      acc[month].income += record.amount;
-    } else {
-      acc[month].expense += record.amount;
-    }
-    return acc;
-  }, {} as { [key: string]: MonthlyData });
-
-  const sortedData: MonthlyData[] = Object.values(monthlyData)
-    .sort((a: MonthlyData, b: MonthlyData) => a.month.localeCompare(b.month))
-    .slice(-12);
+  const { monthlyData } = useStatistics();
 
   const formatMonth = (month: string) => {
     const [year, m] = month.split('-');
@@ -69,7 +46,7 @@ export const MonthlyChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: sortedData.map((item) => formatMonth(item.month)),
+      data: monthlyData.map((item) => formatMonth(item.month)),
       axisLine: {
         lineStyle: {
           color: '#d1d5db',
@@ -108,7 +85,7 @@ export const MonthlyChart = () => {
         name: '收入',
         type: 'line',
         smooth: true,
-        data: sortedData.map((item) => item.income),
+        data: monthlyData.map((item) => item.income),
         lineStyle: {
           color: '#10b981',
           width: 2,
@@ -139,7 +116,7 @@ export const MonthlyChart = () => {
         name: '支出',
         type: 'line',
         smooth: true,
-        data: sortedData.map((item) => item.expense),
+        data: monthlyData.map((item) => item.expense),
         lineStyle: {
           color: '#ef4444',
           width: 2,
@@ -169,7 +146,7 @@ export const MonthlyChart = () => {
     ],
   };
 
-  if (sortedData.length === 0) {
+  if (monthlyData.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
         <div className="text-center text-gray-500">

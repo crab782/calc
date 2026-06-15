@@ -1,38 +1,13 @@
-import type { Statistics } from '../types';
-import { getRecords, formatCurrency, formatDate, deleteRecord } from '../utils/storage';
 import { TrendingUp, TrendingDown, Wallet, Trash2 } from 'lucide-react';
 import { MonthlyChart } from '../components/MonthlyChart';
+import { useRecords } from '../hooks/useRecords';
+import { useStatistics } from '../hooks/useStatistics';
 
-interface DashboardProps {
-  onRecordsChange: () => void;
-}
+export const Dashboard = () => {
+  const { getRecentRecords, deleteRecord } = useRecords();
+  const { statistics, formatCurrency, formatDate } = useStatistics();
 
-export const Dashboard = ({ onRecordsChange }: DashboardProps) => {
-  const records = getRecords();
-  
-  const statistics: Statistics = records.reduce(
-    (acc, record) => {
-      if (record.type === 'income') {
-        acc.totalIncome += record.amount;
-      } else {
-        acc.totalExpense += record.amount;
-      }
-      acc.balance = acc.totalIncome - acc.totalExpense;
-      return acc;
-    },
-    { totalIncome: 0, totalExpense: 0, balance: 0 }
-  );
-
-  const sortedRecords = [...records].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-
-  const recentRecords = sortedRecords.slice(0, 10);
-
-  const handleDelete = (id: string) => {
-    deleteRecord(id);
-    onRecordsChange();
-  };
+  const recentRecords = getRecentRecords(10);
 
   const statsCards = [
     {
@@ -133,7 +108,7 @@ export const Dashboard = ({ onRecordsChange }: DashboardProps) => {
                     {formatCurrency(record.amount)}
                   </span>
                   <button
-                    onClick={() => handleDelete(record.id)}
+                    onClick={() => deleteRecord(record.id)}
                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     title="删除记录"
                   >

@@ -1,15 +1,10 @@
 import { useState } from 'react';
-import { saveRecord, generateId } from '../utils/storage';
 import { PlusCircle, CheckCircle } from 'lucide-react';
+import { useRecords } from '../hooks/useRecords';
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../types/record';
 
-interface AddRecordProps {
-  onSave: () => void;
-}
-
-const incomeCategories = ['工资', '奖金', '投资收益', '兼职', '其他收入'];
-const expenseCategories = ['餐饮', '交通', '购物', '娱乐', '医疗', '教育', '房租', '水电费', '其他支出'];
-
-export const AddRecord = ({ onSave }: AddRecordProps) => {
+export const AddRecord = () => {
+  const { addRecord } = useRecords();
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
@@ -17,7 +12,9 @@ export const AddRecord = ({ onSave }: AddRecordProps) => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [saved, setSaved] = useState(false);
 
-  const categories = type === 'income' ? incomeCategories : expenseCategories;
+  const categories = type === 'income' 
+    ? INCOME_CATEGORIES.map(c => c.name) 
+    : EXPENSE_CATEGORIES.map(c => c.name);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +23,7 @@ export const AddRecord = ({ onSave }: AddRecordProps) => {
       return;
     }
 
-    saveRecord({
-      id: generateId(),
+    addRecord({
       type,
       amount: parseFloat(amount),
       category,
@@ -39,7 +35,6 @@ export const AddRecord = ({ onSave }: AddRecordProps) => {
     setCategory('');
     setNote('');
     setSaved(true);
-    onSave();
 
     setTimeout(() => {
       setSaved(false);
