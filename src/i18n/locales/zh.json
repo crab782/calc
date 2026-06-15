@@ -2,6 +2,7 @@
   "sidebar": {
     "title": "记账工具",
     "dashboard": "总览",
+    "history": "历史",
     "addRecord": "记账",
     "settings": "设置"
   },
@@ -90,6 +91,20 @@
   "incomeChart": {
     "title": "收入趋势",
     "legend": "收入"
+  },
+  "history": {
+    "title": "历史记录",
+    "noRecords": "暂无交易记录",
+    "addFirstRecord": "点击左侧\"记账\"添加第一条记录",
+    "time": "时间",
+    "category": "分类",
+    "amount": "金额",
+    "type": "类型",
+    "description": "描述",
+    "income": "收入",
+    "expense": "支出",
+    "incomeType": "收入",
+    "expenseType": "支出"
   },
   "common": {
     "language": "中文",

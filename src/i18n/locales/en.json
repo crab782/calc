@@ -2,6 +2,7 @@
   "sidebar": {
     "title": "Account Book",
     "dashboard": "Dashboard",
+    "history": "History",
     "addRecord": "Add Record",
     "settings": "Settings"
   },
@@ -90,6 +91,20 @@
   "incomeChart": {
     "title": "Income Trend",
     "legend": "Income"
+  },
+  "history": {
+    "title": "Transaction History",
+    "noRecords": "No transactions yet",
+    "addFirstRecord": "Click \"Add Record\" on the left to add your first entry",
+    "time": "Time",
+    "category": "Category",
+    "amount": "Amount",
+    "type": "Type",
+    "description": "Description",
+    "income": "Income",
+    "expense": "Expense",
+    "incomeType": "Income",
+    "expenseType": "Expense"
   },
   "common": {
     "language": "English",

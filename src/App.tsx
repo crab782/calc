@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { AddRecord } from './pages/AddRecord';
+import { History } from './pages/History';
 import { Settings } from './pages/Settings';
 import type { PageType } from './types';
 
@@ -14,6 +15,7 @@ function App() {
       <main className="flex-1 overflow-auto">
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'add-record' && <AddRecord />}
+        {currentPage === 'history' && <History />}
         {currentPage === 'settings' && <Settings />}
       </main>
     </div>
