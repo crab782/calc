@@ -4,7 +4,9 @@
     "dashboard": "总览",
     "history": "历史",
     "addRecord": "记账",
-    "settings": "设置"
+    "settings": "设置",
+    "collapse": "折叠侧边栏",
+    "expand": "展开侧边栏"
   },
   "dashboard": {
     "title": "总览",

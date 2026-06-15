@@ -1,15 +1,14 @@
-import { LayoutDashboard, PlusCircle, Settings, History, Menu, X } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Settings, History, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { PageType } from '../types';
 
 interface SidebarProps {
   currentPage: PageType;
   onPageChange: (page: PageType) => void;
-  isOpen: boolean;
-  onToggle: () => void;
+  onCollapse: () => void;
 }
 
-export const Sidebar = ({ currentPage, onPageChange, isOpen, onToggle }: SidebarProps) => {
+export const Sidebar = ({ currentPage, onPageChange, onCollapse }: SidebarProps) => {
   const { t } = useLanguage();
 
   const menuItems = [
@@ -20,24 +19,16 @@ export const Sidebar = ({ currentPage, onPageChange, isOpen, onToggle }: Sidebar
   ];
 
   return (
-    <>
-      {/* Toggle Button */}
+    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen p-4 relative">
       <button
-        onClick={onToggle}
-        className="fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
-        title={isOpen ? '关闭侧边栏' : '打开侧边栏'}
+        onClick={onCollapse}
+        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        title={t.sidebar.collapse || '折叠侧边栏'}
       >
-        {isOpen ? <X className="w-5 h-5 text-gray-600" /> : <Menu className="w-5 h-5 text-gray-600" />}
+        <X className="w-4 h-4" />
       </button>
-
-      {/* Sidebar */}
-      <aside
-        className={`bg-white border-r border-gray-200 min-h-screen p-4 transition-all duration-300 ${
-          isOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full overflow-hidden'
-        }`}
-      >
-        <div className="text-xl font-bold text-gray-800 mb-8 pl-12">{t.sidebar.title}</div>
-        <nav className="space-y-2">
+      <div className="text-xl font-bold text-gray-800 mb-8 pr-8">{t.sidebar.title}</div>
+      <nav className="space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
@@ -57,7 +48,6 @@ export const Sidebar = ({ currentPage, onPageChange, isOpen, onToggle }: Sidebar
           );
         })}
       </nav>
-      </aside>
-    </>
+    </aside>
   );
 };
