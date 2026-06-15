@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { PlusCircle, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../types/record';
 
 export const AddRecord = () => {
   const { t } = useLanguage();
-  const { addRecord } = useRecords();
+  const { addRecord, incomeCategories, expenseCategories } = useRecords();
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
@@ -15,8 +14,8 @@ export const AddRecord = () => {
   const [saved, setSaved] = useState(false);
 
   const categories = type === 'income' 
-    ? INCOME_CATEGORIES.map(c => c.name) 
-    : EXPENSE_CATEGORIES.map(c => c.name);
+    ? incomeCategories.map(c => c.name) 
+    : expenseCategories.map(c => c.name);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

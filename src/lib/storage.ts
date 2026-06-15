@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category } from '../types/record';
 import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../types/record';
 
 const STORAGE_KEY = 'expense_tracker_data';
@@ -91,6 +91,39 @@ export class RecordDAO {
   count(): number {
     const schema = this.getSchema();
     return schema.records.length;
+  }
+
+  // 分类管理方法
+  getCategories(): Category[] {
+    const schema = this.getSchema();
+    return [...schema.categories];
+  }
+
+  saveCategories(categories: Category[]): void {
+    const schema = this.getSchema();
+    schema.categories = categories;
+    this.saveSchema(schema);
+  }
+
+  addCategory(category: Category): void {
+    const schema = this.getSchema();
+    schema.categories.push(category);
+    this.saveSchema(schema);
+  }
+
+  deleteCategory(id: string): void {
+    const schema = this.getSchema();
+    schema.categories = schema.categories.filter((c) => c.id !== id);
+    this.saveSchema(schema);
+  }
+
+  updateCategory(category: Category): void {
+    const schema = this.getSchema();
+    const index = schema.categories.findIndex((c) => c.id === category.id);
+    if (index >= 0) {
+      schema.categories[index] = category;
+      this.saveSchema(schema);
+    }
   }
 
   exportData(): DataSchema {

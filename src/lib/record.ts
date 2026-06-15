@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category } from '../types/record';
 import { recordDAO } from './storage';
 
 export interface Statistics {
@@ -235,6 +235,51 @@ export class RecordService {
     } catch {
       return { success: false, message: 'JSON 解析错误' };
     }
+  }
+
+  // 分类管理方法
+  getCategories(): Category[] {
+    return recordDAO.getCategories();
+  }
+
+  getIncomeCategories(): Category[] {
+    return recordDAO.getCategories().filter((c) => c.type === 'income');
+  }
+
+  getExpenseCategories(): Category[] {
+    return recordDAO.getCategories().filter((c) => c.type === 'expense');
+  }
+
+  generateCategoryId(type: 'income' | 'expense'): string {
+    const prefix = type === 'income' ? 'inc' : 'exp';
+    const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    return `${prefix}-${id}`;
+  }
+
+  addCategory(category: Omit<Category, 'id'> & { id?: string }): Category {
+    const newCategory: Category = {
+      ...category,
+      id: category.id || this.generateCategoryId(category.type),
+    };
+    recordDAO.addCategory(newCategory);
+    return newCategory;
+  }
+
+  deleteCategory(id: string): { success: boolean; message: string } {
+    // 检查是否有记录使用该分类
+    const records = recordDAO.findAll();
+    const categoryInUse = records.some((r) => r.category === id);
+    
+    if (categoryInUse) {
+      return { success: false, message: '该分类正在被使用，无法删除' };
+    }
+    
+    recordDAO.deleteCategory(id);
+    return { success: true, message: '分类删除成功' };
+  }
+
+  updateCategory(category: Category): void {
+    recordDAO.updateCategory(category);
   }
 }
 
