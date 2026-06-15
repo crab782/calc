@@ -1,0 +1,14 @@
+- [x] Checkpoint 1: 依赖安装完成（tailwindcss@3, postcss, autoprefixer, lucide-react）
+- [x] Checkpoint 2: TailwindCSS 配置正确（tailwind.config.js）
+- [x] Checkpoint 3: 类型定义文件创建完成（types/index.ts）
+- [x] Checkpoint 4: localStorage 工具函数实现完成（utils/storage.ts）
+- [x] Checkpoint 5: 侧边栏组件创建完成（components/Sidebar.tsx）
+- [x] Checkpoint 6: 总览页组件创建完成（pages/Dashboard.tsx）
+- [x] Checkpoint 7: 记账页组件创建完成（pages/AddRecord.tsx）
+- [x] Checkpoint 8: 主应用入口更新完成（App.tsx）
+- [x] Checkpoint 9: 全局样式更新完成（index.css）
+- [x] Checkpoint 10: 项目构建成功（npm run build）
+- [x] Checkpoint 11: 总览页显示正确（收支统计卡片）
+- [x] Checkpoint 12: 记账页功能正常（添加记录保存到 localStorage）
+- [x] Checkpoint 13: 页面切换功能正常（侧边栏导航）
+- [x] Checkpoint 14: 数据持久化验证通过（刷新页面数据不丢失）
