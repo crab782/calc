@@ -1,6 +1,7 @@
 import type { Statistics } from '../types';
 import { getRecords, formatCurrency, formatDate, deleteRecord } from '../utils/storage';
 import { TrendingUp, TrendingDown, Wallet, Trash2 } from 'lucide-react';
+import { MonthlyChart } from '../components/MonthlyChart';
 
 interface DashboardProps {
   onRecordsChange: () => void;
@@ -79,6 +80,10 @@ export const Dashboard = ({ onRecordsChange }: DashboardProps) => {
             </div>
           );
         })}
+      </div>
+
+      <div className="mb-8">
+        <MonthlyChart />
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
