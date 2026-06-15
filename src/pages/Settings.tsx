@@ -100,14 +100,13 @@ export const Settings = () => {
 
   return (
     <div className="p-6 flex-1">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.settings.title}</h1>
-      
+      {/* Toast 消息提示 */}
       {message && (
         <div
-          className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-fade-in ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-700'
-              : 'bg-red-50 text-red-700'
+              ? 'bg-green-500 text-white'
+              : 'bg-red-500 text-white'
           }`}
         >
           {message.type === 'success' ? (
@@ -119,6 +118,8 @@ export const Settings = () => {
         </div>
       )}
 
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.settings.title}</h1>
+
       <input
         ref={fileInputRef}
         type="file"
@@ -127,7 +128,7 @@ export const Settings = () => {
         className="hidden"
       />
 
-      <div className="max-w-2xl space-y-6">
+      <div className="space-y-6">
         {/* 分类管理区块 */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.settings.categoryManagement}</h2>
