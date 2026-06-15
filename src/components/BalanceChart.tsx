@@ -16,6 +16,15 @@ export const BalanceChart = () => {
     return `${monthNames[monthNum - 1]} ${year}`;
   };
 
+  const boundaryIndex = monthlyDataWithPrediction.findIndex((item) => !item.isActual);
+
+  const actualData = monthlyDataWithPrediction.map((item, i) =>
+    item.isActual || i === boundaryIndex ? item.balance : null
+  );
+  const predictedData = monthlyDataWithPrediction.map((item, i) =>
+    !item.isActual || i === boundaryIndex - 1 ? item.balance : null
+  );
+
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -97,8 +106,8 @@ export const BalanceChart = () => {
       {
         name: language === 'zh' ? '累计结余' : 'Cumulative Balance',
         type: 'line',
-        smooth: true,
-        data: monthlyDataWithPrediction.map((item) => (item.isActual ? item.balance : null)),
+        smooth: false,
+        data: actualData,
         lineStyle: {
           color: '#3b82f6',
           width: 2,
@@ -128,8 +137,8 @@ export const BalanceChart = () => {
       {
         name: language === 'zh' ? '预测结余' : 'Predicted Balance',
         type: 'line',
-        smooth: true,
-        data: monthlyDataWithPrediction.map((item) => (!item.isActual ? item.balance : null)),
+        smooth: false,
+        data: predictedData,
         lineStyle: {
           color: '#3b82f6',
           width: 2,

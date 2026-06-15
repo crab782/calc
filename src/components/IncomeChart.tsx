@@ -16,6 +16,15 @@ export const IncomeChart = () => {
     return `${monthNames[monthNum - 1]} ${year}`;
   };
 
+  const boundaryIndex = monthlyDataWithPrediction.findIndex((item) => !item.isActual);
+
+  const actualData = monthlyDataWithPrediction.map((item, i) =>
+    item.isActual || i === boundaryIndex ? item.income : null
+  );
+  const predictedData = monthlyDataWithPrediction.map((item, i) =>
+    !item.isActual || i === boundaryIndex - 1 ? item.income : null
+  );
+
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -97,8 +106,8 @@ export const IncomeChart = () => {
       {
         name: t.chart.income,
         type: 'line',
-        smooth: true,
-        data: monthlyDataWithPrediction.map((item) => (item.isActual ? item.income : null)),
+        smooth: false,
+        data: actualData,
         lineStyle: {
           color: '#10b981',
           width: 2,
@@ -128,8 +137,8 @@ export const IncomeChart = () => {
       {
         name: language === 'zh' ? '预测收入' : 'Predicted Income',
         type: 'line',
-        smooth: true,
-        data: monthlyDataWithPrediction.map((item) => (!item.isActual ? item.income : null)),
+        smooth: false,
+        data: predictedData,
         lineStyle: {
           color: '#10b981',
           width: 2,

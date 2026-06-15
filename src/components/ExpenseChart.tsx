@@ -16,6 +16,15 @@ export const ExpenseChart = () => {
     return `${monthNames[monthNum - 1]} ${year}`;
   };
 
+  const boundaryIndex = monthlyDataWithPrediction.findIndex((item) => !item.isActual);
+
+  const actualData = monthlyDataWithPrediction.map((item, i) =>
+    item.isActual || i === boundaryIndex ? item.expense : null
+  );
+  const predictedData = monthlyDataWithPrediction.map((item, i) =>
+    !item.isActual || i === boundaryIndex - 1 ? item.expense : null
+  );
+
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -97,8 +106,8 @@ export const ExpenseChart = () => {
       {
         name: t.chart.expense,
         type: 'line',
-        smooth: true,
-        data: monthlyDataWithPrediction.map((item) => (item.isActual ? item.expense : null)),
+        smooth: false,
+        data: actualData,
         lineStyle: {
           color: '#ef4444',
           width: 2,
@@ -128,8 +137,8 @@ export const ExpenseChart = () => {
       {
         name: language === 'zh' ? '预测支出' : 'Predicted Expense',
         type: 'line',
-        smooth: true,
-        data: monthlyDataWithPrediction.map((item) => (!item.isActual ? item.expense : null)),
+        smooth: false,
+        data: predictedData,
         lineStyle: {
           color: '#ef4444',
           width: 2,
