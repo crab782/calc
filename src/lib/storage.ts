@@ -1,5 +1,5 @@
-import type { ExpenseRecord, DataSchema, Category } from '../types/record';
-import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
+import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT } from '../types/record';
 
 const STORAGE_KEY = 'expense_tracker_data';
 
@@ -23,6 +23,7 @@ export class RecordDAO {
       version: CURRENT_VERSION,
       records: [],
       categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
+      accounts: [DEFAULT_ACCOUNT],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -39,6 +40,13 @@ export class RecordDAO {
         s.version = '1.0.0';
         if (!s.categories) {
           s.categories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+        }
+        return s;
+      },
+      '1.0.0': (s) => {
+        s.version = '1.1.0';
+        if (!s.accounts) {
+          s.accounts = [DEFAULT_ACCOUNT];
         }
         return s;
       },
@@ -126,6 +134,39 @@ export class RecordDAO {
     }
   }
 
+  // 账户管理方法
+  getAccounts(): Account[] {
+    const schema = this.getSchema();
+    return [...schema.accounts];
+  }
+
+  saveAccounts(accounts: Account[]): void {
+    const schema = this.getSchema();
+    schema.accounts = accounts;
+    this.saveSchema(schema);
+  }
+
+  addAccount(account: Account): void {
+    const schema = this.getSchema();
+    schema.accounts.push(account);
+    this.saveSchema(schema);
+  }
+
+  deleteAccount(id: string): void {
+    const schema = this.getSchema();
+    schema.accounts = schema.accounts.filter((a) => a.id !== id);
+    this.saveSchema(schema);
+  }
+
+  updateAccount(account: Account): void {
+    const schema = this.getSchema();
+    const index = schema.accounts.findIndex((a) => a.id === account.id);
+    if (index >= 0) {
+      schema.accounts[index] = account;
+      this.saveSchema(schema);
+    }
+  }
+
   exportData(): DataSchema {
     return this.getSchema();
   }
@@ -165,6 +206,17 @@ export class RecordDAO {
       }
     }
 
+    // 验证 accounts 字段（可选，用于兼容旧版本数据）
+    if (schema.accounts !== undefined && !Array.isArray(schema.accounts)) {
+      return false;
+    }
+
+    for (const account of schema.accounts || []) {
+      if (!this.validateAccount(account)) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -181,6 +233,20 @@ export class RecordDAO {
       typeof r.category === 'string' &&
       typeof r.date === 'string' &&
       typeof r.createdAt === 'number'
+    );
+  }
+
+  private validateAccount(account: unknown): account is Account {
+    if (typeof account !== 'object' || account === null) return false;
+    
+    const a = account as Account;
+    
+    return (
+      typeof a.id === 'string' &&
+      typeof a.name === 'string' &&
+      typeof a.currency === 'string' &&
+      typeof a.balance === 'number' &&
+      typeof a.createdAt === 'number'
     );
   }
 }

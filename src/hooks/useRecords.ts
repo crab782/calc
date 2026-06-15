@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { ExpenseRecord, Category } from '../types/record';
+import type { ExpenseRecord, Category, Account } from '../types/record';
 import { recordService } from '../lib/record';
 
 export const useRecords = () => {
@@ -9,6 +9,10 @@ export const useRecords = () => {
 
   const [categories, setCategories] = useState<Category[]>(() => {
     return recordService.getCategories();
+  });
+
+  const [accounts, setAccounts] = useState<Account[]>(() => {
+    return recordService.getAccounts();
   });
 
   // 派生状态：收入分类和支出分类
@@ -26,6 +30,10 @@ export const useRecords = () => {
 
   const refreshCategories = useCallback(() => {
     setCategories(recordService.getCategories());
+  }, []);
+
+  const refreshAccounts = useCallback(() => {
+    setAccounts(recordService.getAccounts());
   }, []);
 
   const addRecord = useCallback((data: {
@@ -69,6 +77,26 @@ export const useRecords = () => {
     refreshCategories();
   }, [refreshCategories]);
 
+  // 账户管理方法
+  const addAccount = useCallback((account: Omit<Account, 'id' | 'createdAt'> & { id?: string }): Account => {
+    const newAccount = recordService.addAccount(account);
+    refreshAccounts();
+    return newAccount;
+  }, [refreshAccounts]);
+
+  const deleteAccount = useCallback((id: string): { success: boolean; message: string } => {
+    const result = recordService.deleteAccount(id);
+    if (result.success) {
+      refreshAccounts();
+    }
+    return result;
+  }, [refreshAccounts]);
+
+  const updateAccount = useCallback((account: Account) => {
+    recordService.updateAccount(account);
+    refreshAccounts();
+  }, [refreshAccounts]);
+
   return {
     records,
     addRecord,
@@ -83,5 +111,10 @@ export const useRecords = () => {
     addCategory,
     deleteCategory,
     updateCategory,
+    accounts,
+    addAccount,
+    deleteAccount,
+    updateAccount,
+    refreshAccounts,
   };
 };

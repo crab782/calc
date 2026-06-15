@@ -15,10 +15,19 @@ export interface Category {
   icon: string;
 }
 
+export interface Account {
+  id: string;
+  name: string;
+  currency: string;
+  balance: number;
+  createdAt: number;
+}
+
 export interface DataSchema {
   version: string;
   records: ExpenseRecord[];
   categories: Category[];
+  accounts: Account[];
   createdAt: number;
   updatedAt: number;
 }
@@ -43,4 +52,12 @@ export const EXPENSE_CATEGORIES: Category[] = [
   { id: 'exp-other', name: '其他支出', type: 'expense', icon: 'more-horizontal' },
 ];
 
-export const CURRENT_VERSION = '1.0.0';
+export const DEFAULT_ACCOUNT: Account = {
+  id: 'default-account',
+  name: '默认账户',
+  currency: 'CNY',
+  balance: 0,
+  createdAt: Date.now(),
+};
+
+export const CURRENT_VERSION = '1.1.0';

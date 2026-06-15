@@ -1,0 +1,18 @@
+{
+  "title": "Account Management",
+  "addAccount": "Add Account",
+  "deleteAccount": "Delete Account",
+  "accountName": "Account Name",
+  "accountNamePlaceholder": "Please enter account name",
+  "currency": "Currency",
+  "balance": "Balance",
+  "noAccounts": "No accounts",
+  "addFirstAccount": "Click the button on the top right to add your first account",
+  "deleteConfirm": "Confirm Delete Account",
+  "deleteMessage": "This action cannot be undone. Are you sure you want to delete this account?",
+  "deleteSuccess": "Account deleted successfully",
+  "deleteFailed": "At least one account must be kept",
+  "addSuccess": "Account added successfully",
+  "cancel": "Cancel",
+  "confirm": "Confirm"
+}

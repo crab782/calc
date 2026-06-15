@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { AddRecord } from './pages/AddRecord';
 import { History } from './pages/History';
 import { Settings } from './pages/Settings';
+import { Accounts } from './pages/Accounts';
 import type { PageType } from './types';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
         {currentPage === 'add-record' && <AddRecord />}
         {currentPage === 'history' && <History />}
         {currentPage === 'settings' && <Settings />}
+        {currentPage === 'accounts' && <Accounts />}
       </main>
     </div>
   );

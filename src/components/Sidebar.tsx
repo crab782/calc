@@ -1,4 +1,4 @@
-import { LayoutDashboard, PlusCircle, Settings, History, X } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Settings, History, X, Wallet } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { PageType } from '../types';
 
@@ -14,6 +14,7 @@ export const Sidebar = ({ currentPage, onPageChange, onCollapse }: SidebarProps)
   const menuItems = [
     { id: 'dashboard' as PageType, label: t.sidebar.dashboard, icon: LayoutDashboard },
     { id: 'history' as PageType, label: t.sidebar.history, icon: History },
+    { id: 'accounts' as PageType, label: '账户', icon: Wallet },
     { id: 'add-record' as PageType, label: t.sidebar.addRecord, icon: PlusCircle },
     { id: 'settings' as PageType, label: t.sidebar.settings, icon: Settings },
   ];

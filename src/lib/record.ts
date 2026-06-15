@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema, Category } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
 import { recordDAO } from './storage';
 
 export interface Statistics {
@@ -280,6 +280,40 @@ export class RecordService {
 
   updateCategory(category: Category): void {
     recordDAO.updateCategory(category);
+  }
+
+  // 账户管理方法
+  getAccounts(): Account[] {
+    return recordDAO.getAccounts();
+  }
+
+  generateAccountId(): string {
+    return 'acc-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  addAccount(account: Omit<Account, 'id' | 'createdAt'> & { id?: string }): Account {
+    const newAccount: Account = {
+      ...account,
+      id: account.id || this.generateAccountId(),
+      createdAt: Date.now(),
+    };
+    recordDAO.addAccount(newAccount);
+    return newAccount;
+  }
+
+  deleteAccount(id: string): { success: boolean; message: string } {
+    // 检查是否只有一个账户（至少保留一个账户）
+    const accounts = recordDAO.getAccounts();
+    if (accounts.length <= 1) {
+      return { success: false, message: '至少需要保留一个账户' };
+    }
+    
+    recordDAO.deleteAccount(id);
+    return { success: true, message: '账户删除成功' };
+  }
+
+  updateAccount(account: Account): void {
+    recordDAO.updateAccount(account);
   }
 }
 

@@ -1,0 +1,18 @@
+{
+  "title": "账户管理",
+  "addAccount": "添加账户",
+  "deleteAccount": "删除账户",
+  "accountName": "账户名称",
+  "accountNamePlaceholder": "请输入账户名称",
+  "currency": "币种",
+  "balance": "余额",
+  "noAccounts": "暂无账户",
+  "addFirstAccount": "点击右上角按钮添加第一个账户",
+  "deleteConfirm": "确认删除账户",
+  "deleteMessage": "删除后无法恢复，确定要删除这个账户吗？",
+  "deleteSuccess": "账户删除成功",
+  "deleteFailed": "至少需要保留一个账户",
+  "addSuccess": "账户添加成功",
+  "cancel": "取消",
+  "confirm": "确认"
+}
