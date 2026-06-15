@@ -1,0 +1,9 @@
+- [x] `generateMonthlyDataWithPrediction` 函数使用 `isActual` 标识替代 `isPredicted`
+- [x] 过去无数据月份收支为0（无预测填充，使用实线）
+- [x] 未来月份收入=0、支出=0（无事发生）
+- [x] 未来月份结余保持最近实际月份的值（直线）
+- [x] 三个图表垂直排列（结余 → 支出 → 收入）
+- [x] 收入和支出图表与结余图表宽度一致
+- [x] 未来月份用虚线样式区分（`isActual=false`）
+- [x] 过去月份按实际数据显示（实线，`isActual=true`）
+- [x] `npm run build` 构建成功

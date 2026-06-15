@@ -2,9 +2,9 @@ import ReactECharts from 'echarts-for-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useStatistics } from '../hooks/useStatistics';
 
-export const MonthlyChart = () => {
+export const ExpenseChart = () => {
   const { t, language } = useLanguage();
-  const { monthlyData } = useStatistics();
+  const { monthlyDataWithPrediction } = useStatistics();
 
   const formatMonth = (month: string) => {
     const [year, m] = month.split('-');
@@ -25,19 +25,25 @@ export const MonthlyChart = () => {
       textStyle: {
         color: '#374151',
       },
-      formatter: (params: { axisValue: string; marker: string; seriesName: string; value: number }[]) => {
-        let result = `<div style="font-weight: 600; margin-bottom: 8px;">${params[0].axisValue}</div>`;
-        params.forEach((item) => {
+      formatter: (params: { axisValue: string; marker: string; seriesName: string; value: number | null }[]) => {
+        const validParams = params.filter((p) => p.value !== null);
+        if (validParams.length === 0) return '';
+        let result = `<div style="font-weight: 600; margin-bottom: 8px;">${validParams[0].axisValue}</div>`;
+        validParams.forEach((item) => {
+          const value = item.value ?? 0;
           result += `<div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
             ${item.marker}
-            <span>${item.seriesName}: ¥${item.value.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
+            <span>${item.seriesName}: ¥${value.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
           </div>`;
         });
         return result;
       },
     },
     legend: {
-      data: [t.chart.income, t.chart.expense],
+      data: [
+        t.chart.expense,
+        language === 'zh' ? '预测支出' : 'Predicted Expense',
+      ],
       textStyle: {
         color: '#6b7280',
       },
@@ -53,7 +59,7 @@ export const MonthlyChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: monthlyData.map((item) => formatMonth(item.month)),
+      data: monthlyDataWithPrediction.map((item) => formatMonth(item.month)),
       axisLine: {
         lineStyle: {
           color: '#d1d5db',
@@ -89,41 +95,10 @@ export const MonthlyChart = () => {
     },
     series: [
       {
-        name: t.chart.income,
-        type: 'line',
-        smooth: true,
-        data: monthlyData.map((item) => item.income),
-        lineStyle: {
-          color: '#10b981',
-          width: 2,
-        },
-        itemStyle: {
-          color: '#10b981',
-        },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
-              { offset: 1, color: 'rgba(16, 185, 129, 0.05)' },
-            ],
-          },
-        },
-        symbol: 'circle',
-        symbolSize: 6,
-        emphasis: {
-          scale: 1.5,
-        },
-      },
-      {
         name: t.chart.expense,
         type: 'line',
         smooth: true,
-        data: monthlyData.map((item) => item.expense),
+        data: monthlyDataWithPrediction.map((item) => (item.isActual ? item.expense : null)),
         lineStyle: {
           color: '#ef4444',
           width: 2,
@@ -150,10 +125,30 @@ export const MonthlyChart = () => {
           scale: 1.5,
         },
       },
+      {
+        name: language === 'zh' ? '预测支出' : 'Predicted Expense',
+        type: 'line',
+        smooth: true,
+        data: monthlyDataWithPrediction.map((item) => (!item.isActual ? item.expense : null)),
+        lineStyle: {
+          color: '#ef4444',
+          width: 2,
+          type: 'dashed',
+        },
+        itemStyle: {
+          color: '#ef4444',
+          opacity: 0.6,
+        },
+        symbol: 'circle',
+        symbolSize: 6,
+        emphasis: {
+          scale: 1.5,
+        },
+      },
     ],
   };
 
-  if (monthlyData.length === 0) {
+  if (monthlyDataWithPrediction.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
         <div className="text-center text-gray-500">
@@ -166,7 +161,9 @@ export const MonthlyChart = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.chart.title}</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        {language === 'zh' ? '支出趋势' : 'Expense Trend'}
+      </h2>
       <div className="h-80">
         <ReactECharts
           option={option}

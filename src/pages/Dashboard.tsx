@@ -1,5 +1,7 @@
 import { TrendingUp, TrendingDown, Wallet, Trash2, Globe } from 'lucide-react';
-import { MonthlyChart } from '../components/MonthlyChart';
+import { BalanceChart } from '../components/BalanceChart';
+import { ExpenseChart } from '../components/ExpenseChart';
+import { IncomeChart } from '../components/IncomeChart';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 import { useStatistics } from '../hooks/useStatistics';
@@ -69,8 +71,10 @@ export const Dashboard = () => {
         })}
       </div>
 
-      <div className="mb-8">
-        <MonthlyChart />
+      <div className="mb-8 space-y-6">
+        <BalanceChart />
+        <ExpenseChart />
+        <IncomeChart />
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
