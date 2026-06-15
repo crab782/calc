@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import ReactECharts from 'echarts-for-react';
 import { getRecords } from '../utils/storage';
 
 interface MonthlyData {
@@ -32,24 +32,141 @@ export const MonthlyChart = () => {
     return `${year}年${parseInt(m)}月`;
   };
 
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { value: number; color: string; payload: MonthlyData }[] }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-lg">
-          <p className="font-medium mb-2">{formatMonth(data.month)}</p>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-3 h-3 rounded-full bg-green-500"></span>
-            <span>收入: ¥{data.income.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-red-500"></span>
-            <span>支出: ¥{data.expense.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
-          </div>
-        </div>
-      );
-    }
-    return null;
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#e5e7eb',
+      borderWidth: 1,
+      textStyle: {
+        color: '#374151',
+      },
+      formatter: (params: { axisValue: string; marker: string; seriesName: string; value: number }[]) => {
+        let result = `<div style="font-weight: 600; margin-bottom: 8px;">${params[0].axisValue}</div>`;
+        params.forEach((item) => {
+          result += `<div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
+            ${item.marker}
+            <span>${item.seriesName}: ¥${item.value.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
+          </div>`;
+        });
+        return result;
+      },
+    },
+    legend: {
+      data: ['收入', '支出'],
+      textStyle: {
+        color: '#6b7280',
+      },
+      bottom: 0,
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '15%',
+      top: '10%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: sortedData.map((item) => formatMonth(item.month)),
+      axisLine: {
+        lineStyle: {
+          color: '#d1d5db',
+        },
+      },
+      axisTick: {
+        show: false,
+      },
+      axisLabel: {
+        color: '#6b7280',
+        fontSize: 12,
+      },
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      axisLabel: {
+        color: '#6b7280',
+        fontSize: 12,
+        formatter: (value: number) => `¥${(value / 1000).toFixed(0)}k`,
+      },
+      splitLine: {
+        lineStyle: {
+          color: '#f3f4f6',
+          type: 'dashed',
+        },
+      },
+    },
+    series: [
+      {
+        name: '收入',
+        type: 'line',
+        smooth: true,
+        data: sortedData.map((item) => item.income),
+        lineStyle: {
+          color: '#10b981',
+          width: 2,
+        },
+        itemStyle: {
+          color: '#10b981',
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+              { offset: 1, color: 'rgba(16, 185, 129, 0.05)' },
+            ],
+          },
+        },
+        symbol: 'circle',
+        symbolSize: 6,
+        emphasis: {
+          scale: 1.5,
+        },
+      },
+      {
+        name: '支出',
+        type: 'line',
+        smooth: true,
+        data: sortedData.map((item) => item.expense),
+        lineStyle: {
+          color: '#ef4444',
+          width: 2,
+        },
+        itemStyle: {
+          color: '#ef4444',
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(239, 68, 68, 0.3)' },
+              { offset: 1, color: 'rgba(239, 68, 68, 0.05)' },
+            ],
+          },
+        },
+        symbol: 'circle',
+        symbolSize: 6,
+        emphasis: {
+          scale: 1.5,
+        },
+      },
+    ],
   };
 
   if (sortedData.length === 0) {
@@ -67,47 +184,11 @@ export const MonthlyChart = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">月度收支趋势</h2>
       <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={sortedData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="month" 
-              tick={{ fontSize: 12 }}
-              tickFormatter={formatMonth}
-              axisLine={{ stroke: '#d1d5db' }}
-              tickLine={{ stroke: '#d1d5db' }}
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `¥${(value / 1000).toFixed(0)}k`}
-              axisLine={{ stroke: '#d1d5db' }}
-              tickLine={{ stroke: '#d1d5db' }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              wrapperStyle={{ paddingTop: '10px' }}
-              iconType="circle"
-            />
-            <Line 
-              type="monotone" 
-              dataKey="income" 
-              name="收入"
-              stroke="#10b981" 
-              strokeWidth={2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="expense" 
-              name="支出"
-              stroke="#ef4444" 
-              strokeWidth={2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <ReactECharts
+          option={option}
+          style={{ width: '100%', height: '100%' }}
+          opts={{ renderer: 'canvas' }}
+        />
       </div>
     </div>
   );
