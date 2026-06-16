@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, Trash2, CheckCircle, AlertCircle, Plus, X } from 'lucide-react';
+import { Download, Upload, Trash2, CheckCircle, AlertCircle, Plus, X, Sun, Moon, Monitor } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useRecords } from '../hooks/useRecords';
 import { recordService } from '../lib/record';
 
 export const Settings = () => {
   const { t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const { count, refresh, incomeCategories, expenseCategories, addCategory, deleteCategory } = useRecords();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
@@ -118,7 +120,7 @@ export const Settings = () => {
         </div>
       )}
 
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.settings.title}</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">{t.settings.title}</h1>
 
       <input
         ref={fileInputRef}
@@ -129,24 +131,69 @@ export const Settings = () => {
       />
 
       <div className="space-y-6">
+        {/* 外观（主题）区块 */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.settings.appearance}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* 浅色模式 */}
+            <button
+              onClick={() => setTheme('light')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                theme === 'light'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 hover:border-gray-300'
+              }`}
+            >
+              <Sun className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{t.settings.lightMode}</p>
+            </button>
+
+            {/* 深色模式 */}
+            <button
+              onClick={() => setTheme('dark')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                theme === 'dark'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 hover:border-gray-300'
+              }`}
+            >
+              <Moon className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{t.settings.darkMode}</p>
+            </button>
+
+            {/* 跟随系统 */}
+            <button
+              onClick={() => setTheme('system')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                theme === 'system'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 hover:border-gray-300'
+              }`}
+            >
+              <Monitor className="w-6 h-6 mx-auto mb-2 text-gray-500 dark:text-gray-400" />
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{t.settings.systemMode}</p>
+            </button>
+          </div>
+        </div>
+
         {/* 分类管理区块 */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.settings.categoryManagement}</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.settings.categoryManagement}</h2>
           
           <div className="space-y-6">
             {/* 收入分类 */}
             <div>
-              <h3 className="text-sm font-medium text-gray-600 mb-3">{t.settings.incomeCategories}</h3>
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t.settings.incomeCategories}</h3>
               <div className="flex flex-wrap gap-2">
                 {incomeCategories.map((category) => (
                   <div
                     key={category.id}
-                    className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg border border-green-200"
+                    className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800"
                   >
                     <span>{category.name}</span>
                     <button
                       onClick={() => setShowDeleteConfirm(category.id)}
-                      className="hover:bg-green-100 rounded-full p-0.5 transition-colors"
+                      className="hover:bg-green-100 dark:hover:bg-green-900/40 rounded-full p-0.5 transition-colors"
                       title={t.settings.deleteCategory}
                     >
                       <X className="w-4 h-4" />
@@ -165,17 +212,17 @@ export const Settings = () => {
 
             {/* 支出分类 */}
             <div>
-              <h3 className="text-sm font-medium text-gray-600 mb-3">{t.settings.expenseCategories}</h3>
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t.settings.expenseCategories}</h3>
               <div className="flex flex-wrap gap-2">
                 {expenseCategories.map((category) => (
                   <div
                     key={category.id}
-                    className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-lg border border-red-200"
+                    className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800"
                   >
                     <span>{category.name}</span>
                     <button
                       onClick={() => setShowDeleteConfirm(category.id)}
-                      className="hover:bg-red-100 rounded-full p-0.5 transition-colors"
+                      className="hover:bg-red-100 dark:hover:bg-red-900/40 rounded-full p-0.5 transition-colors"
                       title={t.settings.deleteCategory}
                     >
                       <X className="w-4 h-4" />
@@ -195,14 +242,14 @@ export const Settings = () => {
         </div>
 
         {/* 数据管理区块 */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t.settings.dataManagement}</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.settings.dataManagement}</h2>
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
               <div>
-                <p className="text-sm text-gray-500">{t.settings.currentRecords}</p>
-                <p className="text-xl font-bold text-gray-800">{count}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t.settings.currentRecords}</p>
+                <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{count}</p>
               </div>
             </div>
 
@@ -224,10 +271,10 @@ export const Settings = () => {
               </button>
             </div>
 
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
               <button
                 onClick={() => setShowConfirmClear(true)}
-                className="flex items-center gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="text-sm">{t.settings.clearData}</span>
@@ -236,9 +283,9 @@ export const Settings = () => {
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-xl p-6">
-          <h3 className="font-medium text-blue-800 mb-2">{t.settings.importExportInfo}</h3>
-          <ul className="text-sm text-blue-700 space-y-1">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+          <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-2">{t.settings.importExportInfo}</h3>
+          <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1">
             <li>• {t.settings.info1}</li>
             <li>• {t.settings.info2}</li>
             <li>• {t.settings.info3}</li>
@@ -249,13 +296,13 @@ export const Settings = () => {
 
       {showConfirmClear && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">{t.settings.clearConfirm}</h3>
-            <p className="text-gray-600 mb-4">{t.settings.clearMessage}</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{t.settings.clearConfirm}</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{t.settings.clearMessage}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmClear(false)}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg font-medium transition-colors"
               >
                 {t.settings.cancel}
               </button>
@@ -273,8 +320,8 @@ export const Settings = () => {
       {/* 添加分类弹窗 */}
       {showAddCategory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
               {showAddCategory === 'income' ? t.settings.addIncomeCategory : t.settings.addExpenseCategory}
             </h3>
             <input
@@ -282,7 +329,7 @@ export const Settings = () => {
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder={t.settings.categoryNamePlaceholder}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -296,7 +343,7 @@ export const Settings = () => {
                   setShowAddCategory(null);
                   setNewCategoryName('');
                 }}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg font-medium transition-colors"
               >
                 {t.settings.cancel}
               </button>
@@ -308,7 +355,7 @@ export const Settings = () => {
                     ? showAddCategory === 'income'
                       ? 'bg-green-500 hover:bg-green-600 text-white'
                       : 'bg-red-500 hover:bg-red-600 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                 }`}
               >
                 {showAddCategory === 'income' ? t.settings.addIncomeCategory : t.settings.addExpenseCategory}
@@ -321,13 +368,13 @@ export const Settings = () => {
       {/* 删除分类确认弹窗 */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">{t.settings.deleteCategory}</h3>
-            <p className="text-gray-600 mb-4">{t.settings.deleteCategoryConfirm}</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{t.settings.deleteCategory}</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{t.settings.deleteCategoryConfirm}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg font-medium transition-colors"
               >
                 {t.settings.cancel}
               </button>

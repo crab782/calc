@@ -41,12 +41,12 @@ export const AddRecord = () => {
 
   // 根据类型获取分类列表
   const categories = type === 'income' || type === 'investment-mature'
-    ? incomeCategories.map(c => c.name) 
+    ? incomeCategories.map(c => c.name)
     : expenseCategories.map(c => c.name);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 验证逻辑
     if (needsPrincipalInterest) {
       // 投资到期和还贷类型需要验证本金和利息
@@ -95,23 +95,23 @@ export const AddRecord = () => {
 
   return (
     <div className="p-6 flex-1">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t.addRecord.title}</h1>
-      
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">{t.addRecord.title}</h1>
+
       <div className="max-w-2xl mx-auto">
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.type}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.type}</label>
             <div className="grid grid-cols-3 gap-3">
               {TRANSACTION_TYPES.map((typeOption) => {
                 const colorClasses: Record<string, string> = {
-                  green: type === typeOption.value ? 'border-green-500 bg-green-50 text-green-600' : 'border-gray-200 hover:border-green-300',
-                  red: type === typeOption.value ? 'border-red-500 bg-red-50 text-red-600' : 'border-gray-200 hover:border-red-300',
-                  blue: type === typeOption.value ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-200 hover:border-blue-300',
-                  purple: type === typeOption.value ? 'border-purple-500 bg-purple-50 text-purple-600' : 'border-gray-200 hover:border-purple-300',
-                  orange: type === typeOption.value ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-200 hover:border-orange-300',
-                  yellow: type === typeOption.value ? 'border-yellow-500 bg-yellow-50 text-yellow-600' : 'border-gray-200 hover:border-yellow-300',
+                  green: type === typeOption.value ? 'border-green-500 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700',
+                  red: type === typeOption.value ? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700',
+                  blue: type === typeOption.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700',
+                  purple: type === typeOption.value ? 'border-purple-500 bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700',
+                  orange: type === typeOption.value ? 'border-orange-500 bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' : 'border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700',
+                  yellow: type === typeOption.value ? 'border-yellow-500 bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400' : 'border-gray-200 dark:border-gray-700 hover:border-yellow-300 dark:hover:border-yellow-700',
                 };
-                
+
                 return (
                   <button
                     key={typeOption.value}
@@ -133,11 +133,11 @@ export const AddRecord = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.currency}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.currency}</label>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800"
             >
               {CURRENCY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -151,9 +151,9 @@ export const AddRecord = () => {
             // 投资到期和还贷：显示本金和利息两个输入框
             <>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">本金</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">本金</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                     {CURRENCY_OPTIONS.find(o => o.value === currency)?.label.match(/\(.+\)/)?.[1] || '¥'}
                   </span>
                   <input
@@ -161,16 +161,16 @@ export const AddRecord = () => {
                     value={principal}
                     onChange={(e) => setPrincipal(e.target.value)}
                     placeholder="0.00"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     step="0.01"
                     min="0"
                   />
                 </div>
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">利息</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">利息</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                     {CURRENCY_OPTIONS.find(o => o.value === currency)?.label.match(/\(.+\)/)?.[1] || '¥'}
                   </span>
                   <input
@@ -178,7 +178,7 @@ export const AddRecord = () => {
                     value={interest}
                     onChange={(e) => setInterest(e.target.value)}
                     placeholder="0.00"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     step="0.01"
                     min="0"
                   />
@@ -188,9 +188,9 @@ export const AddRecord = () => {
           ) : (
             // 其他类型：显示单个金额输入框
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.amount}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.amount}</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                   {CURRENCY_OPTIONS.find(o => o.value === currency)?.label.match(/\(.+\)/)?.[1] || '¥'}
                 </span>
                 <input
@@ -198,7 +198,7 @@ export const AddRecord = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   step="0.01"
                   min="0"
                 />
@@ -207,11 +207,11 @@ export const AddRecord = () => {
           )}
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.category}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.category}</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800"
             >
               <option value="">{t.addRecord.selectCategory}</option>
               {categories.map((cat) => (
@@ -223,22 +223,22 @@ export const AddRecord = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.date}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.date}</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.note}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.note}</label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t.addRecord.notePlaceholder}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               rows={3}
             />
           </div>
@@ -256,10 +256,10 @@ export const AddRecord = () => {
                 : needsPrincipalInterest
                 ? principal && parseFloat(principal) > 0 && interest && parseFloat(interest) > 0 && category
                   ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                 : amount && parseFloat(amount) > 0 && category
                 ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
             }`}
           >
             {saved ? (

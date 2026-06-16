@@ -62,15 +62,15 @@ export const History = () => {
   return (
     <div className="p-6 flex-1 overflow-auto">
       <div className="flex items-center gap-3 mb-6">
-        <HistoryIcon className="w-8 h-8 text-blue-600" />
-        <h1 className="text-2xl font-bold text-gray-800">{t.history.title}</h1>
+        <HistoryIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{t.history.title}</h1>
       </div>
 
       {sortedMonths.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <HistoryIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500">{t.history.noRecords}</p>
-          <p className="text-sm text-gray-400 mt-2">{t.history.addFirstRecord}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <HistoryIcon className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+          <p className="text-gray-500 dark:text-gray-400">{t.history.noRecords}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">{t.history.addFirstRecord}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -78,25 +78,25 @@ export const History = () => {
             const monthData = groupedRecords[month];
 
             return (
-              <div key={month} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div key={month} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* 月份标题栏 */}
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800">
+                    <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                       {formatMonth(month)}
                     </h2>
                     <div className="flex items-center gap-6">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-green-600" />
-                        <span className="text-sm text-gray-600">{t.history.income}:</span>
-                        <span className="font-semibold text-green-600">
+                        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t.history.income}:</span>
+                        <span className="font-semibold text-green-600 dark:text-green-400">
                           +{formatCurrency(monthData.totalIncome)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <TrendingDown className="w-4 h-4 text-red-600" />
-                        <span className="text-sm text-gray-600">{t.history.expense}:</span>
-                        <span className="font-semibold text-red-600">
+                        <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t.history.expense}:</span>
+                        <span className="font-semibold text-red-600 dark:text-red-400">
                           -{formatCurrency(monthData.totalExpense)}
                         </span>
                       </div>
@@ -108,35 +108,35 @@ export const History = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {t.history.time}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {t.history.category}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {t.history.amount}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {t.history.type}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {t.history.description}
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                       {monthData.records.map((record) => (
-                        <tr key={record.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                             {formatDate(record.date)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
                             {record.category}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
-                            <span className={record.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+                            <span className={record.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                               {record.type === 'income' ? '+' : '-'}
                               {formatCurrency(record.amount)}
                             </span>
@@ -145,14 +145,14 @@ export const History = () => {
                             <span
                               className={`px-2 py-1 text-xs rounded-full ${
                                 record.type === 'income'
-                                  ? 'bg-green-100 text-green-600'
-                                  : 'bg-red-100 text-red-600'
+                                  ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                                  : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                               }`}
                             >
                               {record.type === 'income' ? t.history.incomeType : t.history.expenseType}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
+                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                             {record.note || '-'}
                           </td>
                         </tr>

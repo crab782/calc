@@ -31,11 +31,11 @@ const ACCOUNT_TYPE_NAMES: Record<string, string> = {
 
 // 账户类型配置
 const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; color: string; bgColor: string }> = {
-  cash: { label: '现金', color: 'text-green-700', bgColor: 'bg-green-100' },
-  investment: { label: '投资', color: 'text-blue-700', bgColor: 'bg-blue-100' },
-  loan: { label: '贷款', color: 'text-orange-700', bgColor: 'bg-orange-100' },
-  income: { label: '收入', color: 'text-purple-700', bgColor: 'bg-purple-100' },
-  expense: { label: '支出', color: 'text-red-700', bgColor: 'bg-red-100' },
+  cash: { label: '现金', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
+  investment: { label: '投资', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+  loan: { label: '贷款', color: 'text-orange-700 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/30' },
+  income: { label: '收入', color: 'text-purple-700 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
+  expense: { label: '支出', color: 'text-red-700 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' },
 };
 
 // AccountCard 子组件：渲染单个账户卡片
@@ -59,30 +59,30 @@ const AccountCard = ({
   t: TranslationType;
 }) => (
   <div
-    className={`bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${
-      isDefault ? 'border-yellow-400' : 'border-gray-200'
+    className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${
+      isDefault ? 'border-yellow-400 dark:border-yellow-500' : 'border-gray-200 dark:border-gray-700'
     }`}
   >
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-          isDefault ? 'bg-yellow-100' : 'bg-blue-100'
+          isDefault ? 'bg-yellow-100 dark:bg-yellow-900/30' : 'bg-blue-100 dark:bg-blue-900/30'
         }`}>
           <Wallet className={`w-5 h-5 ${
-            isDefault ? 'text-yellow-600' : 'text-blue-600'
+            isDefault ? 'text-yellow-600 dark:text-yellow-400' : 'text-blue-600 dark:text-blue-400'
           }`} />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-800">{account.name}</h3>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-200">{account.name}</h3>
             {/* 账户类型标签 */}
             <span className={`text-xs px-1.5 py-0.5 rounded ${
-              ACCOUNT_TYPE_CONFIG[account.accountType]?.bgColor || 'bg-gray-100'
-            } ${ACCOUNT_TYPE_CONFIG[account.accountType]?.color || 'text-gray-700'}`}>
+              ACCOUNT_TYPE_CONFIG[account.accountType]?.bgColor || 'bg-gray-100 dark:bg-gray-900'
+            } ${ACCOUNT_TYPE_CONFIG[account.accountType]?.color || 'text-gray-700 dark:text-gray-300'}`}>
               {ACCOUNT_TYPE_CONFIG[account.accountType]?.label || account.accountType}
             </span>
           </div>
-          <p className="text-sm text-gray-500">{account.currency}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{account.currency}</p>
         </div>
       </div>
       <div className="flex items-center gap-1">
@@ -91,8 +91,8 @@ const AccountCard = ({
           onClick={() => handleSetDefault(account.id)}
           className={`p-1.5 rounded-lg transition-colors ${
             isDefault
-              ? 'text-yellow-500 hover:bg-yellow-50'
-              : 'text-gray-400 hover:bg-gray-100 hover:text-yellow-500'
+              ? 'text-yellow-500 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+              : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-yellow-500 dark:hover:text-yellow-400'
           }`}
           title={isDefault ? t.accounts.isDefaultAccount : t.accounts.setDefaultAccount}
         >
@@ -101,7 +101,7 @@ const AccountCard = ({
         {/* 编辑按钮 */}
         <button
           onClick={() => handleOpenEdit(account)}
-          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-blue-500"
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
           title={t.accounts.editAccount}
         >
           <Pencil className="w-4 h-4" />
@@ -109,7 +109,7 @@ const AccountCard = ({
         {/* 删除按钮 */}
         <button
           onClick={() => setShowDeleteConfirm(account.id)}
-          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
           title={t.accounts.deleteAccount}
         >
           <X className="w-4 h-4" />
@@ -117,8 +117,8 @@ const AccountCard = ({
       </div>
     </div>
     <div className="mt-4">
-      <p className="text-sm text-gray-500 mb-1">{t.accounts.balance}</p>
-      <p className={`text-2xl font-bold ${balance >= 0 ? 'text-gray-800' : 'text-red-500'}`}>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t.accounts.balance}</p>
+      <p className={`text-2xl font-bold ${balance >= 0 ? 'text-gray-800 dark:text-gray-200' : 'text-red-500 dark:text-red-400'}`}>
         {formatBalance(balance, account.currency)}
       </p>
     </div>
@@ -145,12 +145,12 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export const Accounts = () => {
   const { t } = useLanguage();
-  const { 
-    accounts, 
-    records, 
-    addAccount, 
-    deleteAccount, 
-    updateAccount, 
+  const {
+    accounts,
+    records,
+    addAccount,
+    deleteAccount,
+    updateAccount,
     setDefaultAccount,
     createCurrencyAccounts,
     disableCurrency,
@@ -216,8 +216,8 @@ export const Accounts = () => {
 
   // 账户列表排序：只显示 cash, investment, loan 类型账户
   const visibleAccounts = useMemo(() => {
-    return accounts.filter(acc => 
-      acc.visible === true && 
+    return accounts.filter(acc =>
+      acc.visible === true &&
       ['cash', 'investment', 'loan'].includes(acc.accountType)
     );
   }, [accounts]);
@@ -231,7 +231,7 @@ export const Accounts = () => {
       }
       grouped[acc.currency].push(acc);
     });
-    
+
     // 对每个币种组内的账户排序：默认账户优先
     Object.keys(grouped).forEach(currency => {
       const defaultAccount = grouped[currency].find(acc => acc.isDefault);
@@ -241,14 +241,14 @@ export const Accounts = () => {
         ...otherAccounts,
       ];
     });
-    
+
     // CNY 币种优先显示
     const sortedCurrencies = Object.keys(grouped).sort((a, b) => {
       if (a === 'CNY') return -1;
       if (b === 'CNY') return 1;
       return a.localeCompare(b);
     });
-    
+
     return {
       currencies: sortedCurrencies,
       groups: grouped,
@@ -384,7 +384,7 @@ export const Accounts = () => {
 
       {/* 页面标题和添加按钮 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{t.accounts.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{t.accounts.title}</h1>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
@@ -395,14 +395,14 @@ export const Accounts = () => {
       </div>
 
       {/* 默认币种设置 */}
-      <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-3">
-          <Globe className="w-5 h-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">默认币种</span>
+          <Globe className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">默认币种</span>
           <select
             value={defaultCurrency}
             onChange={(e) => handleSetDefaultCurrency(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {availableCurrencies.map((currency) => (
               <option key={currency} value={currency}>
@@ -410,16 +410,16 @@ export const Accounts = () => {
               </option>
             ))}
           </select>
-          <span className="text-xs text-gray-400 ml-2">（影响总览和统计的币种基准）</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">（影响总览和统计的币种基准）</span>
         </div>
       </div>
 
       {/* 支持的外币 */}
-      <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-3 mb-3">
-          <Coins className="w-5 h-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">支持的外币</span>
-          <span className="text-xs text-gray-400">（勾选启用，取消勾选禁用）</span>
+          <Coins className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">支持的外币</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">（勾选启用，取消勾选禁用）</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {FOREIGN_CURRENCIES.map((fc) => {
@@ -430,8 +430,8 @@ export const Accounts = () => {
                 key={fc.value}
                 className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
                   isEnabled
-                    ? 'border-blue-300 bg-blue-50 hover:bg-blue-100'
-                    : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                    ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                    : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
                 } ${isDefaultCurrency ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <input
@@ -439,13 +439,13 @@ export const Accounts = () => {
                   checked={isEnabled}
                   disabled={isDefaultCurrency}
                   onChange={(e) => handleCurrencyToggle(fc.value, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 dark:text-blue-400 rounded focus:ring-blue-500"
                 />
-                <span className={`text-sm font-medium ${isEnabled ? 'text-blue-700' : 'text-gray-600'}`}>
+                <span className={`text-sm font-medium ${isEnabled ? 'text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>
                   {fc.label}
                 </span>
                 {isDefaultCurrency && (
-                  <span className="text-xs text-gray-400 ml-auto">默认</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">默认</span>
                 )}
               </label>
             );
@@ -455,17 +455,17 @@ export const Accounts = () => {
 
       {/* 单账户提示 */}
       {accounts.length === 1 && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-          <Info className="w-5 h-5 text-blue-500 flex-shrink-0" />
-          <p className="text-sm text-blue-700">{t.accounts.singleAccountTip}</p>
+        <div className="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 flex items-center gap-2">
+          <Info className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+          <p className="text-sm text-blue-700 dark:text-blue-400">{t.accounts.singleAccountTip}</p>
         </div>
       )}
 
       {/* 账户列表 */}
       {visibleAccounts.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <Wallet className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">{t.accounts.noAccounts}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <Wallet className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">{t.accounts.noAccounts}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -473,11 +473,11 @@ export const Accounts = () => {
             <div key={currency}>
               <div className="flex items-center gap-2 mb-3">
                 {currency === 'CNY' ? (
-                  <Coins className="w-4 h-4 text-gray-500" />
+                  <Coins className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 ) : (
-                  <Globe className="w-4 h-4 text-gray-500" />
+                  <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 )}
-                <h2 className="text-sm font-medium text-gray-500">
+                <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   {currency === 'CNY' ? '本币账户' : `${currency} 账户`}
                 </h2>
               </div>
@@ -504,18 +504,18 @@ export const Accounts = () => {
       {/* 添加账户弹窗 */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.accounts.addAccount}</h3>
-            
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.accounts.addAccount}</h3>
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   币种
                 </label>
                 <select
                   value={newAccountCurrency}
                   onChange={(e) => setNewAccountCurrency(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {CURRENCY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -526,13 +526,13 @@ export const Accounts = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   账户类型
                 </label>
                 <select
                   value={newAccountType}
                   onChange={(e) => setNewAccountType(e.target.value as 'cash' | 'investment' | 'loan')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {ACCOUNT_TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -542,9 +542,9 @@ export const Accounts = () => {
                 </select>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-sm text-gray-600">
-                  账户名称将自动设置为：<span className="font-medium text-gray-800">
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  账户名称将自动设置为：<span className="font-medium text-gray-800 dark:text-gray-200">
                     {newAccountCurrency} {ACCOUNT_TYPE_NAMES[newAccountType]}
                   </span>
                 </p>
@@ -558,7 +558,7 @@ export const Accounts = () => {
                   setNewAccountCurrency('CNY');
                   setNewAccountType('cash');
                 }}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-medium transition-colors"
               >
                 {t.accounts.cancel}
               </button>
@@ -576,12 +576,12 @@ export const Accounts = () => {
       {/* 编辑账户弹窗 */}
       {showEditModal && editingAccount && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.accounts.editAccount}</h3>
-            
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.accounts.editAccount}</h3>
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t.accounts.editAccountName}
                 </label>
                 <input
@@ -589,7 +589,7 @@ export const Accounts = () => {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder={t.accounts.editAccountNamePlaceholder}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -600,7 +600,7 @@ export const Accounts = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t.accounts.editAccountBalance}
                 </label>
                 <input
@@ -608,7 +608,7 @@ export const Accounts = () => {
                   value={editBalance}
                   onChange={(e) => setEditBalance(e.target.value)}
                   placeholder={t.accounts.editAccountBalancePlaceholder}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSaveEdit();
@@ -618,10 +618,10 @@ export const Accounts = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t.accounts.currency}
                 </label>
-                <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-600">
+                <div className="px-4 py-2 bg-gray-100 dark:bg-gray-900 rounded-lg text-gray-600 dark:text-gray-400">
                   {editingAccount.currency}
                 </div>
               </div>
@@ -630,7 +630,7 @@ export const Accounts = () => {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowEditModal(null)}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-medium transition-colors"
               >
                 {t.accounts.cancel}
               </button>
@@ -640,7 +640,7 @@ export const Accounts = () => {
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                   editName.trim()
                     ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                 }`}
               >
                 {t.accounts.confirm}
@@ -653,13 +653,13 @@ export const Accounts = () => {
       {/* 删除账户确认弹窗 */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">{t.accounts.deleteConfirm}</h3>
-            <p className="text-gray-600 mb-4">{t.accounts.deleteMessage}</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{t.accounts.deleteConfirm}</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{t.accounts.deleteMessage}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-medium transition-colors"
               >
                 {t.accounts.cancel}
               </button>

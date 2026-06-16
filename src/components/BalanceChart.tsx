@@ -1,10 +1,20 @@
 import ReactECharts from 'echarts-for-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useStatistics } from '../hooks/useStatistics';
 
 export const BalanceChart = () => {
   const { language } = useLanguage();
+  const { effectiveTheme } = useTheme();
   const { monthlyDataWithPrediction } = useStatistics();
+
+  const isDark = effectiveTheme === 'dark';
+  const textColor = isDark ? '#9ca3af' : '#6b7280';
+  const axisLineColor = isDark ? '#4b5563' : '#d1d5db';
+  const splitLineColor = isDark ? '#374151' : '#f3f4f6';
+  const tooltipBg = isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+  const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
+  const tooltipText = isDark ? '#e5e7eb' : '#374151';
 
   const formatMonth = (month: string) => {
     const [year, m] = month.split('-');
@@ -28,11 +38,11 @@ export const BalanceChart = () => {
   const option = {
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#e5e7eb',
+      backgroundColor: tooltipBg,
+      borderColor: tooltipBorder,
       borderWidth: 1,
       textStyle: {
-        color: '#374151',
+        color: tooltipText,
       },
       formatter: (params: { axisValue: string; marker: string; seriesName: string; value: number | null }[]) => {
         const validParams = params.filter((p) => p.value !== null);
@@ -54,7 +64,7 @@ export const BalanceChart = () => {
         language === 'zh' ? '预测结余' : 'Predicted Balance',
       ],
       textStyle: {
-        color: '#6b7280',
+        color: textColor,
       },
       bottom: 0,
     },
@@ -71,14 +81,14 @@ export const BalanceChart = () => {
       data: monthlyDataWithPrediction.map((item) => formatMonth(item.month)),
       axisLine: {
         lineStyle: {
-          color: '#d1d5db',
+          color: axisLineColor,
         },
       },
       axisTick: {
         show: false,
       },
       axisLabel: {
-        color: '#6b7280',
+        color: textColor,
         fontSize: 12,
       },
     },
@@ -91,13 +101,13 @@ export const BalanceChart = () => {
         show: false,
       },
       axisLabel: {
-        color: '#6b7280',
+        color: textColor,
         fontSize: 12,
         formatter: (value: number) => `¥${(value / 1000).toFixed(0)}k`,
       },
       splitLine: {
         lineStyle: {
-          color: '#f3f4f6',
+          color: splitLineColor,
           type: 'dashed',
         },
       },
@@ -159,8 +169,8 @@ export const BalanceChart = () => {
 
   if (monthlyDataWithPrediction.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <div className="text-center text-gray-500">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div className="text-center text-gray-500 dark:text-gray-400">
           <p>暂无数据</p>
           <p className="text-sm mt-1">添加交易记录后将显示月度趋势图表</p>
         </div>
@@ -169,8 +179,8 @@ export const BalanceChart = () => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
         {language === 'zh' ? '结余趋势' : 'Balance Trend'}
       </h2>
       <div className="h-80">

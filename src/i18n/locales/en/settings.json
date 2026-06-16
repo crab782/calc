@@ -1,5 +1,9 @@
 {
   "title": "Settings",
+  "appearance": "Appearance",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+  "systemMode": "System",
   "dataManagement": "Data Management",
   "currentRecords": "Current Records",
   "exportData": "Export Data",

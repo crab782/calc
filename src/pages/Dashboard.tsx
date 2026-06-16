@@ -18,39 +18,39 @@ export const Dashboard = () => {
       title: t.dashboard.totalIncome,
       value: formatCurrency(statistics.totalIncome),
       icon: TrendingUp,
-      color: 'bg-green-50 text-green-600',
-      iconBg: 'bg-green-100',
+      color: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+      iconBg: 'bg-green-100 dark:bg-green-900/30',
     },
     {
       title: t.dashboard.totalExpense,
       value: formatCurrency(statistics.totalExpense),
       icon: TrendingDown,
-      color: 'bg-red-50 text-red-600',
-      iconBg: 'bg-red-100',
+      color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
+      iconBg: 'bg-red-100 dark:bg-red-900/30',
     },
     {
       title: t.dashboard.balance,
       value: formatCurrency(statistics.balance),
       icon: Wallet,
-      color: 'bg-blue-50 text-blue-600',
-      iconBg: 'bg-blue-100',
+      color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
+      iconBg: 'bg-blue-100 dark:bg-blue-900/30',
     },
   ];
 
   return (
     <div className="p-6 flex-1">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{t.dashboard.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{t.dashboard.title}</h1>
         <button
           onClick={toggleLanguage}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           title={language === 'zh' ? 'Switch to English' : '切换到中文'}
         >
           <Globe className="w-4 h-4" />
           <span>{language === 'zh' ? 'EN' : '中文'}</span>
         </button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {statsCards.map((card) => {
           const Icon = card.icon;
@@ -77,13 +77,13 @@ export const Dashboard = () => {
         <IncomeChart />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">{t.dashboard.recentTransactions}</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t.dashboard.recentTransactions}</h2>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {recentRecords.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-500">
+            <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
               <Wallet className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>{t.dashboard.noRecords}</p>
               <p className="text-sm mt-1">{t.dashboard.addFirstRecord}</p>
@@ -92,32 +92,32 @@ export const Dashboard = () => {
             recentRecords.map((record) => (
               <div
                 key={record.id}
-                className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <div>
                   <div className="flex items-center gap-2">
                     <span
                       className={`px-2 py-1 text-xs rounded-full ${
                         record.type === 'income'
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-red-100 text-red-600'
+                          ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                       }`}
                     >
                       {record.type === 'income' ? t.dashboard.income : t.dashboard.expense}
                     </span>
-                    <span className="text-sm text-gray-500">{record.category}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{record.category}</span>
                   </div>
-                  <p className="text-gray-800 font-medium mt-1">
+                  <p className="text-gray-800 dark:text-gray-200 font-medium mt-1">
                     {record.note || record.category}
                   </p>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                     {formatDate(record.date)}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span
                     className={`font-semibold ${
-                      record.type === 'income' ? 'text-green-600' : 'text-red-600'
+                      record.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                     }`}
                   >
                     {record.type === 'income' ? '+' : '-'}
@@ -125,7 +125,7 @@ export const Dashboard = () => {
                   </span>
                   <button
                     onClick={() => deleteRecord(record.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     title={t.dashboard.deleteRecord}
                   >
                     <Trash2 className="w-4 h-4" />

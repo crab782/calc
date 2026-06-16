@@ -122,7 +122,7 @@ export const IncomeRules = () => {
 
       {/* 页面标题和添加按钮 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">收入规则</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">收入规则</h1>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
@@ -134,30 +134,30 @@ export const IncomeRules = () => {
 
       {/* 规则列表 */}
       {incomeRules.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">暂无收入规则，点击上方按钮添加</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <TrendingUp className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">暂无收入规则，点击上方按钮添加</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {incomeRules.map((rule) => (
             <div
               key={rule.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-800">{rule.name}</h3>
-                    <p className="text-sm text-gray-500">{rule.currency}</p>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">{rule.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{rule.currency}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowDeleteConfirm(rule.id)}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-400 dark:text-gray-500 hover:text-red-500"
                   title="删除规则"
                 >
                   <X className="w-4 h-4" />
@@ -165,14 +165,14 @@ export const IncomeRules = () => {
               </div>
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-500">金额</p>
-                  <p className="text-lg font-bold text-gray-800">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">金额</p>
+                  <p className="text-lg font-bold text-gray-800 dark:text-gray-200">
                     {formatAmount(rule.amount, rule.currency)}
                   </p>
                 </div>
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-500">周期</p>
-                  <p className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">周期</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                     {PERIOD_LABELS[rule.period]}
                   </p>
                 </div>
@@ -185,13 +185,13 @@ export const IncomeRules = () => {
       {/* 添加规则弹窗 */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">添加收入规则</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">添加收入规则</h3>
             
             <div className="space-y-4">
               {/* 规则名称 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   规则名称
                 </label>
                 <input
@@ -199,7 +199,7 @@ export const IncomeRules = () => {
                   value={newRuleName}
                   onChange={(e) => setNewRuleName(e.target.value)}
                   placeholder="请输入规则名称"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -211,13 +211,13 @@ export const IncomeRules = () => {
 
               {/* 币种选择 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   币种
                 </label>
                 <select
                   value={newRuleCurrency}
                   onChange={(e) => setNewRuleCurrency(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {CURRENCY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -229,7 +229,7 @@ export const IncomeRules = () => {
 
               {/* 金额输入 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   金额
                 </label>
                 <input
@@ -239,7 +239,7 @@ export const IncomeRules = () => {
                   placeholder="请输入金额"
                   min="0"
                   step="0.01"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleAddRule();
@@ -250,13 +250,13 @@ export const IncomeRules = () => {
 
               {/* 周期选择 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   周期
                 </label>
                 <select
                   value={newRulePeriod}
                   onChange={(e) => setNewRulePeriod(e.target.value as IncomePeriod)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {PERIOD_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -273,7 +273,7 @@ export const IncomeRules = () => {
                   setShowAddModal(false);
                   resetAddForm();
                 }}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg font-medium transition-colors"
               >
                 取消
               </button>
@@ -283,7 +283,7 @@ export const IncomeRules = () => {
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                   newRuleName.trim() && newRuleAmount && parseFloat(newRuleAmount) >= 0
                     ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                 }`}
               >
                 添加
@@ -296,13 +296,13 @@ export const IncomeRules = () => {
       {/* 删除规则确认弹窗 */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">删除收入规则</h3>
-            <p className="text-gray-600 mb-4">确定要删除这个收入规则吗？此操作无法撤销。</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">删除收入规则</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">确定要删除这个收入规则吗？此操作无法撤销。</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg font-medium transition-colors"
               >
                 取消
               </button>

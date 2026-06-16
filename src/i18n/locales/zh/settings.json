@@ -1,5 +1,9 @@
 {
   "title": "设置",
+  "appearance": "外观",
+  "lightMode": "浅色模式",
+  "darkMode": "深色模式",
+  "systemMode": "跟随系统",
   "dataManagement": "数据管理",
   "currentRecords": "当前记录数",
   "exportData": "导出数据",
