@@ -708,6 +708,10 @@ describe('RecordService', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: baseTime,
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       mockStore.records.push(record1);
       
@@ -720,6 +724,10 @@ describe('RecordService', () => {
         date: '2024-01-16',
         currency: 'CNY',
         createdAt: baseTime + 100,
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 200 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 200 },
+        ],
       };
       mockStore.records.push(record2);
       
@@ -732,6 +740,10 @@ describe('RecordService', () => {
         date: '2024-01-17',
         currency: 'CNY',
         createdAt: baseTime + 200,
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 300 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 300 },
+        ],
       };
       mockStore.records.push(record3);
 
@@ -851,6 +863,10 @@ describe('RecordService', () => {
           date: '2024-01-15',
           currency: 'CNY',
           createdAt: Date.now(),
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [{ ...DEFAULT_ACCOUNT }],
@@ -1659,8 +1675,8 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
-          { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 5000 },
+          { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 5000 },
         ],
       };
       const expenseRecord: ExpenseRecord = {
@@ -1673,8 +1689,8 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
-          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
         ],
       };
       mockStore.records.push(incomeRecord, expenseRecord);
@@ -1735,7 +1751,7 @@ describe('RecordService', () => {
         }
         return balance;
       };
-      const incomeBalance = calculateBalance('income', mockStore.records);
+      const incomeBalance = calculateBalance('CNY-income', mockStore.records);
 
       // Assert - 收入账户余额 = -5000（贷方）
       expect(incomeBalance).toBe(-5000);
@@ -1753,8 +1769,8 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
-          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
         ],
       };
       mockStore.records.push(expenseRecord);
@@ -1775,7 +1791,7 @@ describe('RecordService', () => {
         }
         return balance;
       };
-      const expenseBalance = calculateBalance('expense', mockStore.records);
+      const expenseBalance = calculateBalance('CNY-expense', mockStore.records);
 
       // Assert - 支出账户余额 = 100（借方）
       expect(expenseBalance).toBe(100);
@@ -1793,8 +1809,8 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'investment', accountName: '投资', direction: 'debit', amount: 10000 },
-          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 10000 },
+          { accountId: 'CNY-investment', accountName: '投资', direction: 'debit', amount: 10000 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 10000 },
         ],
       };
       const matureRecord: ExpenseRecord = {
@@ -1807,10 +1823,10 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 10000 },
-          { accountId: 'investment', accountName: '投资', direction: 'credit', amount: 10000 },
-          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 500 },
-          { accountId: 'income', accountName: '收入', direction: 'credit', amount: 500 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 10000 },
+          { accountId: 'CNY-investment', accountName: '投资', direction: 'credit', amount: 10000 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 500 },
+          { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 500 },
         ],
       };
       mockStore.records.push(investmentRecord, matureRecord);
@@ -1831,7 +1847,7 @@ describe('RecordService', () => {
         }
         return balance;
       };
-      const investmentBalance = calculateBalance('investment', mockStore.records);
+      const investmentBalance = calculateBalance('CNY-investment', mockStore.records);
 
       // Assert - 投资账户余额 = 10000（借） - 10000（贷） = 0
       expect(investmentBalance).toBe(0);
@@ -1849,8 +1865,8 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 50000 },
-          { accountId: 'loan', accountName: '贷款', direction: 'credit', amount: 50000 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 50000 },
+          { accountId: 'CNY-loan', accountName: '贷款', direction: 'credit', amount: 50000 },
         ],
       };
       const loanRepayRecord: ExpenseRecord = {
@@ -1863,10 +1879,10 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'loan', accountName: '贷款', direction: 'debit', amount: 5000 },
-          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 5000 },
-          { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
-          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+          { accountId: 'CNY-loan', accountName: '贷款', direction: 'debit', amount: 5000 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 5000 },
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
         ],
       };
       mockStore.records.push(loanReceiveRecord, loanRepayRecord);
@@ -1887,7 +1903,7 @@ describe('RecordService', () => {
         }
         return balance;
       };
-      const loanBalance = calculateBalance('loan', mockStore.records);
+      const loanBalance = calculateBalance('CNY-loan', mockStore.records);
 
       // Assert - 贷款账户余额 = -50000（贷） + 5000（借） = -45000（剩余贷款）
       expect(loanBalance).toBe(-45000);
@@ -1906,8 +1922,8 @@ describe('RecordService', () => {
           currency: 'CNY',
           createdAt: Date.now(),
           entries: [
-            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
-            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 5000 },
+            { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 5000 },
           ],
         },
         {
@@ -1920,8 +1936,8 @@ describe('RecordService', () => {
           currency: 'CNY',
           createdAt: Date.now(),
           entries: [
-            { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
-            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
           ],
         },
         {
@@ -1934,8 +1950,8 @@ describe('RecordService', () => {
           currency: 'CNY',
           createdAt: Date.now(),
           entries: [
-            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 1000 },
-            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 1000 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 1000 },
+            { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 1000 },
           ],
         },
         {
@@ -1948,8 +1964,8 @@ describe('RecordService', () => {
           currency: 'CNY',
           createdAt: Date.now(),
           entries: [
-            { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 500 },
-            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 500 },
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 500 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 500 },
           ],
         },
       ];
@@ -1994,8 +2010,8 @@ describe('RecordService', () => {
           currency: 'CNY',
           createdAt: Date.now(),
           entries: [
-            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
-            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 5000 },
+            { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 5000 },
           ],
         },
         {
@@ -2008,10 +2024,10 @@ describe('RecordService', () => {
           currency: 'CNY',
           createdAt: Date.now(),
           entries: [
-            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 10000 },
-            { accountId: 'investment', accountName: '投资', direction: 'credit', amount: 10000 },
-            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 500 },
-            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 500 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 10000 },
+            { accountId: 'CNY-investment', accountName: '投资', direction: 'credit', amount: 10000 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 500 },
+            { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 500 },
           ],
         },
         {
@@ -2024,10 +2040,10 @@ describe('RecordService', () => {
           currency: 'CNY',
           createdAt: Date.now(),
           entries: [
-            { accountId: 'loan', accountName: '贷款', direction: 'debit', amount: 5000 },
-            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 5000 },
-            { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
-            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+            { accountId: 'CNY-loan', accountName: '贷款', direction: 'debit', amount: 5000 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 5000 },
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
           ],
         },
       ];

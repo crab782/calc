@@ -424,39 +424,39 @@ describe('useRecords Hook', () => {
 
         const initialCount = result.current.accounts.length;
 
-        let newAccount: Account;
+        let addResult: { success: boolean; message: string; account?: Account };
         act(() => {
-          newAccount = result.current.addAccount({
-            name: '储蓄账户',
-            currency: 'CNY',
-            balance: 10000,
+          addResult = result.current.addAccount({
+            currency: 'USD',
+            accountType: 'cash',
           });
         });
 
         expect(result.current.accounts).toHaveLength(initialCount + 1);
-        expect(newAccount!.name).toBe('储蓄账户');
-        expect(newAccount!.currency).toBe('CNY');
-        expect(newAccount!.balance).toBe(10000);
-        expect(newAccount!.id).toBeDefined();
-        expect(newAccount!.createdAt).toBeDefined();
+        expect(addResult!.success).toBe(true);
+        expect(addResult!.account).toBeDefined();
+        expect(addResult!.account!.currency).toBe('USD');
+        expect(addResult!.account!.accountType).toBe('cash');
+        expect(addResult!.account!.id).toBeDefined();
+        expect(addResult!.account!.createdAt).toBeDefined();
       });
 
       it('添加账户时应该自动生成 id 和 createdAt', () => {
         const { result } = renderHook(() => useRecords());
 
-        let newAccount: Account;
+        let addResult: { success: boolean; message: string; account?: Account };
         act(() => {
-          newAccount = result.current.addAccount({
-            name: '测试账户',
+          addResult = result.current.addAccount({
             currency: 'USD',
-            balance: 500,
+            accountType: 'investment',
           });
         });
 
-        expect(newAccount!.id).toBeDefined();
-        expect(typeof newAccount!.id).toBe('string');
-        expect(newAccount!.createdAt).toBeDefined();
-        expect(typeof newAccount!.createdAt).toBe('number');
+        expect(addResult!.success).toBe(true);
+        expect(addResult!.account!.id).toBeDefined();
+        expect(typeof addResult!.account!.id).toBe('string');
+        expect(addResult!.account!.createdAt).toBeDefined();
+        expect(typeof addResult!.account!.createdAt).toBe('number');
       });
     });
 
@@ -465,15 +465,15 @@ describe('useRecords Hook', () => {
         const { result } = renderHook(() => useRecords());
 
         // 先添加一个账户
+        let addResult: { success: boolean; message: string; account?: Account };
         act(() => {
-          result.current.addAccount({
-            name: '待删除账户',
-            currency: 'CNY',
-            balance: 0,
+          addResult = result.current.addAccount({
+            currency: 'USD',
+            accountType: 'cash',
           });
         });
 
-        const accountToDelete = result.current.accounts.find((a) => a.name === '待删除账户');
+        const accountToDelete = addResult!.account;
         expect(accountToDelete).toBeDefined();
 
         // 删除账户
@@ -483,7 +483,7 @@ describe('useRecords Hook', () => {
         });
 
         expect(deleteResult!.success).toBe(true);
-        expect(result.current.accounts.find((a) => a.name === '待删除账户')).toBeUndefined();
+        expect(result.current.accounts.find((a) => a.id === accountToDelete!.id)).toBeUndefined();
       });
 
       it('删除最后一个账户应该失败', () => {
@@ -656,14 +656,13 @@ describe('useRecords Hook', () => {
 
       act(() => {
         result.current.addAccount({
-          name: '持久化测试账户',
-          currency: 'CNY',
-          balance: 1000,
+          currency: 'USD',
+          accountType: 'cash',
         });
       });
 
       const storedData = JSON.parse(localStorage.getItem('expense_tracker_data') || '{}');
-      const found = storedData.accounts.find((a: Account) => a.name === '持久化测试账户');
+      const found = storedData.accounts.find((a: Account) => a.currency === 'USD' && a.accountType === 'cash');
       expect(found).toBeDefined();
     });
   });

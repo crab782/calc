@@ -33,6 +33,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -55,6 +59,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -87,6 +95,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -108,6 +120,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record1);
 
@@ -131,6 +147,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
 
       // Act
@@ -152,6 +172,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -176,6 +200,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -208,6 +236,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -230,6 +262,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       const record2: ExpenseRecord = {
         id: 'test-id-2',
@@ -240,6 +276,10 @@ describe('RecordDAO', () => {
         date: '2024-01-16',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 200 },
+          { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 200 },
+        ],
       };
       dao.save(record1);
       dao.save(record2);
@@ -372,6 +412,7 @@ describe('RecordDAO', () => {
         id: 'test-acc',
         name: '新账户',
         currency: 'USD',
+        accountType: 'cash',
         balance: 1000,
         createdAt: Date.now(),
         isDefault: false,
@@ -390,9 +431,11 @@ describe('RecordDAO', () => {
         id: 'test-acc-1',
         name: '测试账户',
         currency: 'USD',
+        accountType: 'cash',
         balance: 1000,
         createdAt: Date.now(),
         isDefault: false,
+        visible: true,
       };
 
       // Act
@@ -411,6 +454,7 @@ describe('RecordDAO', () => {
         id: 'test-acc-1',
         name: '测试账户',
         currency: 'CNY',
+        accountType: 'cash',
         balance: 1000,
         createdAt: Date.now(),
         isDefault: false,
@@ -446,6 +490,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -472,6 +520,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       const record2: ExpenseRecord = {
         id: 'test-id-2',
@@ -482,6 +534,10 @@ describe('RecordDAO', () => {
         date: '2024-01-16',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 200 },
+          { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 200 },
+        ],
       };
       dao.save(record1);
       dao.save(record2);
@@ -510,6 +566,10 @@ describe('RecordDAO', () => {
           date: '2024-01-15',
           currency: 'CNY',
           createdAt: Date.now(),
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [DEFAULT_ACCOUNT],
@@ -586,6 +646,10 @@ describe('RecordDAO', () => {
           date: '2024-01-15',
           currency: 'CNY',
           createdAt: Date.now(),
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
         }],
         categories: [],
         accounts: [],
@@ -614,6 +678,10 @@ describe('RecordDAO', () => {
           date: '2024-01-15',
           currency: 'CNY',
           createdAt: Date.now(),
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: -100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: -100 },
+          ],
         }],
         categories: [],
         accounts: [],
@@ -642,6 +710,10 @@ describe('RecordDAO', () => {
           date: '2024-01-15',
           currency: 'CNY',
           createdAt: Date.now(),
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 0 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 0 },
+          ],
         }],
         categories: [],
         accounts: [],
@@ -667,8 +739,11 @@ describe('RecordDAO', () => {
           id: 'test-acc-1',
           name: '测试账户',
           currency: 'CNY',
+          accountType: 'cash',
           balance: 1000,
-          // 缺少 createdAt 字段
+          createdAt: Date.now(),
+          isDefault: false,
+          visible: true,
         }] as Account[],
         incomeRules: [],
         createdAt: Date.now(),
@@ -697,6 +772,10 @@ describe('RecordDAO', () => {
           date: '2024-01-15',
           currency: 'CNY',
           createdAt: Date.now(),
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         // 没有 accounts 字段
@@ -735,6 +814,10 @@ describe('RecordDAO', () => {
           date: '2024-01-15',
           currency: 'CNY',
           createdAt: Date.now(),
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
         }],
         // 没有 categories 字段
         createdAt: Date.now(),
@@ -771,6 +854,10 @@ describe('RecordDAO', () => {
           category: 'exp-food',
           date: '2024-01-15',
           createdAt: 1700000000000,
+          entries: [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         createdAt: 1700000000000,
@@ -1149,6 +1236,13 @@ describe('RecordDAO', () => {
           date: '2024-01-15',
           createdAt: Date.now() + i,
           currency: 'CNY',
+          entries: i % 2 === 0 ? [
+            { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: Math.random() * 1000 },
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: Math.random() * 1000 },
+          ] : [
+            { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: Math.random() * 1000 },
+            { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: Math.random() * 1000 },
+          ],
         };
         dao.save(record);
       }
@@ -1173,6 +1267,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
 
       // Act
@@ -1195,6 +1293,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
 
       // Act
@@ -1217,6 +1319,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: Number.MAX_SAFE_INTEGER },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: Number.MAX_SAFE_INTEGER },
+        ],
       };
 
       // Act
@@ -1239,6 +1345,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 0.01 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 0.01 },
+        ],
       };
 
       // Act
@@ -1265,6 +1375,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record1);
       expect(dao.count()).toBe(1);
@@ -1278,6 +1392,10 @@ describe('RecordDAO', () => {
         date: '2024-01-16',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 200 },
+          { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 200 },
+        ],
       };
       dao.save(record2);
       expect(dao.count()).toBe(2);
@@ -1296,6 +1414,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -1320,6 +1442,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       const record2: ExpenseRecord = {
         id: 'test-id-2',
@@ -1330,6 +1456,10 @@ describe('RecordDAO', () => {
         date: '2024-02-15',
         createdAt: Date.now(),
         currency: 'CNY',
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 200 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 200 },
+        ],
       };
       dao.save(record1);
       dao.save(record2);
@@ -1353,6 +1483,10 @@ describe('RecordDAO', () => {
         date: '2024-01-15',
         currency: 'CNY',
         createdAt: Date.now(),
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
       };
       dao.save(record);
 
@@ -1411,9 +1545,11 @@ describe('RecordDAO', () => {
         id: 'test-acc-1',
         name: '测试账户',
         currency: 'CNY',
+        accountType: 'cash',
         balance: 1000,
         createdAt: Date.now(),
         isDefault: false,
+        visible: true,
       };
       dao.addAccount(newAccount);
 
@@ -1422,9 +1558,11 @@ describe('RecordDAO', () => {
         id: 'test-acc-1',
         name: '更新后的账户',
         currency: 'USD',
+        accountType: 'cash',
         balance: 2000,
         createdAt: newAccount.createdAt,
         isDefault: false,
+        visible: true,
       };
       dao.updateAccount(updatedAccount);
 
@@ -1440,9 +1578,11 @@ describe('RecordDAO', () => {
         id: 'non-existent-id',
         name: '不存在的账户',
         currency: 'CNY',
+        accountType: 'cash',
         balance: 1000,
         createdAt: Date.now(),
         isDefault: false,
+        visible: true,
       };
 
       // Act & Assert
@@ -1471,8 +1611,8 @@ describe('RecordDAO', () => {
     it('应替换所有账户', () => {
       // Arrange
       const newAccounts: Account[] = [
-        { id: 'new-acc-1', name: '新账户1', currency: 'CNY', balance: 1000, createdAt: Date.now(), isDefault: false },
-        { id: 'new-acc-2', name: '新账户2', currency: 'USD', balance: 2000, createdAt: Date.now(), isDefault: false },
+        { id: 'new-acc-1', name: '新账户1', currency: 'CNY', accountType: 'cash', balance: 1000, createdAt: Date.now(), isDefault: false, visible: true },
+        { id: 'new-acc-2', name: '新账户2', currency: 'USD', accountType: 'cash', balance: 2000, createdAt: Date.now(), isDefault: false, visible: true },
       ];
 
       // Act
@@ -1498,6 +1638,10 @@ describe('RecordDAO', () => {
             category: '工资',
             date: '2026-06-15',
             createdAt: 1781535627313,
+            entries: [
+              { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 334 },
+              { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 334 },
+            ],
             // 注意：没有 currency 字段
           },
         ],
@@ -1530,6 +1674,10 @@ describe('RecordDAO', () => {
             category: '餐饮',
             date: '2026-06-04',
             createdAt: 1781535647535,
+            entries: [
+              { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 44 },
+              { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 44 },
+            ],
           },
         ],
         categories: [],
@@ -1561,6 +1709,10 @@ describe('RecordDAO', () => {
             category: '工资',
             date: '2026-06-15',
             createdAt: 1781535627313,
+            entries: [
+              { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 334 },
+              { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 334 },
+            ],
           },
         ],
         categories: [],
@@ -1592,6 +1744,10 @@ describe('RecordDAO', () => {
             category: '工资',
             date: '2026-06-15',
             createdAt: 1781535627313,
+            entries: [
+              { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 334 },
+              { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 334 },
+            ],
           },
         ],
         categories: [],
@@ -1625,6 +1781,10 @@ describe('RecordDAO', () => {
             date: '2026-06-15',
             createdAt: 1781535627313,
             currency: 'USD',
+            entries: [
+              { accountId: 'USD-cash', accountName: '现金', direction: 'debit', amount: 334 },
+              { accountId: 'USD-income', accountName: '收入', direction: 'credit', amount: 334 },
+            ],
           },
         ],
         categories: [],
@@ -1654,11 +1814,11 @@ describe('RecordDAO', () => {
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [
           // 旧账户格式（无 accountType 字段）
-          { id: 'cash', name: '现金', currency: 'CNY', balance: 0, createdAt: Date.now(), isDefault: true, visible: true },
-          { id: 'investment', name: '投资', currency: 'CNY', balance: 0, createdAt: Date.now(), isDefault: false, visible: true },
-          { id: 'loan', name: '贷款', currency: 'CNY', balance: 0, createdAt: Date.now(), isDefault: false, visible: true },
-          { id: 'expense', name: '支出', currency: 'CNY', balance: 0, createdAt: Date.now(), isDefault: false, visible: false },
-          { id: 'income', name: '收入', currency: 'CNY', balance: 0, createdAt: Date.now(), isDefault: false, visible: false },
+          { id: 'cash', name: '现金', currency: 'CNY', accountType: 'cash', balance: 0, createdAt: Date.now(), isDefault: true, visible: true },
+          { id: 'investment', name: '投资', currency: 'CNY', accountType: 'investment', balance: 0, createdAt: Date.now(), isDefault: false, visible: true },
+          { id: 'loan', name: '贷款', currency: 'CNY', accountType: 'loan', balance: 0, createdAt: Date.now(), isDefault: false, visible: true },
+          { id: 'expense', name: '支出', currency: 'CNY', accountType: 'expense', balance: 0, createdAt: Date.now(), isDefault: false, visible: false },
+          { id: 'income', name: '收入', currency: 'CNY', accountType: 'income', balance: 0, createdAt: Date.now(), isDefault: false, visible: false },
         ],
         incomeRules: [DEFAULT_INCOME_RULE],
         createdAt: 1700000000000,
@@ -1732,7 +1892,7 @@ describe('RecordDAO', () => {
         ],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [
-          { id: 'cash', name: '现金', currency: 'CNY', balance: 0, createdAt: Date.now(), isDefault: true, visible: true },
+          { id: 'cash', name: '现金', currency: 'CNY', accountType: 'cash', balance: 0, createdAt: Date.now(), isDefault: true, visible: true },
         ],
         incomeRules: [DEFAULT_INCOME_RULE],
         createdAt: 1700000000000,
@@ -1770,7 +1930,7 @@ describe('RecordDAO', () => {
         records: [],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [
-          { id: 'cash', name: '现金', currency: 'CNY', balance: 0, createdAt: Date.now(), isDefault: true, visible: true },
+          { id: 'cash', name: '现金', currency: 'CNY', accountType: 'cash', balance: 0, createdAt: Date.now(), isDefault: true, visible: true },
         ],
         incomeRules: [DEFAULT_INCOME_RULE],
         createdAt: 1700000000000,
