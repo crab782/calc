@@ -412,19 +412,12 @@ export class RecordService {
     return 'acc-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 
-  addAccount(account: { currency: string; accountType: 'cash' | 'investment' | 'loan' }): { success: boolean; message: string; account?: Account } {
-    const { currency, accountType } = account;
+  addAccount(account: { currency: string; accountType: 'cash' | 'investment' | 'loan'; name?: string }): { success: boolean; message: string; account?: Account } {
+    const { currency, accountType, name: customName } = account;
     
-    // 检查是否已存在相同 currency 和 accountType 的账户
-    const accounts = recordDAO.getAccounts();
-    const existingAccount = accounts.find(a => a.currency === currency && a.accountType === accountType);
-    if (existingAccount) {
-      return { success: false, message: `该币种下已存在${this.ACCOUNT_TYPE_NAMES[accountType]}账户` };
-    }
-
-    // 生成账户ID和名称
-    const id = `${currency}-${accountType}`;
-    const name = `${currency} ${this.ACCOUNT_TYPE_NAMES[accountType]}`;
+    // 自定义账户使用唯一ID，允许多个同币种同类型账户
+    const id = this.generateAccountId();
+    const name = customName || `${currency} ${this.ACCOUNT_TYPE_NAMES[accountType]}`;
 
     const newAccount: Account = {
       id,

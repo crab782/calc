@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Wallet, Plus, X, CheckCircle, AlertCircle, Info, Star, Pencil, Globe, Coins } from 'lucide-react';
+import { Wallet, Plus, X, CheckCircle, AlertCircle, Info, Pencil, Globe, Coins } from 'lucide-react';
 import { useRecords } from '../hooks/useRecords';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Account, AccountType } from '../types/record';
@@ -43,8 +43,6 @@ const AccountCard = ({
   account,
   balance,
   formatBalance,
-  isDefault,
-  handleSetDefault,
   handleOpenEdit,
   setShowDeleteConfirm,
   t,
@@ -52,25 +50,17 @@ const AccountCard = ({
   account: Account;
   balance: number;
   formatBalance: (balance: number, currency: string) => string;
-  isDefault: boolean;
-  handleSetDefault: (id: string) => void;
   handleOpenEdit: (account: Account) => void;
   setShowDeleteConfirm: (id: string | null) => void;
   t: TranslationType;
 }) => (
   <div
-    className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${
-      isDefault ? 'border-yellow-400 dark:border-yellow-500' : 'border-gray-200 dark:border-gray-700'
-    }`}
+    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow border-gray-200 dark:border-gray-700"
   >
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-          isDefault ? 'bg-yellow-100 dark:bg-yellow-900/30' : 'bg-blue-100 dark:bg-blue-900/30'
-        }`}>
-          <Wallet className={`w-5 h-5 ${
-            isDefault ? 'text-yellow-600 dark:text-yellow-400' : 'text-blue-600 dark:text-blue-400'
-          }`} />
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+          <Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -86,18 +76,6 @@ const AccountCard = ({
         </div>
       </div>
       <div className="flex items-center gap-1">
-        {/* 设为默认按钮 */}
-        <button
-          onClick={() => handleSetDefault(account.id)}
-          className={`p-1.5 rounded-lg transition-colors ${
-            isDefault
-              ? 'text-yellow-500 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
-              : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-yellow-500 dark:hover:text-yellow-400'
-          }`}
-          title={isDefault ? t.accounts.isDefaultAccount : t.accounts.setDefaultAccount}
-        >
-          <Star className="w-4 h-4" fill={isDefault ? 'currentColor' : 'none'} />
-        </button>
         {/* 编辑按钮 */}
         <button
           onClick={() => handleOpenEdit(account)}
@@ -161,6 +139,7 @@ export const Accounts = () => {
   const [showEditModal, setShowEditModal] = useState<string | null>(null);
   const [newAccountCurrency, setNewAccountCurrency] = useState('CNY');
   const [newAccountType, setNewAccountType] = useState<'cash' | 'investment' | 'loan'>('cash');
+  const [newAccountName, setNewAccountName] = useState('');
   const [editName, setEditName] = useState('');
   const [editBalance, setEditBalance] = useState('');
 
@@ -301,12 +280,14 @@ export const Accounts = () => {
     const result = addAccount({
       currency: newAccountCurrency,
       accountType: newAccountType,
+      name: newAccountName.trim() || `${newAccountCurrency} ${ACCOUNT_TYPE_NAMES[newAccountType]}`,
     });
 
     if (result.success) {
       showMessage('success', t.accounts.addSuccess);
       setNewAccountCurrency('CNY');
       setNewAccountType('cash');
+      setNewAccountName('');
       setShowAddModal(false);
     } else {
       showMessage('error', result.message);
@@ -322,12 +303,6 @@ export const Accounts = () => {
       showMessage('error', result.message);
     }
     setShowDeleteConfirm(null);
-  };
-
-  // 设置默认账户
-  const handleSetDefault = (id: string) => {
-    setDefaultAccount(id);
-    showMessage('success', t.accounts.setDefaultSuccess);
   };
 
   // 打开编辑弹窗
@@ -488,8 +463,6 @@ export const Accounts = () => {
                     account={account}
                     balance={accountBalances[account.id] ?? 0}
                     formatBalance={formatBalance}
-                    isDefault={account.isDefault}
-                    handleSetDefault={handleSetDefault}
                     handleOpenEdit={handleOpenEdit}
                     setShowDeleteConfirm={setShowDeleteConfirm}
                     t={t}
@@ -508,6 +481,22 @@ export const Accounts = () => {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.accounts.addAccount}</h3>
 
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  账户名称
+                </label>
+                <input
+                  type="text"
+                  value={newAccountName}
+                  onChange={(e) => setNewAccountName(e.target.value)}
+                  placeholder={`例如：${newAccountCurrency} ${ACCOUNT_TYPE_NAMES[newAccountType]}`}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  留空则自动命名为：{newAccountCurrency} {ACCOUNT_TYPE_NAMES[newAccountType]}
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   币种
@@ -541,14 +530,6 @@ export const Accounts = () => {
                   ))}
                 </select>
               </div>
-
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  账户名称将自动设置为：<span className="font-medium text-gray-800 dark:text-gray-200">
-                    {newAccountCurrency} {ACCOUNT_TYPE_NAMES[newAccountType]}
-                  </span>
-                </p>
-              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -557,6 +538,7 @@ export const Accounts = () => {
                   setShowAddModal(false);
                   setNewAccountCurrency('CNY');
                   setNewAccountType('cash');
+                  setNewAccountName('');
                 }}
                 className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-medium transition-colors"
               >

@@ -88,7 +88,7 @@ export const useRecords = () => {
   }, [refreshCategories]);
 
   // 账户管理方法
-  const addAccount = useCallback((account: { currency: string; accountType: 'cash' | 'investment' | 'loan' }): { success: boolean; message: string; account?: Account } => {
+  const addAccount = useCallback((account: { currency: string; accountType: 'cash' | 'investment' | 'loan'; name?: string }): { success: boolean; message: string; account?: Account } => {
     const result = recordService.addAccount(account);
     if (result.success) {
       refreshAccounts();
