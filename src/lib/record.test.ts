@@ -1014,7 +1014,7 @@ describe('RecordService', () => {
         currency: 'CNY',
         balance: 0,
       });
-      const account2 = service.addAccount({
+      service.addAccount({
         name: '账户2',
         currency: 'USD',
         balance: 0,

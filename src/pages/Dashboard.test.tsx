@@ -44,9 +44,16 @@ describe('Dashboard', () => {
         expense: '支出',
         deleteRecord: '删除记录',
       },
+      sidebar: {},
+      addRecord: {},
+      history: {},
+      settings: {},
+      accounts: {},
+      charts: {},
+      common: {},
     },
     toggleLanguage: mockToggleLanguage,
-  };
+  } as any;
 
   const defaultRecordsMock = {
     records: [],

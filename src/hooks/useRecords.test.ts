@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRecords } from './useRecords';
-import type { ExpenseRecord, Category, Account } from '../types/record';
+import type { Category, Account } from '../types/record';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT } from '../types/record';
 
 describe('useRecords Hook', () => {
