@@ -74,17 +74,25 @@ export class RecordDAO {
 
   findAll(): ExpenseRecord[] {
     const schema = this.getSchema();
-    return [...schema.records];
+    // 为旧记录补全缺失的 currency 字段
+    return schema.records.map(record => ({
+      ...record,
+      currency: record.currency || 'CNY',
+    }));
   }
 
   findById(id: string): ExpenseRecord | undefined {
     const schema = this.getSchema();
-    return schema.records.find((r) => r.id === id);
+    const record = schema.records.find((r) => r.id === id);
+    if (!record) return undefined;
+    return { ...record, currency: record.currency || 'CNY' };
   }
 
   findByMonth(month: string): ExpenseRecord[] {
     const schema = this.getSchema();
-    return schema.records.filter((r) => r.date.startsWith(month));
+    return schema.records
+      .filter((r) => r.date.startsWith(month))
+      .map(record => ({ ...record, currency: record.currency || 'CNY' }));
   }
 
   save(record: ExpenseRecord): void {
@@ -223,6 +231,12 @@ export class RecordDAO {
       if (!this.validateSchema(data)) {
         return { success: false, message: '数据格式验证失败' };
       }
+
+      // 补全旧记录的 currency 字段
+      data.records = data.records.map(record => ({
+        ...record,
+        currency: record.currency || 'CNY',
+      }));
 
       const migrated = this.migrateSchema(data);
       this.saveSchema(migrated);

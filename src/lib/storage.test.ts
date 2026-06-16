@@ -1168,4 +1168,164 @@ describe('RecordDAO', () => {
       expect(accounts).toEqual(newAccounts);
     });
   });
+
+  describe('旧记录 currency 字段向后兼容', () => {
+    it('findAll() 应为缺少 currency 的旧记录补全默认值 CNY', () => {
+      // Arrange - 直接操作 localStorage 模拟旧数据
+      const oldData = {
+        version: '1.2.0',
+        records: [
+          {
+            id: 'old-record-1',
+            type: 'income' as const,
+            amount: 334,
+            note: '',
+            category: '工资',
+            date: '2026-06-15',
+            createdAt: 1781535627313,
+            // 注意：没有 currency 字段
+          },
+        ],
+        categories: [],
+        accounts: [],
+        incomeRules: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem('expense_tracker_data', JSON.stringify(oldData));
+
+      // Act
+      const records = dao.findAll();
+
+      // Assert
+      expect(records).toHaveLength(1);
+      expect(records[0].currency).toBe('CNY');
+    });
+
+    it('findById() 应为缺少 currency 的旧记录补全默认值 CNY', () => {
+      // Arrange
+      const oldData = {
+        version: '1.2.0',
+        records: [
+          {
+            id: 'old-record-2',
+            type: 'expense' as const,
+            amount: 44,
+            note: '',
+            category: '餐饮',
+            date: '2026-06-04',
+            createdAt: 1781535647535,
+          },
+        ],
+        categories: [],
+        accounts: [],
+        incomeRules: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem('expense_tracker_data', JSON.stringify(oldData));
+
+      // Act
+      const record = dao.findById('old-record-2');
+
+      // Assert
+      expect(record).toBeDefined();
+      expect(record!.currency).toBe('CNY');
+    });
+
+    it('findByMonth() 应为缺少 currency 的旧记录补全默认值 CNY', () => {
+      // Arrange
+      const oldData = {
+        version: '1.2.0',
+        records: [
+          {
+            id: 'old-record-3',
+            type: 'income' as const,
+            amount: 334,
+            note: '',
+            category: '工资',
+            date: '2026-06-15',
+            createdAt: 1781535627313,
+          },
+        ],
+        categories: [],
+        accounts: [],
+        incomeRules: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem('expense_tracker_data', JSON.stringify(oldData));
+
+      // Act
+      const records = dao.findByMonth('2026-06');
+
+      // Assert
+      expect(records).toHaveLength(1);
+      expect(records[0].currency).toBe('CNY');
+    });
+
+    it('importData() 导入旧数据时应补全 currency 字段', () => {
+      // Arrange
+      const oldExportData = {
+        version: '1.2.0',
+        records: [
+          {
+            id: 'import-record-1',
+            type: 'income' as const,
+            amount: 334,
+            note: '',
+            category: '工资',
+            date: '2026-06-15',
+            createdAt: 1781535627313,
+          },
+        ],
+        categories: [],
+        accounts: [],
+        incomeRules: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      // Act
+      const result = dao.importData(oldExportData as unknown as DataSchema);
+
+      // Assert
+      expect(result.success).toBe(true);
+      const records = dao.findAll();
+      expect(records).toHaveLength(1);
+      expect(records[0].currency).toBe('CNY');
+    });
+
+    it('新记录不应被覆盖已有的 currency 字段', () => {
+      // Arrange
+      const newData = {
+        version: '1.2.0',
+        records: [
+          {
+            id: 'new-record-1',
+            type: 'income' as const,
+            amount: 334,
+            note: '',
+            category: '工资',
+            date: '2026-06-15',
+            createdAt: 1781535627313,
+            currency: 'USD',
+          },
+        ],
+        categories: [],
+        accounts: [],
+        incomeRules: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem('expense_tracker_data', JSON.stringify(newData));
+
+      // Act
+      const records = dao.findAll();
+
+      // Assert
+      expect(records).toHaveLength(1);
+      expect(records[0].currency).toBe('USD');
+    });
+  });
 });

@@ -26,12 +26,19 @@ export class RecordService {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
-  formatCurrency(amount: number): string {
+  formatCurrency(amount: number, currency?: string): string {
+    const targetCurrency = currency || this.getDefaultAccountCurrency();
     return new Intl.NumberFormat('zh-CN', {
       style: 'currency',
-      currency: 'CNY',
+      currency: targetCurrency,
       minimumFractionDigits: 2,
     }).format(amount);
+  }
+
+  // 获取默认账户币种（第一个账户的币种）
+  getDefaultAccountCurrency(): string {
+    const accounts = recordDAO.getAccounts();
+    return accounts.length > 0 ? accounts[0].currency : 'CNY';
   }
 
   formatDate(dateString: string): string {
@@ -95,7 +102,8 @@ export class RecordService {
   }
 
   getStatistics(): Statistics {
-    const records = recordDAO.findAll().filter(r => r.currency === 'CNY');
+    const currency = this.getDefaultAccountCurrency();
+    const records = recordDAO.findAll().filter(r => r.currency === currency);
     
     return records.reduce(
       (acc, record) => {
@@ -112,7 +120,8 @@ export class RecordService {
   }
 
   getMonthlyData(): MonthlyData[] {
-    const records = recordDAO.findAll().filter(r => r.currency === 'CNY');
+    const currency = this.getDefaultAccountCurrency();
+    const records = recordDAO.findAll().filter(r => r.currency === currency);
     
     const monthlyData = records.reduce((acc, record) => {
       const month = record.date.substring(0, 7);
@@ -152,9 +161,10 @@ export class RecordService {
 
     const monthList = generateMonthList();
 
-    // 从记录中获取实际月度数据（仅 CNY 币种）
-    const cnyRecords = records.filter(r => r.currency === 'CNY');
-    const actualMonthlyData = cnyRecords.reduce((acc, record) => {
+    // 从记录中获取实际月度数据（仅默认账户币种）
+    const currency = this.getDefaultAccountCurrency();
+    const filteredRecords = records.filter(r => r.currency === currency);
+    const actualMonthlyData = filteredRecords.reduce((acc, record) => {
       const month = record.date.substring(0, 7);
       if (!acc[month]) {
         acc[month] = { month, income: 0, expense: 0 };
