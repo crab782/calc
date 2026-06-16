@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Wallet, Plus, X, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Wallet, Plus, X, CheckCircle, AlertCircle, Info, Star, Pencil } from 'lucide-react';
 import { useRecords } from '../hooks/useRecords';
 import { useLanguage } from '../contexts/LanguageContext';
+import type { Account } from '../types/record';
 
 // 币种选项
 const CURRENCY_OPTIONS = [
@@ -23,20 +24,20 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export const Accounts = () => {
   const { t } = useLanguage();
-  const { accounts, addAccount, deleteAccount } = useRecords();
+  const { accounts, addAccount, deleteAccount, updateAccount, setDefaultAccount } = useRecords();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState<string | null>(null);
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountCurrency, setNewAccountCurrency] = useState('CNY');
+  const [editName, setEditName] = useState('');
+  const [editBalance, setEditBalance] = useState('');
 
-  // 账户排序：总账户/默认CNY账户始终在第一位，其余按创建时间排序
+  // 账户排序：默认账户排在最前，其余按创建时间排序
   const sortedAccounts = [...accounts].sort((a, b) => {
-    // 默认总账户（CNY且名为"总账户"或"Master Account"）排在最前
-    const isDefaultA = a.currency === 'CNY' && (a.name === '总账户' || a.name === 'Master Account');
-    const isDefaultB = b.currency === 'CNY' && (b.name === '总账户' || b.name === 'Master Account');
-    if (isDefaultA && !isDefaultB) return -1;
-    if (isDefaultB && !isDefaultA) return 1;
+    if (a.isDefault && !b.isDefault) return -1;
+    if (b.isDefault && !a.isDefault) return 1;
     return a.createdAt - b.createdAt;
   });
 
@@ -81,6 +82,44 @@ export const Accounts = () => {
     }
     setShowDeleteConfirm(null);
   };
+
+  // 设置默认账户
+  const handleSetDefault = (id: string) => {
+    setDefaultAccount(id);
+    showMessage('success', t.accounts.setDefaultSuccess);
+  };
+
+  // 打开编辑弹窗
+  const handleOpenEdit = (account: Account) => {
+    setEditName(account.name);
+    setEditBalance(account.balance.toString());
+    setShowEditModal(account.id);
+  };
+
+  // 保存编辑
+  const handleSaveEdit = () => {
+    if (!editName.trim() || !showEditModal) return;
+
+    const account = accounts.find(a => a.id === showEditModal);
+    if (!account) return;
+
+    const balance = parseFloat(editBalance);
+    if (isNaN(balance)) {
+      showMessage('error', t.accounts.invalidBalance);
+      return;
+    }
+
+    updateAccount({
+      ...account,
+      name: editName.trim(),
+      balance,
+    });
+
+    showMessage('success', t.accounts.editSuccess);
+    setShowEditModal(null);
+  };
+
+  const editingAccount = accounts.find(a => a.id === showEditModal);
 
   return (
     <div className="p-6 flex-1">
@@ -133,25 +172,54 @@ export const Accounts = () => {
           {sortedAccounts.map((account) => (
             <div
               key={account.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow"
+              className={`bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${
+                account.isDefault ? 'border-yellow-400' : 'border-gray-200'
+              }`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Wallet className="w-5 h-5 text-blue-600" />
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    account.isDefault ? 'bg-yellow-100' : 'bg-blue-100'
+                  }`}>
+                    <Wallet className={`w-5 h-5 ${
+                      account.isDefault ? 'text-yellow-600' : 'text-blue-600'
+                    }`} />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-800">{account.name}</h3>
                     <p className="text-sm text-gray-500">{account.currency}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowDeleteConfirm(account.id)}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
-                  title={t.accounts.deleteAccount}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  {/* 设为默认按钮 */}
+                  <button
+                    onClick={() => handleSetDefault(account.id)}
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      account.isDefault
+                        ? 'text-yellow-500 hover:bg-yellow-50'
+                        : 'text-gray-400 hover:bg-gray-100 hover:text-yellow-500'
+                    }`}
+                    title={account.isDefault ? t.accounts.isDefaultAccount : t.accounts.setDefaultAccount}
+                  >
+                    <Star className="w-4 h-4" fill={account.isDefault ? 'currentColor' : 'none'} />
+                  </button>
+                  {/* 编辑按钮 */}
+                  <button
+                    onClick={() => handleOpenEdit(account)}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-blue-500"
+                    title={t.accounts.editAccount}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  {/* 删除按钮 */}
+                  <button
+                    onClick={() => setShowDeleteConfirm(account.id)}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+                    title={t.accounts.deleteAccount}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="mt-4">
                 <p className="text-sm text-gray-500 mb-1">{t.accounts.balance}</p>
@@ -235,6 +303,83 @@ export const Accounts = () => {
         </div>
       )}
 
+      {/* 编辑账户弹窗 */}
+      {showEditModal && editingAccount && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.accounts.editAccount}</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t.accounts.editAccountName}
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder={t.accounts.editAccountNamePlaceholder}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveEdit();
+                    }
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t.accounts.editAccountBalance}
+                </label>
+                <input
+                  type="number"
+                  value={editBalance}
+                  onChange={(e) => setEditBalance(e.target.value)}
+                  placeholder={t.accounts.editAccountBalancePlaceholder}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveEdit();
+                    }
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t.accounts.currency}
+                </label>
+                <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-600">
+                  {editingAccount.currency}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowEditModal(null)}
+                className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+              >
+                {t.accounts.cancel}
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={!editName.trim()}
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                  editName.trim()
+                    ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {t.accounts.confirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 删除账户确认弹窗 */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -252,7 +397,7 @@ export const Accounts = () => {
                 onClick={() => handleDeleteAccount(showDeleteConfirm)}
                 className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
               >
-                {t.accounts.deleteAccount}
+                {t.accounts.delete}
               </button>
             </div>
           </div>

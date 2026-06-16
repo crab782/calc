@@ -16,5 +16,16 @@
   "cancel": "Cancel",
   "confirm": "Confirm",
   "singleAccountTip": "Currently using the master account. Add accounts for other currencies to manage multi-currency.",
-  "defaultAccountName": "Master Account"
+  "defaultAccountName": "Master Account",
+  "setDefaultAccount": "Set as Default",
+  "isDefaultAccount": "Default Account",
+  "setDefaultSuccess": "Set as default account",
+  "editAccount": "Edit Account",
+  "editAccountName": "Account Name",
+  "editAccountNamePlaceholder": "Please enter account name",
+  "editAccountBalance": "Balance",
+  "editAccountBalancePlaceholder": "Please enter balance",
+  "editSuccess": "Account information updated successfully",
+  "invalidBalance": "Please enter a valid balance amount",
+  "delete": "Delete"
 }

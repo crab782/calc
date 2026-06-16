@@ -87,7 +87,7 @@ export const useRecords = () => {
   }, [refreshCategories]);
 
   // 账户管理方法
-  const addAccount = useCallback((account: Omit<Account, 'id' | 'createdAt'> & { id?: string }): Account => {
+  const addAccount = useCallback((account: Omit<Account, 'id' | 'createdAt' | 'isDefault'> & { id?: string }): Account => {
     const newAccount = recordService.addAccount(account);
     refreshAccounts();
     return newAccount;
@@ -103,6 +103,11 @@ export const useRecords = () => {
 
   const updateAccount = useCallback((account: Account) => {
     recordService.updateAccount(account);
+    refreshAccounts();
+  }, [refreshAccounts]);
+
+  const setDefaultAccount = useCallback((id: string) => {
+    recordService.setDefaultAccount(id);
     refreshAccounts();
   }, [refreshAccounts]);
 
@@ -150,6 +155,7 @@ export const useRecords = () => {
     addAccount,
     deleteAccount,
     updateAccount,
+    setDefaultAccount,
     refreshAccounts,
     incomeRules,
     addIncomeRule,

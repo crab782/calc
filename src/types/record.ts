@@ -22,6 +22,7 @@ export interface Account {
   currency: string;
   balance: number;
   createdAt: number;
+  isDefault: boolean;
 }
 
 export type IncomePeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -71,6 +72,7 @@ export const DEFAULT_ACCOUNT: Account = {
   currency: 'CNY',
   balance: 0,
   createdAt: Date.now(),
+  isDefault: true,
 };
 
 export const DEFAULT_INCOME_RULE: IncomeRule = {
@@ -82,4 +84,4 @@ export const DEFAULT_INCOME_RULE: IncomeRule = {
   createdAt: Date.now(),
 };
 
-export const CURRENT_VERSION = '1.2.0';
+export const CURRENT_VERSION = '1.3.0';

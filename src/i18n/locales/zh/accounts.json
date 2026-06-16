@@ -16,5 +16,16 @@
   "cancel": "取消",
   "confirm": "确认",
   "singleAccountTip": "当前使用总账户，添加其他币种账户可进行多币种管理",
-  "defaultAccountName": "总账户"
+  "defaultAccountName": "总账户",
+  "setDefaultAccount": "设为默认",
+  "isDefaultAccount": "默认账户",
+  "setDefaultSuccess": "已设为默认账户",
+  "editAccount": "编辑账户",
+  "editAccountName": "账户名称",
+  "editAccountNamePlaceholder": "请输入账户名称",
+  "editAccountBalance": "余额",
+  "editAccountBalancePlaceholder": "请输入余额",
+  "editSuccess": "账户信息更新成功",
+  "invalidBalance": "请输入有效的余额数值",
+  "delete": "删除"
 }

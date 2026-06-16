@@ -55,6 +55,15 @@ export class RecordDAO {
           s.incomeRules = [DEFAULT_INCOME_RULE];
         }
       },
+      '1.2.0': (s) => {
+        s.version = '1.3.0';
+        if (s.accounts && s.accounts.length > 0) {
+          // 第一个账户设为默认
+          s.accounts.forEach((a, i) => {
+            a.isDefault = i === 0;
+          });
+        }
+      },
     };
 
     // 连续迁移，直到达到当前版本
@@ -187,6 +196,14 @@ export class RecordDAO {
       schema.accounts[index] = account;
       this.saveSchema(schema);
     }
+  }
+
+  setDefaultAccount(id: string): void {
+    const schema = this.getSchema();
+    schema.accounts.forEach(a => {
+      a.isDefault = a.id === id;
+    });
+    this.saveSchema(schema);
   }
 
   // 收入规则管理方法

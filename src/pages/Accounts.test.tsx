@@ -40,6 +40,17 @@ describe('Accounts', () => {
         confirm: '确认',
         singleAccountTip: '当前使用总账户，添加其他币种账户可进行多币种管理',
         defaultAccountName: '总账户',
+        setDefaultAccount: '设为默认',
+        isDefaultAccount: '默认账户',
+        setDefaultSuccess: '已设为默认账户',
+        editAccount: '编辑账户',
+        editAccountName: '账户名称',
+        editAccountNamePlaceholder: '请输入账户名称',
+        editAccountBalance: '余额',
+        editAccountBalancePlaceholder: '请输入余额',
+        editSuccess: '账户信息更新成功',
+        invalidBalance: '请输入有效的余额数值',
+        delete: '删除',
       },
     },
     toggleLanguage: vi.fn(),
@@ -425,8 +436,8 @@ describe('Accounts', () => {
         fireEvent.click(deleteButton);
         
         // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
-        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
-        fireEvent.click(confirmButtons[1]);
+        const dialogDeleteButton = screen.getByRole('button', { name: '删除' });
+        fireEvent.click(dialogDeleteButton);
         
         expect(mockDeleteAccount).toHaveBeenCalledWith('1');
       }
@@ -520,8 +531,8 @@ describe('Accounts', () => {
         fireEvent.click(deleteButton);
         
         // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
-        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
-        fireEvent.click(confirmButtons[1]);
+        const dialogDeleteButton = screen.getByRole('button', { name: '删除' });
+        fireEvent.click(dialogDeleteButton);
         
         await waitFor(() => {
           expect(screen.getByText('账户删除成功')).toBeInTheDocument();
@@ -597,10 +608,9 @@ describe('Accounts', () => {
       if (deleteButton) {
         fireEvent.click(deleteButton);
         
-        // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
-        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
-        const confirmButton = confirmButtons[1];
-        fireEvent.click(confirmButton);
+        // 点击确认删除按钮 (dialog 中的红色删除按钮)
+        const dialogDeleteButton = screen.getByRole('button', { name: '删除' });
+        fireEvent.click(dialogDeleteButton);
         
         await waitFor(() => {
           expect(screen.getByText('删除失败：账户正在使用中')).toBeInTheDocument();
@@ -634,10 +644,9 @@ describe('Accounts', () => {
       if (deleteButton) {
         fireEvent.click(deleteButton);
         
-        // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
-        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
-        const confirmButton = confirmButtons[1];
-        fireEvent.click(confirmButton);
+        // 点击确认删除按钮 (dialog 中的红色删除按钮)
+        const dialogDeleteButton = screen.getByRole('button', { name: '删除' });
+        fireEvent.click(dialogDeleteButton);
         
         await waitFor(() => {
           const toast = screen.getByText('删除失败');

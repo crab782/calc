@@ -373,6 +373,7 @@ describe('RecordDAO', () => {
         currency: 'USD',
         balance: 1000,
         createdAt: Date.now(),
+        isDefault: false,
       });
 
       // Assert
@@ -389,6 +390,7 @@ describe('RecordDAO', () => {
         currency: 'USD',
         balance: 1000,
         createdAt: Date.now(),
+        isDefault: false,
       };
 
       // Act
@@ -409,6 +411,7 @@ describe('RecordDAO', () => {
         currency: 'CNY',
         balance: 1000,
         createdAt: Date.now(),
+        isDefault: false,
       };
       dao.addAccount(newAccount);
 
@@ -703,8 +706,8 @@ describe('RecordDAO', () => {
       const accounts = newDao.getAccounts();
       const data = newDao.exportData();
 
-      // Assert - 连续迁移：v1.0.0 → v1.1.0 → v1.2.0
-      expect(data.version).toBe('1.2.0');
+      // Assert - 连续迁移：v1.0.0 → v1.1.0 → v1.2.0 → v1.3.0
+      expect(data.version).toBe('1.3.0');
       expect(accounts).toBeDefined();
       expect(accounts.length).toBe(1);
       expect(accounts[0].id).toBe('default-account');
@@ -741,8 +744,8 @@ describe('RecordDAO', () => {
       const categories = newDao.getCategories();
       const data = newDao.exportData();
 
-      // Assert - 连续迁移：v0.1.0 → v1.0.0 → v1.1.0 → v1.2.0
-      expect(data.version).toBe('1.2.0');
+      // Assert - 连续迁移：v0.1.0 → v1.0.0 → v1.1.0 → v1.2.0 → v1.3.0
+      expect(data.version).toBe('1.3.0');
       expect(categories).toBeDefined();
       expect(categories.length).toBeGreaterThan(0);
       // 验证 accounts 和 incomeRules 也被迁移
@@ -1101,6 +1104,7 @@ describe('RecordDAO', () => {
         currency: 'CNY',
         balance: 1000,
         createdAt: Date.now(),
+        isDefault: false,
       };
       dao.addAccount(newAccount);
 
@@ -1110,7 +1114,8 @@ describe('RecordDAO', () => {
         name: '更新后的账户',
         currency: 'USD',
         balance: 2000,
-        createdAt: Date.now(),
+        createdAt: newAccount.createdAt,
+        isDefault: false,
       };
       dao.updateAccount(updatedAccount);
 
@@ -1128,6 +1133,7 @@ describe('RecordDAO', () => {
         currency: 'CNY',
         balance: 1000,
         createdAt: Date.now(),
+        isDefault: false,
       };
 
       // Act & Assert
@@ -1156,8 +1162,8 @@ describe('RecordDAO', () => {
     it('应替换所有账户', () => {
       // Arrange
       const newAccounts: Account[] = [
-        { id: 'new-acc-1', name: '新账户1', currency: 'CNY', balance: 1000, createdAt: Date.now() },
-        { id: 'new-acc-2', name: '新账户2', currency: 'USD', balance: 2000, createdAt: Date.now() },
+        { id: 'new-acc-1', name: '新账户1', currency: 'CNY', balance: 1000, createdAt: Date.now(), isDefault: false },
+        { id: 'new-acc-2', name: '新账户2', currency: 'USD', balance: 2000, createdAt: Date.now(), isDefault: false },
       ];
 
       // Act

@@ -1163,6 +1163,7 @@ describe('RecordService', () => {
         currency: 'USD',
         balance: 1000,
         createdAt: newAccount.createdAt,
+        isDefault: false,
       });
 
       // Assert

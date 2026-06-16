@@ -35,10 +35,11 @@ export class RecordService {
     }).format(amount);
   }
 
-  // 获取默认账户币种（第一个账户的币种）
+  // 获取默认账户币种（isDefault 为 true 的账户的币种）
   getDefaultAccountCurrency(): string {
     const accounts = recordDAO.getAccounts();
-    return accounts.length > 0 ? accounts[0].currency : 'CNY';
+    const defaultAccount = accounts.find(a => a.isDefault);
+    return defaultAccount ? defaultAccount.currency : (accounts.length > 0 ? accounts[0].currency : 'CNY');
   }
 
   formatDate(dateString: string): string {
@@ -306,11 +307,12 @@ export class RecordService {
     return 'acc-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 
-  addAccount(account: Omit<Account, 'id' | 'createdAt'> & { id?: string }): Account {
+  addAccount(account: Omit<Account, 'id' | 'createdAt' | 'isDefault'> & { id?: string }): Account {
     const newAccount: Account = {
       ...account,
       id: account.id || this.generateAccountId(),
       createdAt: Date.now(),
+      isDefault: false,
     };
     recordDAO.addAccount(newAccount);
     return newAccount;
@@ -329,6 +331,10 @@ export class RecordService {
 
   updateAccount(account: Account): void {
     recordDAO.updateAccount(account);
+  }
+
+  setDefaultAccount(id: string): void {
+    recordDAO.setDefaultAccount(id);
   }
 
   // 收入规则管理方法
@@ -379,6 +385,7 @@ export class RecordService {
       currency: currency,
       balance: 0,
       createdAt: Date.now(),
+      isDefault: false,
     };
     recordDAO.addAccount(newAccount);
     return newAccount;
