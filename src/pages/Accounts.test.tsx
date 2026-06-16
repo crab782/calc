@@ -391,8 +391,8 @@ describe('Accounts', () => {
       if (deleteButton) {
         fireEvent.click(deleteButton);
         
-        expect(screen.getByText('删除账户')).toBeInTheDocument();
-        expect(screen.getByText('确定要删除这个账户吗？此操作无法撤销。')).toBeInTheDocument();
+        // 确认弹窗应该显示
+        expect(screen.getByText('删除后无法恢复，确定要删除这个账户吗？')).toBeInTheDocument();
       }
     });
 
@@ -424,9 +424,9 @@ describe('Accounts', () => {
       if (deleteButton) {
         fireEvent.click(deleteButton);
         
-        // 点击确认删除按钮
-        const confirmButton = screen.getByRole('button', { name: '删除' });
-        fireEvent.click(confirmButton);
+        // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
+        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
+        fireEvent.click(confirmButtons[1]);
         
         expect(mockDeleteAccount).toHaveBeenCalledWith('1');
       }
@@ -519,9 +519,9 @@ describe('Accounts', () => {
       if (deleteButton) {
         fireEvent.click(deleteButton);
         
-        // 点击确认删除按钮
-        const confirmButton = screen.getByRole('button', { name: '删除' });
-        fireEvent.click(confirmButton);
+        // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
+        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
+        fireEvent.click(confirmButtons[1]);
         
         await waitFor(() => {
           expect(screen.getByText('账户删除成功')).toBeInTheDocument();
@@ -597,8 +597,9 @@ describe('Accounts', () => {
       if (deleteButton) {
         fireEvent.click(deleteButton);
         
-        // 点击确认删除按钮
-        const confirmButton = screen.getByRole('button', { name: '删除' });
+        // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
+        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
+        const confirmButton = confirmButtons[1];
         fireEvent.click(confirmButton);
         
         await waitFor(() => {
@@ -633,8 +634,9 @@ describe('Accounts', () => {
       if (deleteButton) {
         fireEvent.click(deleteButton);
         
-        // 点击确认删除按钮
-        const confirmButton = screen.getByRole('button', { name: '删除' });
+        // 点击确认删除按钮 (dialog 中的红色删除按钮是第二个)
+        const confirmButtons = screen.getAllByRole('button', { name: '删除账户' });
+        const confirmButton = confirmButtons[1];
         fireEvent.click(confirmButton);
         
         await waitFor(() => {

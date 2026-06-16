@@ -30,8 +30,6 @@ export const Accounts = () => {
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountCurrency, setNewAccountCurrency] = useState('CNY');
 
-  const isSingleAccount = accounts.length === 1;
-
   // 账户排序：总账户/默认CNY账户始终在第一位，其余按创建时间排序
   const sortedAccounts = [...accounts].sort((a, b) => {
     // 默认总账户（CNY且名为"总账户"或"Master Account"）排在最前
@@ -105,85 +103,65 @@ export const Accounts = () => {
       )}
 
       {/* 页面标题和添加按钮 */}
-      {!isSingleAccount && (
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">{t.accounts.title}</h1>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            <span>{t.accounts.addAccount}</span>
-          </button>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">{t.accounts.title}</h1>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+          <span>{t.accounts.addAccount}</span>
+        </button>
+      </div>
+
+      {/* 单账户提示 */}
+      {accounts.length === 1 && (
+        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+          <Info className="w-5 h-5 text-blue-500 flex-shrink-0" />
+          <p className="text-sm text-blue-700">{t.accounts.singleAccountTip}</p>
         </div>
       )}
 
-      {/* 单账户简化提示 */}
-      {isSingleAccount ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 max-w-md w-full">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <Info className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                {accounts[0]?.name || t.accounts.defaultAccountName}
-              </h3>
-              <p className="text-gray-500 mb-6">{t.accounts.singleAccountTip}</p>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                <span>{t.accounts.addAccount}</span>
-              </button>
-            </div>
-          </div>
+      {/* 账户列表 */}
+      {accounts.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <Wallet className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500">{t.accounts.noAccounts}</p>
         </div>
       ) : (
-        <>
-          {/* 账户列表 */}
-          {accounts.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-              <Wallet className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">{t.accounts.noAccounts}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedAccounts.map((account) => (
-                <div
-                  key={account.id}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Wallet className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-800">{account.name}</h3>
-                        <p className="text-sm text-gray-500">{account.currency}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowDeleteConfirm(account.id)}
-                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
-                      title={t.accounts.deleteAccount}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedAccounts.map((account) => (
+            <div
+              key={account.id}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Wallet className="w-5 h-5 text-blue-600" />
                   </div>
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-1">{t.accounts.balance}</p>
-                    <p className={`text-2xl font-bold ${account.balance >= 0 ? 'text-gray-800' : 'text-red-500'}`}>
-                      {formatBalance(account.balance, account.currency)}
-                    </p>
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{account.name}</h3>
+                    <p className="text-sm text-gray-500">{account.currency}</p>
                   </div>
                 </div>
-              ))}
+                <button
+                  onClick={() => setShowDeleteConfirm(account.id)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+                  title={t.accounts.deleteAccount}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-gray-500 mb-1">{t.accounts.balance}</p>
+                <p className={`text-2xl font-bold ${account.balance >= 0 ? 'text-gray-800' : 'text-red-500'}`}>
+                  {formatBalance(account.balance, account.currency)}
+                </p>
+              </div>
             </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
       {/* 添加账户弹窗 */}

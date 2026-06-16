@@ -95,7 +95,7 @@ export class RecordService {
   }
 
   getStatistics(): Statistics {
-    const records = recordDAO.findAll();
+    const records = recordDAO.findAll().filter(r => r.currency === 'CNY');
     
     return records.reduce(
       (acc, record) => {
@@ -112,7 +112,7 @@ export class RecordService {
   }
 
   getMonthlyData(): MonthlyData[] {
-    const records = recordDAO.findAll();
+    const records = recordDAO.findAll().filter(r => r.currency === 'CNY');
     
     const monthlyData = records.reduce((acc, record) => {
       const month = record.date.substring(0, 7);
@@ -152,8 +152,9 @@ export class RecordService {
 
     const monthList = generateMonthList();
 
-    // 从记录中获取实际月度数据
-    const actualMonthlyData = records.reduce((acc, record) => {
+    // 从记录中获取实际月度数据（仅 CNY 币种）
+    const cnyRecords = records.filter(r => r.currency === 'CNY');
+    const actualMonthlyData = cnyRecords.reduce((acc, record) => {
       const month = record.date.substring(0, 7);
       if (!acc[month]) {
         acc[month] = { month, income: 0, expense: 0 };
