@@ -57,6 +57,7 @@ describe('Accounts', () => {
   };
 
   const defaultRecordsMock = {
+    records: [],
     accounts: [],
     addAccount: mockAddAccount,
     deleteAccount: mockDeleteAccount,
@@ -107,6 +108,7 @@ describe('Accounts', () => {
       ];
 
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -137,6 +139,7 @@ describe('Accounts', () => {
       ];
 
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -166,7 +169,12 @@ describe('Accounts', () => {
         },
       ];
 
+      const mockRecords = [
+        { id: 'r1', type: 'income', amount: 1000.50, currency: 'CNY', category: '工资', date: '2026-06-15', note: '', createdAt: Date.now() },
+      ];
+
       vi.mocked(useRecords).mockReturnValue({
+        records: mockRecords,
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -197,7 +205,12 @@ describe('Accounts', () => {
         },
       ];
 
+      const mockRecords = [
+        { id: 'r1', type: 'expense', amount: 500, currency: 'CNY', category: '购物', date: '2026-06-15', note: '', createdAt: Date.now() },
+      ];
+
       vi.mocked(useRecords).mockReturnValue({
+        records: mockRecords,
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -358,6 +371,7 @@ describe('Accounts', () => {
       ];
 
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -386,6 +400,7 @@ describe('Accounts', () => {
       ];
 
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -419,6 +434,7 @@ describe('Accounts', () => {
       ];
 
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -455,6 +471,7 @@ describe('Accounts', () => {
       ];
 
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -514,6 +531,7 @@ describe('Accounts', () => {
       ];
 
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: mockAccounts,
         addAccount: mockAddAccount,
         deleteAccount: mockDeleteAccount,
@@ -584,6 +602,7 @@ describe('Accounts', () => {
 
     it('删除失败应该显示错误消息', async () => {
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: [
           {
             id: '1',
@@ -620,6 +639,7 @@ describe('Accounts', () => {
 
     it('错误消息应该显示红色样式', async () => {
       vi.mocked(useRecords).mockReturnValue({
+        records: [],
         accounts: [
           {
             id: '1',

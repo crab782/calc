@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Wallet, Plus, X, CheckCircle, AlertCircle, Info, Star, Pencil } from 'lucide-react';
 import { useRecords } from '../hooks/useRecords';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -24,7 +24,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export const Accounts = () => {
   const { t } = useLanguage();
-  const { accounts, addAccount, deleteAccount, updateAccount, setDefaultAccount } = useRecords();
+  const { accounts, records, addAccount, deleteAccount, updateAccount, setDefaultAccount } = useRecords();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -36,6 +36,18 @@ export const Accounts = () => {
 
   // 账户列表：保持原有顺序，不按 isDefault 调整
   const sortedAccounts = accounts;
+
+  // 计算每个账户对应币种的结余（从记录中计算）
+  const accountBalances = useMemo(() => {
+    const balances: Record<string, number> = {};
+    accounts.forEach(acc => {
+      const balance = records
+        .filter(r => r.currency === acc.currency)
+        .reduce((sum, r) => sum + (r.type === 'income' ? r.amount : -r.amount), 0);
+      balances[acc.id] = balance;
+    });
+    return balances;
+  }, [accounts, records]);
 
   // 格式化余额显示
   const formatBalance = (balance: number, currency: string) => {
@@ -219,8 +231,8 @@ export const Accounts = () => {
               </div>
               <div className="mt-4">
                 <p className="text-sm text-gray-500 mb-1">{t.accounts.balance}</p>
-                <p className={`text-2xl font-bold ${account.balance >= 0 ? 'text-gray-800' : 'text-red-500'}`}>
-                  {formatBalance(account.balance, account.currency)}
+                <p className={`text-2xl font-bold ${accountBalances[account.id] >= 0 ? 'text-gray-800' : 'text-red-500'}`}>
+                  {formatBalance(accountBalances[account.id], account.currency)}
                 </p>
               </div>
             </div>
