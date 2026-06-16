@@ -1,5 +1,91 @@
-import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry } from '../types/record';
 import { recordDAO } from './storage';
+
+/**
+ * 根据交易类型生成分录
+ * @param type 交易类型
+ * @param amount 金额（用于收入、支出、投资、贷款到账）
+ * @param principal 本金（用于投资到期、还贷）
+ * @param interest 利息（用于投资到期、还贷）
+ * @param currency 币种（用于生成账户ID）
+ * @returns 分录数组
+ */
+export function generateEntries(
+  type: ExpenseRecord['type'],
+  amount: number,
+  principal?: number,
+  interest?: number,
+  currency: string = 'CNY'
+): Entry[] {
+  switch (type) {
+    case 'income':
+      // 借：现金账户
+      // 贷：收入账户
+      return [
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'debit', amount },
+        { accountId: `${currency}-income`, accountName: '收入', direction: 'credit', amount },
+      ];
+
+    case 'expense':
+      // 借：支出账户
+      // 贷：现金账户
+      return [
+        { accountId: `${currency}-expense`, accountName: '支出', direction: 'debit', amount },
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'credit', amount },
+      ];
+
+    case 'investment':
+      // 借：投资账户
+      // 贷：现金账户
+      return [
+        { accountId: `${currency}-investment`, accountName: '投资', direction: 'debit', amount },
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'credit', amount },
+      ];
+
+    case 'investment-mature': {
+      // 投资到期：需要本金和利息
+      // 借：现金账户（本金）
+      // 贷：投资账户（本金）
+      // 借：现金账户（利息）
+      // 贷：收入账户（利息）
+      const invPrincipal = principal ?? 0;
+      const invInterest = interest ?? 0;
+      return [
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'debit', amount: invPrincipal },
+        { accountId: `${currency}-investment`, accountName: '投资', direction: 'credit', amount: invPrincipal },
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'debit', amount: invInterest },
+        { accountId: `${currency}-income`, accountName: '收入', direction: 'credit', amount: invInterest },
+      ];
+    }
+
+    case 'loan-receive':
+      // 借：现金账户
+      // 贷：贷款账户
+      return [
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'debit', amount },
+        { accountId: `${currency}-loan`, accountName: '贷款', direction: 'credit', amount },
+      ];
+
+    case 'loan-repay': {
+      // 还贷：需要本金和利息
+      // 借：贷款账户（本金）
+      // 贷：现金账户（本金）
+      // 借：支出账户（利息）
+      // 贷：现金账户（利息）
+      const loanPrincipal = principal ?? 0;
+      const loanInterest = interest ?? 0;
+      return [
+        { accountId: `${currency}-loan`, accountName: '贷款', direction: 'debit', amount: loanPrincipal },
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'credit', amount: loanPrincipal },
+        { accountId: `${currency}-expense`, accountName: '支出', direction: 'debit', amount: loanInterest },
+        { accountId: `${currency}-cash`, accountName: '现金', direction: 'credit', amount: loanInterest },
+      ];
+    }
+
+    default:
+      return [];
+  }
+}
 
 export interface Statistics {
   totalIncome: number;
@@ -60,14 +146,25 @@ export class RecordService {
   }
 
   addRecord(data: {
-    type: 'income' | 'expense';
+    type: ExpenseRecord['type'];
     amount: number;
     note: string;
     category: string;
     date: string;
     currency?: string;
+    principal?: number;
+    interest?: number;
+    entries?: Entry[];
   }): void {
     const currency = data.currency || 'CNY';
+    // 生成分录，传递 currency 参数
+    const entries = data.entries || generateEntries(
+      data.type,
+      data.amount,
+      data.principal,
+      data.interest,
+      currency
+    );
     const record: ExpenseRecord = {
       id: this.generateId(),
       type: data.type,
@@ -77,6 +174,7 @@ export class RecordService {
       date: data.date,
       currency,
       createdAt: Date.now(),
+      entries,
     };
     recordDAO.save(record);
     this.getOrCreateAccountByCurrency(currency);
@@ -303,19 +401,65 @@ export class RecordService {
     return recordDAO.getAccounts();
   }
 
+  // 账户类型名称映射
+  private ACCOUNT_TYPE_NAMES: Record<string, string> = {
+    cash: '现金',
+    investment: '投资',
+    loan: '贷款',
+  };
+
   generateAccountId(): string {
     return 'acc-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 
-  addAccount(account: Omit<Account, 'id' | 'createdAt' | 'isDefault'> & { id?: string }): Account {
+  addAccount(account: { currency: string; accountType: 'cash' | 'investment' | 'loan' }): { success: boolean; message: string; account?: Account } {
+    const { currency, accountType } = account;
+    
+    // 检查是否已存在相同 currency 和 accountType 的账户
+    const accounts = recordDAO.getAccounts();
+    const existingAccount = accounts.find(a => a.currency === currency && a.accountType === accountType);
+    if (existingAccount) {
+      return { success: false, message: `该币种下已存在${this.ACCOUNT_TYPE_NAMES[accountType]}账户` };
+    }
+
+    // 生成账户ID和名称
+    const id = `${currency}-${accountType}`;
+    const name = `${currency} ${this.ACCOUNT_TYPE_NAMES[accountType]}`;
+
     const newAccount: Account = {
-      ...account,
-      id: account.id || this.generateAccountId(),
+      id,
+      name,
+      currency,
+      accountType,
+      balance: 0,
       createdAt: Date.now(),
       isDefault: false,
+      visible: true,
     };
     recordDAO.addAccount(newAccount);
-    return newAccount;
+    return { success: true, message: '账户创建成功', account: newAccount };
+  }
+
+  /**
+   * 计算账户余额（从分录计算：借方总和 - 贷方总和）
+   * @param accountId 账户ID
+   * @returns 账户余额
+   */
+  getAccountBalance(accountId: string): number {
+    const records = recordDAO.findAll();
+    let balance = 0;
+    records.forEach(record => {
+      record.entries?.forEach(entry => {
+        if (entry.accountId === accountId) {
+          if (entry.direction === 'debit') {
+            balance += entry.amount;
+          } else {
+            balance -= entry.amount;
+          }
+        }
+      });
+    });
+    return balance;
   }
 
   deleteAccount(id: string): { success: boolean; message: string } {
@@ -324,8 +468,19 @@ export class RecordService {
     if (accounts.length <= 1) {
       return { success: false, message: '至少需要保留一个账户' };
     }
-    
-    recordDAO.deleteAccount(id);
+
+    // 检查账户余额是否为0
+    const balance = this.getAccountBalance(id);
+    if (balance !== 0) {
+      return { success: false, message: '账户有余额，无法删除' };
+    }
+
+    // 软删除：设置 visible=false 而不是真正删除
+    const account = accounts.find(a => a.id === id);
+    if (account) {
+      account.visible = false;
+      recordDAO.updateAccount(account);
+    }
     return { success: true, message: '账户删除成功' };
   }
 
@@ -371,24 +526,29 @@ export class RecordService {
     recordDAO.updateIncomeRule(incomeRule);
   }
 
-  // 按币种查找/创建账户
-  getOrCreateAccountByCurrency(currency: string): Account {
-    const accounts = recordDAO.getAccounts();
-    const existing = accounts.find(a => a.currency === currency);
-    if (existing) {
-      return existing;
-    }
-    
-    const newAccount: Account = {
-      id: this.generateAccountId(),
-      name: `${currency}账户`,
-      currency: currency,
-      balance: 0,
-      createdAt: Date.now(),
-      isDefault: false,
-    };
-    recordDAO.addAccount(newAccount);
-    return newAccount;
+  // 按币种查找/创建账户（创建所有类型的账户）
+  getOrCreateAccountByCurrency(currency: string): Account[] {
+    return recordDAO.createCurrencyAccounts(currency);
+  }
+
+  // 创建指定币种的账户
+  createCurrencyAccounts(currency: string): Account[] {
+    return recordDAO.createCurrencyAccounts(currency);
+  }
+
+  // 获取指定币种的总余额
+  getCurrencyBalance(currency: string): number {
+    return recordDAO.getCurrencyBalance(currency);
+  }
+
+  // 禁用指定币种
+  disableCurrency(currency: string): { success: boolean; message: string } {
+    return recordDAO.disableCurrency(currency);
+  }
+
+  // 检查币种是否启用
+  isCurrencyEnabled(currency: string): boolean {
+    return recordDAO.isCurrencyEnabled(currency);
   }
 }
 

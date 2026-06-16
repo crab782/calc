@@ -217,6 +217,7 @@ describe('AddRecord', () => {
       const submitButton = screen.getByRole('button', { name: '添加记录' });
       fireEvent.click(submitButton);
       
+      // 验证 addRecord 被调用，包含 entries 字段（自动生成）
       expect(mockAddRecord).toHaveBeenCalledWith({
         type: 'expense',
         amount: 100.50,
@@ -224,6 +225,10 @@ describe('AddRecord', () => {
         note: '午餐',
         date: '2024-01-15',
         currency: 'CNY',
+        entries: [
+          { accountId: 'CNY-expense', accountName: '支出', direction: 'debit', amount: 100.50 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'credit', amount: 100.50 },
+        ],
       });
     });
 

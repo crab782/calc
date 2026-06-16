@@ -1,8 +1,129 @@
 import { useState, useMemo } from 'react';
-import { Wallet, Plus, X, CheckCircle, AlertCircle, Info, Star, Pencil } from 'lucide-react';
+import { Wallet, Plus, X, CheckCircle, AlertCircle, Info, Star, Pencil, Globe, Coins } from 'lucide-react';
 import { useRecords } from '../hooks/useRecords';
 import { useLanguage } from '../contexts/LanguageContext';
-import type { Account } from '../types/record';
+import type { Account, AccountType } from '../types/record';
+
+// 获取翻译类型
+type TranslationType = ReturnType<typeof useLanguage>['t'];
+
+// 外币配置列表
+const FOREIGN_CURRENCIES = [
+  { value: 'USD', label: '美元 (USD)' },
+  { value: 'EUR', label: '欧元 (EUR)' },
+  { value: 'GBP', label: '英镑 (GBP)' },
+  { value: 'JPY', label: '日元 (JPY)' },
+];
+
+// 账户类型选项（用于新建账户）
+const ACCOUNT_TYPE_OPTIONS = [
+  { value: 'cash', label: '现金' },
+  { value: 'investment', label: '投资' },
+  { value: 'loan', label: '贷款' },
+];
+
+// 账户类型名称映射
+const ACCOUNT_TYPE_NAMES: Record<string, string> = {
+  cash: '现金',
+  investment: '投资',
+  loan: '贷款',
+};
+
+// 账户类型配置
+const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; color: string; bgColor: string }> = {
+  cash: { label: '现金', color: 'text-green-700', bgColor: 'bg-green-100' },
+  investment: { label: '投资', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  loan: { label: '贷款', color: 'text-orange-700', bgColor: 'bg-orange-100' },
+  income: { label: '收入', color: 'text-purple-700', bgColor: 'bg-purple-100' },
+  expense: { label: '支出', color: 'text-red-700', bgColor: 'bg-red-100' },
+};
+
+// AccountCard 子组件：渲染单个账户卡片
+const AccountCard = ({
+  account,
+  balance,
+  formatBalance,
+  isDefault,
+  handleSetDefault,
+  handleOpenEdit,
+  setShowDeleteConfirm,
+  t,
+}: {
+  account: Account;
+  balance: number;
+  formatBalance: (balance: number, currency: string) => string;
+  isDefault: boolean;
+  handleSetDefault: (id: string) => void;
+  handleOpenEdit: (account: Account) => void;
+  setShowDeleteConfirm: (id: string | null) => void;
+  t: TranslationType;
+}) => (
+  <div
+    className={`bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${
+      isDefault ? 'border-yellow-400' : 'border-gray-200'
+    }`}
+  >
+    <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+          isDefault ? 'bg-yellow-100' : 'bg-blue-100'
+        }`}>
+          <Wallet className={`w-5 h-5 ${
+            isDefault ? 'text-yellow-600' : 'text-blue-600'
+          }`} />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-gray-800">{account.name}</h3>
+            {/* 账户类型标签 */}
+            <span className={`text-xs px-1.5 py-0.5 rounded ${
+              ACCOUNT_TYPE_CONFIG[account.accountType]?.bgColor || 'bg-gray-100'
+            } ${ACCOUNT_TYPE_CONFIG[account.accountType]?.color || 'text-gray-700'}`}>
+              {ACCOUNT_TYPE_CONFIG[account.accountType]?.label || account.accountType}
+            </span>
+          </div>
+          <p className="text-sm text-gray-500">{account.currency}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1">
+        {/* 设为默认按钮 */}
+        <button
+          onClick={() => handleSetDefault(account.id)}
+          className={`p-1.5 rounded-lg transition-colors ${
+            isDefault
+              ? 'text-yellow-500 hover:bg-yellow-50'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-yellow-500'
+          }`}
+          title={isDefault ? t.accounts.isDefaultAccount : t.accounts.setDefaultAccount}
+        >
+          <Star className="w-4 h-4" fill={isDefault ? 'currentColor' : 'none'} />
+        </button>
+        {/* 编辑按钮 */}
+        <button
+          onClick={() => handleOpenEdit(account)}
+          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-blue-500"
+          title={t.accounts.editAccount}
+        >
+          <Pencil className="w-4 h-4" />
+        </button>
+        {/* 删除按钮 */}
+        <button
+          onClick={() => setShowDeleteConfirm(account.id)}
+          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+          title={t.accounts.deleteAccount}
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+    <div className="mt-4">
+      <p className="text-sm text-gray-500 mb-1">{t.accounts.balance}</p>
+      <p className={`text-2xl font-bold ${balance >= 0 ? 'text-gray-800' : 'text-red-500'}`}>
+        {formatBalance(balance, account.currency)}
+      </p>
+    </div>
+  </div>
+);
 
 // 币种选项
 const CURRENCY_OPTIONS = [
@@ -24,28 +145,139 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export const Accounts = () => {
   const { t } = useLanguage();
-  const { accounts, records, addAccount, deleteAccount, updateAccount, setDefaultAccount } = useRecords();
+  const { 
+    accounts, 
+    records, 
+    addAccount, 
+    deleteAccount, 
+    updateAccount, 
+    setDefaultAccount,
+    createCurrencyAccounts,
+    disableCurrency,
+  } = useRecords();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState<string | null>(null);
-  const [newAccountName, setNewAccountName] = useState('');
   const [newAccountCurrency, setNewAccountCurrency] = useState('CNY');
+  const [newAccountType, setNewAccountType] = useState<'cash' | 'investment' | 'loan'>('cash');
   const [editName, setEditName] = useState('');
   const [editBalance, setEditBalance] = useState('');
 
-  // 账户列表：保持原有顺序，不按 isDefault 调整
-  const sortedAccounts = accounts;
+  // 获取所有可用币种（去重）
+  const availableCurrencies = useMemo(() => {
+    const currencies = accounts.map(a => a.currency);
+    return [...new Set(currencies)];
+  }, [accounts]);
 
-  // 计算每个账户对应币种的结余（从记录中计算）
+  // 当前默认币种
+  const defaultCurrency = useMemo(() => {
+    const defaultAccount = accounts.find(a => a.isDefault);
+    return defaultAccount?.currency || 'CNY';
+  }, [accounts]);
+
+  // 设置默认币种
+  const handleSetDefaultCurrency = (currency: string) => {
+    const account = accounts.find(a => a.currency === currency && a.visible === true);
+    if (account) {
+      setDefaultAccount(account.id);
+      showMessage('success', t.accounts.setDefaultSuccess);
+    }
+  };
+
+  // 外币启用状态（检查是否存在该币种的 visible=true 账户）
+  const enabledCurrencies = useMemo(() => {
+    const enabled: string[] = [];
+    FOREIGN_CURRENCIES.forEach(fc => {
+      const currencyAccounts = accounts.filter(a => a.currency === fc.value);
+      if (currencyAccounts.some(a => a.visible === true)) {
+        enabled.push(fc.value);
+      }
+    });
+    return enabled;
+  }, [accounts]);
+
+  // 处理外币启用/禁用
+  const handleCurrencyToggle = (currency: string, enabled: boolean) => {
+    if (enabled) {
+      // 启用外币：创建该币种的5类账户
+      createCurrencyAccounts(currency);
+      showMessage('success', `${currency} 币种已启用`);
+    } else {
+      // 禁用外币：检查余额后软删除
+      const result = disableCurrency(currency);
+      if (result.success) {
+        showMessage('success', `${currency} 币种已禁用`);
+      } else {
+        showMessage('error', result.message);
+      }
+    }
+  };
+
+  // 账户列表排序：只显示 cash, investment, loan 类型账户
+  const visibleAccounts = useMemo(() => {
+    return accounts.filter(acc => 
+      acc.visible === true && 
+      ['cash', 'investment', 'loan'].includes(acc.accountType)
+    );
+  }, [accounts]);
+
+  // 按币种分组
+  const accountsByCurrency = useMemo(() => {
+    const grouped: Record<string, typeof visibleAccounts> = {};
+    visibleAccounts.forEach(acc => {
+      if (!grouped[acc.currency]) {
+        grouped[acc.currency] = [];
+      }
+      grouped[acc.currency].push(acc);
+    });
+    
+    // 对每个币种组内的账户排序：默认账户优先
+    Object.keys(grouped).forEach(currency => {
+      const defaultAccount = grouped[currency].find(acc => acc.isDefault);
+      const otherAccounts = grouped[currency].filter(acc => !acc.isDefault);
+      grouped[currency] = [
+        ...(defaultAccount ? [defaultAccount] : []),
+        ...otherAccounts,
+      ];
+    });
+    
+    // CNY 币种优先显示
+    const sortedCurrencies = Object.keys(grouped).sort((a, b) => {
+      if (a === 'CNY') return -1;
+      if (b === 'CNY') return 1;
+      return a.localeCompare(b);
+    });
+    
+    return {
+      currencies: sortedCurrencies,
+      groups: grouped,
+    };
+  }, [visibleAccounts]);
+
+  // 计算每个账户对应币种的结余（从分录中计算）
   const accountBalances = useMemo(() => {
     const balances: Record<string, number> = {};
+
+    // 初始化所有账户余额为0
     accounts.forEach(acc => {
-      const balance = records
-        .filter(r => r.currency === acc.currency)
-        .reduce((sum, r) => sum + (r.type === 'income' ? r.amount : -r.amount), 0);
-      balances[acc.id] = balance;
+      balances[acc.id] = 0;
     });
+
+    // 从分录计算余额
+    records.forEach(record => {
+      record.entries?.forEach(entry => {
+        if (!balances[entry.accountId]) {
+          balances[entry.accountId] = 0;
+        }
+        if (entry.direction === 'debit') {
+          balances[entry.accountId] += entry.amount;
+        } else {
+          balances[entry.accountId] -= entry.amount;
+        }
+      });
+    });
+
     return balances;
   }, [accounts, records]);
 
@@ -66,18 +298,19 @@ export const Accounts = () => {
 
   // 添加账户
   const handleAddAccount = () => {
-    if (!newAccountName.trim()) return;
-
-    addAccount({
-      name: newAccountName.trim(),
+    const result = addAccount({
       currency: newAccountCurrency,
-      balance: 0,
+      accountType: newAccountType,
     });
 
-    showMessage('success', t.accounts.addSuccess);
-    setNewAccountName('');
-    setNewAccountCurrency('CNY');
-    setShowAddModal(false);
+    if (result.success) {
+      showMessage('success', t.accounts.addSuccess);
+      setNewAccountCurrency('CNY');
+      setNewAccountType('cash');
+      setShowAddModal(false);
+    } else {
+      showMessage('error', result.message);
+    }
   };
 
   // 删除账户
@@ -161,6 +394,65 @@ export const Accounts = () => {
         </button>
       </div>
 
+      {/* 默认币种设置 */}
+      <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center gap-3">
+          <Globe className="w-5 h-5 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">默认币种</span>
+          <select
+            value={defaultCurrency}
+            onChange={(e) => handleSetDefaultCurrency(e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {availableCurrencies.map((currency) => (
+              <option key={currency} value={currency}>
+                {currency} ({CURRENCY_SYMBOLS[currency] || ''})
+              </option>
+            ))}
+          </select>
+          <span className="text-xs text-gray-400 ml-2">（影响总览和统计的币种基准）</span>
+        </div>
+      </div>
+
+      {/* 支持的外币 */}
+      <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <Coins className="w-5 h-5 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">支持的外币</span>
+          <span className="text-xs text-gray-400">（勾选启用，取消勾选禁用）</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {FOREIGN_CURRENCIES.map((fc) => {
+            const isEnabled = enabledCurrencies.includes(fc.value);
+            const isDefaultCurrency = defaultCurrency === fc.value;
+            return (
+              <label
+                key={fc.value}
+                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  isEnabled
+                    ? 'border-blue-300 bg-blue-50 hover:bg-blue-100'
+                    : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                } ${isDefaultCurrency ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={isEnabled}
+                  disabled={isDefaultCurrency}
+                  onChange={(e) => handleCurrencyToggle(fc.value, e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className={`text-sm font-medium ${isEnabled ? 'text-blue-700' : 'text-gray-600'}`}>
+                  {fc.label}
+                </span>
+                {isDefaultCurrency && (
+                  <span className="text-xs text-gray-400 ml-auto">默认</span>
+                )}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
       {/* 单账户提示 */}
       {accounts.length === 1 && (
         <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
@@ -170,70 +462,39 @@ export const Accounts = () => {
       )}
 
       {/* 账户列表 */}
-      {accounts.length === 0 ? (
+      {visibleAccounts.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <Wallet className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">{t.accounts.noAccounts}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedAccounts.map((account) => (
-            <div
-              key={account.id}
-              className={`bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${
-                account.isDefault ? 'border-yellow-400' : 'border-gray-200'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    account.isDefault ? 'bg-yellow-100' : 'bg-blue-100'
-                  }`}>
-                    <Wallet className={`w-5 h-5 ${
-                      account.isDefault ? 'text-yellow-600' : 'text-blue-600'
-                    }`} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{account.name}</h3>
-                    <p className="text-sm text-gray-500">{account.currency}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  {/* 设为默认按钮 */}
-                  <button
-                    onClick={() => handleSetDefault(account.id)}
-                    className={`p-1.5 rounded-lg transition-colors ${
-                      account.isDefault
-                        ? 'text-yellow-500 hover:bg-yellow-50'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-yellow-500'
-                    }`}
-                    title={account.isDefault ? t.accounts.isDefaultAccount : t.accounts.setDefaultAccount}
-                  >
-                    <Star className="w-4 h-4" fill={account.isDefault ? 'currentColor' : 'none'} />
-                  </button>
-                  {/* 编辑按钮 */}
-                  <button
-                    onClick={() => handleOpenEdit(account)}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-blue-500"
-                    title={t.accounts.editAccount}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  {/* 删除按钮 */}
-                  <button
-                    onClick={() => setShowDeleteConfirm(account.id)}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-red-500"
-                    title={t.accounts.deleteAccount}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+        <div className="space-y-6">
+          {accountsByCurrency.currencies.map((currency) => (
+            <div key={currency}>
+              <div className="flex items-center gap-2 mb-3">
+                {currency === 'CNY' ? (
+                  <Coins className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <Globe className="w-4 h-4 text-gray-500" />
+                )}
+                <h2 className="text-sm font-medium text-gray-500">
+                  {currency === 'CNY' ? '本币账户' : `${currency} 账户`}
+                </h2>
               </div>
-              <div className="mt-4">
-                <p className="text-sm text-gray-500 mb-1">{t.accounts.balance}</p>
-                <p className={`text-2xl font-bold ${accountBalances[account.id] >= 0 ? 'text-gray-800' : 'text-red-500'}`}>
-                  {formatBalance(accountBalances[account.id], account.currency)}
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {accountsByCurrency.groups[currency].map((account) => (
+                  <AccountCard
+                    key={account.id}
+                    account={account}
+                    balance={accountBalances[account.id] ?? 0}
+                    formatBalance={formatBalance}
+                    isDefault={account.isDefault}
+                    handleSetDefault={handleSetDefault}
+                    handleOpenEdit={handleOpenEdit}
+                    setShowDeleteConfirm={setShowDeleteConfirm}
+                    t={t}
+                  />
+                ))}
               </div>
             </div>
           ))}
@@ -249,26 +510,7 @@ export const Accounts = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t.accounts.accountName}
-                </label>
-                <input
-                  type="text"
-                  value={newAccountName}
-                  onChange={(e) => setNewAccountName(e.target.value)}
-                  placeholder={t.accounts.accountNamePlaceholder}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleAddAccount();
-                    }
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t.accounts.currency}
+                  币种
                 </label>
                 <select
                   value={newAccountCurrency}
@@ -282,14 +524,39 @@ export const Accounts = () => {
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  账户类型
+                </label>
+                <select
+                  value={newAccountType}
+                  onChange={(e) => setNewAccountType(e.target.value as 'cash' | 'investment' | 'loan')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-sm text-gray-600">
+                  账户名称将自动设置为：<span className="font-medium text-gray-800">
+                    {newAccountCurrency} {ACCOUNT_TYPE_NAMES[newAccountType]}
+                  </span>
+                </p>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowAddModal(false);
-                  setNewAccountName('');
                   setNewAccountCurrency('CNY');
+                  setNewAccountType('cash');
                 }}
                 className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
               >
@@ -297,12 +564,7 @@ export const Accounts = () => {
               </button>
               <button
                 onClick={handleAddAccount}
-                disabled={!newAccountName.trim()}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                  newAccountName.trim()
-                    ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
               >
                 {t.accounts.confirm}
               </button>

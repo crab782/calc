@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "records": [
     {
       "id": "mqfcbbqpfj0di0rrdcg",
@@ -9,7 +9,21 @@
       "category": "工资",
       "date": "2026-06-15",
       "createdAt": 1781535627313,
-      "currency": "CNY"
+      "currency": "CNY",
+      "entries": [
+        {
+          "accountId": "cash",
+          "accountName": "现金",
+          "direction": "debit",
+          "amount": 334
+        },
+        {
+          "accountId": "income",
+          "accountName": "收入",
+          "direction": "credit",
+          "amount": 334
+        }
+      ]
     },
     {
       "id": "mqfcbkdgz62rlt4qfq",
@@ -19,7 +33,21 @@
       "category": "工资",
       "date": "2026-05-15",
       "createdAt": 1781535638500,
-      "currency": "CNY"
+      "currency": "CNY",
+      "entries": [
+        {
+          "accountId": "cash",
+          "accountName": "现金",
+          "direction": "debit",
+          "amount": 3535
+        },
+        {
+          "accountId": "income",
+          "accountName": "收入",
+          "direction": "credit",
+          "amount": 3535
+        }
+      ]
     },
     {
       "id": "mqfcbrcfgkeq7icnqp5",
@@ -29,7 +57,21 @@
       "category": "餐饮",
       "date": "2026-06-04",
       "createdAt": 1781535647535,
-      "currency": "CNY"
+      "currency": "CNY",
+      "entries": [
+        {
+          "accountId": "expense",
+          "accountName": "支出",
+          "direction": "debit",
+          "amount": 44
+        },
+        {
+          "accountId": "cash",
+          "accountName": "现金",
+          "direction": "credit",
+          "amount": 44
+        }
+      ]
     },
     {
       "id": "mqfk419dvrnxzxgecmn",
@@ -39,7 +81,21 @@
       "category": "兼职",
       "date": "2026-06-17",
       "createdAt": 1781548724065,
-      "currency": "CNY"
+      "currency": "CNY",
+      "entries": [
+        {
+          "accountId": "cash",
+          "accountName": "现金",
+          "direction": "debit",
+          "amount": 34
+        },
+        {
+          "accountId": "income",
+          "accountName": "收入",
+          "direction": "credit",
+          "amount": 34
+        }
+      ]
     },
     {
       "id": "mqgk6gxscjpzi03qrsn",
@@ -49,7 +105,21 @@
       "category": "11",
       "date": "2026-06-05",
       "currency": "CNY",
-      "createdAt": 1781609303872
+      "createdAt": 1781609303872,
+      "entries": [
+        {
+          "accountId": "cash",
+          "accountName": "现金",
+          "direction": "debit",
+          "amount": 100
+        },
+        {
+          "accountId": "income",
+          "accountName": "收入",
+          "direction": "credit",
+          "amount": 100
+        }
+      ]
     }
   ],
   "categories": [
@@ -93,7 +163,8 @@
       "currency": "CNY",
       "balance": 0,
       "createdAt": 1781594362307,
-      "isDefault": true
+      "isDefault": true,
+      "visible": true
     },
     {
       "name": "1",
@@ -101,7 +172,8 @@
       "balance": 0,
       "id": "acc-mqgd4kbb64q9z",
       "createdAt": 1781597457623,
-      "isDefault": false
+      "isDefault": false,
+      "visible": true
     }
   ],
   "incomeRules": [

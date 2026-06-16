@@ -1,12 +1,21 @@
+// 分录接口：用于记录每笔交易涉及的账户和金额
+export interface Entry {
+  accountId: string;
+  accountName: string;
+  direction: 'debit' | 'credit'; // 借/贷
+  amount: number;
+}
+
 export interface ExpenseRecord {
   id: string;
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'investment' | 'investment-mature' | 'loan-receive' | 'loan-repay';
   amount: number;
   note: string;
   category: string;
   date: string;
   currency: string;
   createdAt: number;
+  entries: Entry[];
 }
 
 export interface Category {
@@ -16,13 +25,17 @@ export interface Category {
   icon: string;
 }
 
+export type AccountType = 'cash' | 'investment' | 'loan' | 'income' | 'expense';
+
 export interface Account {
   id: string;
   name: string;
   currency: string;
+  accountType: AccountType; // 账户类型
   balance: number;
   createdAt: number;
   isDefault: boolean;
+  visible: boolean; // 是否在账户页显示
 }
 
 export type IncomePeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -70,9 +83,11 @@ export const DEFAULT_ACCOUNT: Account = {
   id: 'default-account',
   name: '总账户',
   currency: 'CNY',
+  accountType: 'cash',
   balance: 0,
   createdAt: Date.now(),
   isDefault: true,
+  visible: true,
 };
 
 export const DEFAULT_INCOME_RULE: IncomeRule = {
@@ -84,4 +99,4 @@ export const DEFAULT_INCOME_RULE: IncomeRule = {
   createdAt: Date.now(),
 };
 
-export const CURRENT_VERSION = '1.3.0';
+export const CURRENT_VERSION = '1.5.0';

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RecordService } from './record';
+import { RecordService, generateEntries } from './record';
 import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT, DEFAULT_INCOME_RULE } from '../types/record';
 
@@ -60,8 +60,12 @@ vi.mock('./storage', () => ({
       mockStore.updatedAt = Date.now();
     },
     deleteAccount: (id: string) => {
-      mockStore.accounts = mockStore.accounts.filter(a => a.id !== id);
-      mockStore.updatedAt = Date.now();
+      // 软删除：设置 visible=false
+      const account = mockStore.accounts.find(a => a.id === id);
+      if (account) {
+        account.visible = false;
+        mockStore.updatedAt = Date.now();
+      }
     },
     updateAccount: (account: Account) => {
       const index = mockStore.accounts.findIndex(a => a.id === account.id);
@@ -74,6 +78,39 @@ vi.mock('./storage', () => ({
     importData: (data: DataSchema) => {
       mockStore = { ...data };
       return { success: true, message: `成功导入 ${data.records.length} 条记录` };
+    },
+    createCurrencyAccounts: (currency: string) => {
+      // 创建5类账户
+      const now = Date.now();
+      const newAccounts: Account[] = [
+        { id: `${currency}-cash`, name: '现金', currency, accountType: 'cash', balance: 0, createdAt: now, isDefault: false, visible: true },
+        { id: `${currency}-investment`, name: '投资', currency, accountType: 'investment', balance: 0, createdAt: now, isDefault: false, visible: true },
+        { id: `${currency}-loan`, name: '贷款', currency, accountType: 'loan', balance: 0, createdAt: now, isDefault: false, visible: true },
+        { id: `${currency}-expense`, name: '支出', currency, accountType: 'expense', balance: 0, createdAt: now, isDefault: false, visible: false },
+        { id: `${currency}-income`, name: '收入', currency, accountType: 'income', balance: 0, createdAt: now, isDefault: false, visible: false },
+      ];
+      mockStore.accounts.push(...newAccounts);
+      mockStore.updatedAt = Date.now();
+      return newAccounts;
+    },
+    getCurrencyBalance: (currency: string) => {
+      // 计算指定币种的总余额
+      const currencyAccounts = mockStore.accounts.filter(a => a.currency === currency && a.visible === true);
+      return currencyAccounts.reduce((sum, a) => sum + a.balance, 0);
+    },
+    disableCurrency: (currency: string) => {
+      // 禁用币种（软删除）
+      mockStore.accounts.forEach(a => {
+        if (a.currency === currency) {
+          a.visible = false;
+        }
+      });
+      mockStore.updatedAt = Date.now();
+      return { success: true, message: '币种已禁用' };
+    },
+    isCurrencyEnabled: (currency: string) => {
+      const currencyAccounts = mockStore.accounts.filter(a => a.currency === currency);
+      return currencyAccounts.some(a => a.visible === true);
     },
   },
 }));
@@ -977,62 +1014,63 @@ describe('RecordService', () => {
   });
 
   describe('addAccount', () => {
-    it('应添加新账户', () => {
+    it('应添加新账户（指定币种和类型）', () => {
       // Arrange
       const accountData = {
-        name: '测试账户',
         currency: 'USD',
-        balance: 1000,
+        accountType: 'cash' as 'cash' | 'investment' | 'loan',
       };
 
       // Act
-      const newAccount = service.addAccount(accountData);
+      const result = service.addAccount(accountData);
 
-      // Assert
-      expect(newAccount.id).toBeDefined();
-      expect(newAccount.name).toBe('测试账户');
-      expect(newAccount.currency).toBe('USD');
-      expect(newAccount.balance).toBe(1000);
-      expect(newAccount.createdAt).toBeDefined();
+      // Assert - 新的 addAccount 返回结果对象
+      expect(result.success).toBe(true);
+      expect(result.account).toBeDefined();
+      expect(result.account!.id).toBe('USD-cash');
+      expect(result.account!.name).toBe('USD 现金');
+      expect(result.account!.currency).toBe('USD');
+      expect(result.account!.accountType).toBe('cash');
+      expect(result.account!.createdAt).toBeDefined();
     });
 
-    it('应生成以 acc- 开头的 ID', () => {
+    it('应生成 {currency}-{accountType} 格式的 ID', () => {
       // Arrange
       const accountData = {
-        name: '测试账户',
         currency: 'CNY',
-        balance: 0,
+        accountType: 'investment' as 'cash' | 'investment' | 'loan',
       };
 
       // Act
-      const newAccount = service.addAccount(accountData);
+      const result = service.addAccount(accountData);
 
-      // Assert
-      expect(newAccount.id).toMatch(/^acc-/);
+      // Assert - 新的 ID 格式
+      expect(result.success).toBe(true);
+      expect(result.account!.id).toMatch(/^CNY-(cash|investment|loan)$/);
     });
   });
 
   describe('deleteAccount', () => {
-    it('应删除账户当有多个账户时', () => {
+    it('应软删除账户当有多个账户时', () => {
       // Arrange
-      const account1 = service.addAccount({
-        name: '账户1',
+      const result1 = service.addAccount({
         currency: 'CNY',
-        balance: 0,
+        accountType: 'cash' as 'cash' | 'investment' | 'loan',
       });
       service.addAccount({
-        name: '账户2',
         currency: 'USD',
-        balance: 0,
+        accountType: 'cash' as 'cash' | 'investment' | 'loan',
       });
 
       // Act
-      const result = service.deleteAccount(account1.id);
+      const deleteResult = service.deleteAccount(result1.account!.id);
 
-      // Assert
-      expect(result.success).toBe(true);
+      // Assert - 软删除：账户仍存在但不可见
+      expect(deleteResult.success).toBe(true);
       const accounts = service.getAccounts();
-      expect(accounts.find(a => a.id === account1.id)).toBeUndefined();
+      const deletedAccount = accounts.find(a => a.id === result1.account!.id);
+      expect(deletedAccount).toBeDefined();
+      expect(deletedAccount!.visible).toBe(false);
     });
 
     it('应拒绝删除最后一个账户', () => {
@@ -1051,9 +1089,8 @@ describe('RecordService', () => {
     it('删除不存在的账户应返回成功', () => {
       // Arrange
       service.addAccount({
-        name: '测试账户',
         currency: 'CNY',
-        balance: 0,
+        accountType: 'cash' as 'cash' | 'investment' | 'loan',
       });
 
       // Act
@@ -1150,20 +1187,22 @@ describe('RecordService', () => {
   describe('updateAccount', () => {
     it('应更新已存在的账户', () => {
       // Arrange
-      const newAccount = service.addAccount({
-        name: '测试账户',
+      const result = service.addAccount({
         currency: 'CNY',
-        balance: 0,
+        accountType: 'cash' as 'cash' | 'investment' | 'loan',
       });
+      const newAccount = result.account!;
 
       // Act
       service.updateAccount({
         id: newAccount.id,
         name: '更新后的账户',
         currency: 'USD',
+        accountType: 'cash',
         balance: 1000,
         createdAt: newAccount.createdAt,
         isDefault: false,
+        visible: true,
       });
 
       // Assert
@@ -1378,6 +1417,636 @@ describe('RecordService', () => {
       // Assert
       expect(service.getRecordCount()).toBe(recordCount);
       expect(stats.totalIncome + stats.totalExpense).toBeGreaterThan(0);
+    });
+  });
+
+  // ========== SubTask 7.3: 测试 generateEntries 函数（新记账类型）==========
+  describe('generateEntries', () => {
+    it('应为收入类型生成正确的分录（借:现金, 贷:收入）', () => {
+      // Arrange
+      const amount = 5000;
+
+      // Act
+      const entries = generateEntries('income', amount);
+
+      // Assert - 使用新的账户ID格式 {currency}-{accountType}
+      expect(entries).toHaveLength(2);
+      expect(entries[0]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'debit',
+        amount: 5000,
+      });
+      expect(entries[1]).toEqual({
+        accountId: 'CNY-income',
+        accountName: '收入',
+        direction: 'credit',
+        amount: 5000,
+      });
+    });
+
+    it('应为支出类型生成正确的分录（借:支出, 贷:现金）', () => {
+      // Arrange
+      const amount = 100;
+
+      // Act
+      const entries = generateEntries('expense', amount);
+
+      // Assert - 使用新的账户ID格式
+      expect(entries).toHaveLength(2);
+      expect(entries[0]).toEqual({
+        accountId: 'CNY-expense',
+        accountName: '支出',
+        direction: 'debit',
+        amount: 100,
+      });
+      expect(entries[1]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'credit',
+        amount: 100,
+      });
+    });
+
+    it('应为投资类型生成正确的分录（借:投资, 贷:现金）', () => {
+      // Arrange
+      const amount = 10000;
+
+      // Act
+      const entries = generateEntries('investment', amount);
+
+      // Assert - 使用新的账户ID格式
+      expect(entries).toHaveLength(2);
+      expect(entries[0]).toEqual({
+        accountId: 'CNY-investment',
+        accountName: '投资',
+        direction: 'debit',
+        amount: 10000,
+      });
+      expect(entries[1]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'credit',
+        amount: 10000,
+      });
+    });
+
+    it('应为投资到期类型生成正确的分录（本金和利息）', () => {
+      // Arrange
+      const principal = 10000;
+      const interest = 500;
+
+      // Act
+      const entries = generateEntries('investment-mature', 0, principal, interest);
+
+      // Assert - 应生成4条分录（使用新的账户ID格式）
+      expect(entries).toHaveLength(4);
+      // 本金：借:现金, 贷:投资
+      expect(entries[0]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'debit',
+        amount: 10000,
+      });
+      expect(entries[1]).toEqual({
+        accountId: 'CNY-investment',
+        accountName: '投资',
+        direction: 'credit',
+        amount: 10000,
+      });
+      // 利息：借:现金, 贷:收入
+      expect(entries[2]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'debit',
+        amount: 500,
+      });
+      expect(entries[3]).toEqual({
+        accountId: 'CNY-income',
+        accountName: '收入',
+        direction: 'credit',
+        amount: 500,
+      });
+    });
+
+    it('应为贷款到账类型生成正确的分录（借:现金, 贷:贷款）', () => {
+      // Arrange
+      const amount = 50000;
+
+      // Act
+      const entries = generateEntries('loan-receive', amount);
+
+      // Assert - 使用新的账户ID格式
+      expect(entries).toHaveLength(2);
+      expect(entries[0]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'debit',
+        amount: 50000,
+      });
+      expect(entries[1]).toEqual({
+        accountId: 'CNY-loan',
+        accountName: '贷款',
+        direction: 'credit',
+        amount: 50000,
+      });
+    });
+
+    it('应为还贷类型生成正确的分录（本金和利息）', () => {
+      // Arrange
+      const principal = 5000;
+      const interest = 100;
+
+      // Act
+      const entries = generateEntries('loan-repay', 0, principal, interest);
+
+      // Assert - 应生成4条分录（使用新的账户ID格式）
+      expect(entries).toHaveLength(4);
+      // 本金：借:贷款, 贷:现金
+      expect(entries[0]).toEqual({
+        accountId: 'CNY-loan',
+        accountName: '贷款',
+        direction: 'debit',
+        amount: 5000,
+      });
+      expect(entries[1]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'credit',
+        amount: 5000,
+      });
+      // 利息：借:支出, 贷:现金
+      expect(entries[2]).toEqual({
+        accountId: 'CNY-expense',
+        accountName: '支出',
+        direction: 'debit',
+        amount: 100,
+      });
+      expect(entries[3]).toEqual({
+        accountId: 'CNY-cash',
+        accountName: '现金',
+        direction: 'credit',
+        amount: 100,
+      });
+    });
+
+    it('应处理投资到期类型无利息的情况', () => {
+      // Arrange
+      const principal = 10000;
+
+      // Act
+      const entries = generateEntries('investment-mature', 0, principal, 0);
+
+      // Assert - 本金分录存在，利息分录金额为0
+      expect(entries).toHaveLength(4);
+      expect(entries[0].amount).toBe(10000);
+      expect(entries[1].amount).toBe(10000);
+      expect(entries[2].amount).toBe(0);
+      expect(entries[3].amount).toBe(0);
+    });
+
+    it('应处理还贷类型无利息的情况', () => {
+      // Arrange
+      const principal = 5000;
+
+      // Act
+      const entries = generateEntries('loan-repay', 0, principal, 0);
+
+      // Assert - 本金分录存在，利息分录金额为0
+      expect(entries).toHaveLength(4);
+      expect(entries[0].amount).toBe(5000);
+      expect(entries[1].amount).toBe(5000);
+      expect(entries[2].amount).toBe(0);
+      expect(entries[3].amount).toBe(0);
+    });
+
+    it('应处理投资到期类型未提供本金利息参数的情况', () => {
+      // Arrange & Act
+      const entries = generateEntries('investment-mature', 0);
+
+      // Assert - 默认值为0
+      expect(entries).toHaveLength(4);
+      expect(entries[0].amount).toBe(0);
+      expect(entries[1].amount).toBe(0);
+      expect(entries[2].amount).toBe(0);
+      expect(entries[3].amount).toBe(0);
+    });
+
+    it('应处理还贷类型未提供本金利息参数的情况', () => {
+      // Arrange & Act
+      const entries = generateEntries('loan-repay', 0);
+
+      // Assert - 默认值为0
+      expect(entries).toHaveLength(4);
+      expect(entries[0].amount).toBe(0);
+      expect(entries[1].amount).toBe(0);
+      expect(entries[2].amount).toBe(0);
+      expect(entries[3].amount).toBe(0);
+    });
+  });
+
+  // ========== SubTask 7.4: 测试账户余额计算 ==========
+  describe('账户余额计算', () => {
+    it('应正确计算现金账户余额（借方总和 - 贷方总和）', () => {
+      // Arrange - 添加收入和支出记录
+      const incomeRecord: ExpenseRecord = {
+        id: 'income-1',
+        type: 'income',
+        amount: 5000,
+        note: '工资',
+        category: 'inc-salary',
+        date: '2024-01-15',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
+          { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+        ],
+      };
+      const expenseRecord: ExpenseRecord = {
+        id: 'expense-1',
+        type: 'expense',
+        amount: 100,
+        note: '午餐',
+        category: 'exp-food',
+        date: '2024-01-16',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
+      };
+      mockStore.records.push(incomeRecord, expenseRecord);
+
+      // Act - 计算现金账户余额
+      const calculateBalance = (accountId: string, records: ExpenseRecord[]): number => {
+        let balance = 0;
+        for (const record of records) {
+          for (const entry of record.entries) {
+            if (entry.accountId === accountId) {
+              if (entry.direction === 'debit') {
+                balance += entry.amount;
+              } else {
+                balance -= entry.amount;
+              }
+            }
+          }
+        }
+        return balance;
+      };
+      const cashBalance = calculateBalance('cash', mockStore.records);
+
+      // Assert - 现金账户余额 = 5000（借） - 100（贷） = 4900
+      expect(cashBalance).toBe(4900);
+    });
+
+    it('应正确计算收入账户余额（贷方总和）', () => {
+      // Arrange
+      const incomeRecord: ExpenseRecord = {
+        id: 'income-1',
+        type: 'income',
+        amount: 5000,
+        note: '工资',
+        category: 'inc-salary',
+        date: '2024-01-15',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
+          { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+        ],
+      };
+      mockStore.records.push(incomeRecord);
+
+      // Act
+      const calculateBalance = (accountId: string, records: ExpenseRecord[]): number => {
+        let balance = 0;
+        for (const record of records) {
+          for (const entry of record.entries) {
+            if (entry.accountId === accountId) {
+              if (entry.direction === 'debit') {
+                balance += entry.amount;
+              } else {
+                balance -= entry.amount;
+              }
+            }
+          }
+        }
+        return balance;
+      };
+      const incomeBalance = calculateBalance('income', mockStore.records);
+
+      // Assert - 收入账户余额 = -5000（贷方）
+      expect(incomeBalance).toBe(-5000);
+    });
+
+    it('应正确计算支出账户余额（借方总和）', () => {
+      // Arrange
+      const expenseRecord: ExpenseRecord = {
+        id: 'expense-1',
+        type: 'expense',
+        amount: 100,
+        note: '午餐',
+        category: 'exp-food',
+        date: '2024-01-16',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
+      };
+      mockStore.records.push(expenseRecord);
+
+      // Act
+      const calculateBalance = (accountId: string, records: ExpenseRecord[]): number => {
+        let balance = 0;
+        for (const record of records) {
+          for (const entry of record.entries) {
+            if (entry.accountId === accountId) {
+              if (entry.direction === 'debit') {
+                balance += entry.amount;
+              } else {
+                balance -= entry.amount;
+              }
+            }
+          }
+        }
+        return balance;
+      };
+      const expenseBalance = calculateBalance('expense', mockStore.records);
+
+      // Assert - 支出账户余额 = 100（借方）
+      expect(expenseBalance).toBe(100);
+    });
+
+    it('应正确计算投资账户余额', () => {
+      // Arrange - 投资和投资到期
+      const investmentRecord: ExpenseRecord = {
+        id: 'investment-1',
+        type: 'investment',
+        amount: 10000,
+        note: '购买理财产品',
+        category: 'inc-investment',
+        date: '2024-01-01',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'investment', accountName: '投资', direction: 'debit', amount: 10000 },
+          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 10000 },
+        ],
+      };
+      const matureRecord: ExpenseRecord = {
+        id: 'mature-1',
+        type: 'investment-mature',
+        amount: 10500,
+        note: '理财到期',
+        category: 'inc-investment',
+        date: '2024-02-01',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 10000 },
+          { accountId: 'investment', accountName: '投资', direction: 'credit', amount: 10000 },
+          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 500 },
+          { accountId: 'income', accountName: '收入', direction: 'credit', amount: 500 },
+        ],
+      };
+      mockStore.records.push(investmentRecord, matureRecord);
+
+      // Act
+      const calculateBalance = (accountId: string, records: ExpenseRecord[]): number => {
+        let balance = 0;
+        for (const record of records) {
+          for (const entry of record.entries) {
+            if (entry.accountId === accountId) {
+              if (entry.direction === 'debit') {
+                balance += entry.amount;
+              } else {
+                balance -= entry.amount;
+              }
+            }
+          }
+        }
+        return balance;
+      };
+      const investmentBalance = calculateBalance('investment', mockStore.records);
+
+      // Assert - 投资账户余额 = 10000（借） - 10000（贷） = 0
+      expect(investmentBalance).toBe(0);
+    });
+
+    it('应正确计算贷款账户余额', () => {
+      // Arrange - 贷款到账和还贷
+      const loanReceiveRecord: ExpenseRecord = {
+        id: 'loan-receive-1',
+        type: 'loan-receive',
+        amount: 50000,
+        note: '贷款到账',
+        category: 'inc-other',
+        date: '2024-01-01',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 50000 },
+          { accountId: 'loan', accountName: '贷款', direction: 'credit', amount: 50000 },
+        ],
+      };
+      const loanRepayRecord: ExpenseRecord = {
+        id: 'loan-repay-1',
+        type: 'loan-repay',
+        amount: 5100,
+        note: '还贷',
+        category: 'exp-other',
+        date: '2024-02-01',
+        currency: 'CNY',
+        createdAt: Date.now(),
+        entries: [
+          { accountId: 'loan', accountName: '贷款', direction: 'debit', amount: 5000 },
+          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 5000 },
+          { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
+          { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+        ],
+      };
+      mockStore.records.push(loanReceiveRecord, loanRepayRecord);
+
+      // Act
+      const calculateBalance = (accountId: string, records: ExpenseRecord[]): number => {
+        let balance = 0;
+        for (const record of records) {
+          for (const entry of record.entries) {
+            if (entry.accountId === accountId) {
+              if (entry.direction === 'debit') {
+                balance += entry.amount;
+              } else {
+                balance -= entry.amount;
+              }
+            }
+          }
+        }
+        return balance;
+      };
+      const loanBalance = calculateBalance('loan', mockStore.records);
+
+      // Assert - 贷款账户余额 = -50000（贷） + 5000（借） = -45000（剩余贷款）
+      expect(loanBalance).toBe(-45000);
+    });
+
+    it('应正确处理多条记录的累计余额计算', () => {
+      // Arrange - 多条收入和支出记录
+      const records: ExpenseRecord[] = [
+        {
+          id: 'income-1',
+          type: 'income',
+          amount: 5000,
+          note: '工资',
+          category: 'inc-salary',
+          date: '2024-01-01',
+          currency: 'CNY',
+          createdAt: Date.now(),
+          entries: [
+            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
+            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+          ],
+        },
+        {
+          id: 'expense-1',
+          type: 'expense',
+          amount: 100,
+          note: '早餐',
+          category: 'exp-food',
+          date: '2024-01-02',
+          currency: 'CNY',
+          createdAt: Date.now(),
+          entries: [
+            { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
+        },
+        {
+          id: 'income-2',
+          type: 'income',
+          amount: 1000,
+          note: '奖金',
+          category: 'inc-bonus',
+          date: '2024-01-03',
+          currency: 'CNY',
+          createdAt: Date.now(),
+          entries: [
+            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 1000 },
+            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 1000 },
+          ],
+        },
+        {
+          id: 'expense-2',
+          type: 'expense',
+          amount: 500,
+          note: '购物',
+          category: 'exp-shopping',
+          date: '2024-01-04',
+          currency: 'CNY',
+          createdAt: Date.now(),
+          entries: [
+            { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 500 },
+            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 500 },
+          ],
+        },
+      ];
+      mockStore.records.push(...records);
+
+      // Act
+      const calculateBalance = (accountId: string, records: ExpenseRecord[]): number => {
+        let balance = 0;
+        for (const record of records) {
+          for (const entry of record.entries) {
+            if (entry.accountId === accountId) {
+              if (entry.direction === 'debit') {
+                balance += entry.amount;
+              } else {
+                balance -= entry.amount;
+              }
+            }
+          }
+        }
+        return balance;
+      };
+
+      // Assert
+      // 现金：5000 + 1000（借） - 100 - 500（贷） = 5400
+      expect(calculateBalance('cash', mockStore.records)).toBe(5400);
+      // 收入：-5000 - 1000（贷） = -6000
+      expect(calculateBalance('income', mockStore.records)).toBe(-6000);
+      // 支出：100 + 500（借） = 600
+      expect(calculateBalance('expense', mockStore.records)).toBe(600);
+    });
+
+    it('应验证分录借贷平衡', () => {
+      // Arrange - 每条记录的借方总和应等于贷方总和
+      const records: ExpenseRecord[] = [
+        {
+          id: 'income-1',
+          type: 'income',
+          amount: 5000,
+          note: '工资',
+          category: 'inc-salary',
+          date: '2024-01-01',
+          currency: 'CNY',
+          createdAt: Date.now(),
+          entries: [
+            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
+            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+          ],
+        },
+        {
+          id: 'investment-mature-1',
+          type: 'investment-mature',
+          amount: 10500,
+          note: '理财到期',
+          category: 'inc-investment',
+          date: '2024-02-01',
+          currency: 'CNY',
+          createdAt: Date.now(),
+          entries: [
+            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 10000 },
+            { accountId: 'investment', accountName: '投资', direction: 'credit', amount: 10000 },
+            { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 500 },
+            { accountId: 'income', accountName: '收入', direction: 'credit', amount: 500 },
+          ],
+        },
+        {
+          id: 'loan-repay-1',
+          type: 'loan-repay',
+          amount: 5100,
+          note: '还贷',
+          category: 'exp-other',
+          date: '2024-03-01',
+          currency: 'CNY',
+          createdAt: Date.now(),
+          entries: [
+            { accountId: 'loan', accountName: '贷款', direction: 'debit', amount: 5000 },
+            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 5000 },
+            { accountId: 'expense', accountName: '支出', direction: 'debit', amount: 100 },
+            { accountId: 'cash', accountName: '现金', direction: 'credit', amount: 100 },
+          ],
+        },
+      ];
+
+      // Act - 验证每条记录的借贷平衡
+      const validateBalance = (record: ExpenseRecord): boolean => {
+        const debitSum = record.entries
+          .filter(e => e.direction === 'debit')
+          .reduce((sum, e) => sum + e.amount, 0);
+        const creditSum = record.entries
+          .filter(e => e.direction === 'credit')
+          .reduce((sum, e) => sum + e.amount, 0);
+        return debitSum === creditSum;
+      };
+
+      // Assert
+      records.forEach(record => {
+        expect(validateBalance(record)).toBe(true);
+      });
     });
   });
 });

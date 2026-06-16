@@ -45,12 +45,13 @@ export const useRecords = () => {
   }, []);
 
   const addRecord = useCallback((data: {
-    type: 'income' | 'expense';
+    type: ExpenseRecord['type'];
     amount: number;
     note: string;
     category: string;
     date: string;
     currency?: string;
+    entries?: ExpenseRecord['entries'];
   }) => {
     recordService.addRecord(data);
     refresh();
@@ -87,10 +88,12 @@ export const useRecords = () => {
   }, [refreshCategories]);
 
   // 账户管理方法
-  const addAccount = useCallback((account: Omit<Account, 'id' | 'createdAt' | 'isDefault'> & { id?: string }): Account => {
-    const newAccount = recordService.addAccount(account);
-    refreshAccounts();
-    return newAccount;
+  const addAccount = useCallback((account: { currency: string; accountType: 'cash' | 'investment' | 'loan' }): { success: boolean; message: string; account?: Account } => {
+    const result = recordService.addAccount(account);
+    if (result.success) {
+      refreshAccounts();
+    }
+    return result;
   }, [refreshAccounts]);
 
   const deleteAccount = useCallback((id: string): { success: boolean; message: string } => {
@@ -131,11 +134,33 @@ export const useRecords = () => {
     refreshIncomeRules();
   }, [refreshIncomeRules]);
 
-  const getOrCreateAccountByCurrency = useCallback((currency: string): Account => {
-    const account = recordService.getOrCreateAccountByCurrency(currency);
+  const getOrCreateAccountByCurrency = useCallback((currency: string): Account[] => {
+    const accounts = recordService.getOrCreateAccountByCurrency(currency);
     refreshAccounts();
-    return account;
+    return accounts;
   }, [refreshAccounts]);
+
+  const createCurrencyAccounts = useCallback((currency: string): Account[] => {
+    const accounts = recordService.createCurrencyAccounts(currency);
+    refreshAccounts();
+    return accounts;
+  }, [refreshAccounts]);
+
+  const getCurrencyBalance = useCallback((currency: string): number => {
+    return recordService.getCurrencyBalance(currency);
+  }, []);
+
+  const disableCurrency = useCallback((currency: string): { success: boolean; message: string } => {
+    const result = recordService.disableCurrency(currency);
+    if (result.success) {
+      refreshAccounts();
+    }
+    return result;
+  }, [refreshAccounts]);
+
+  const isCurrencyEnabled = useCallback((currency: string): boolean => {
+    return recordService.isCurrencyEnabled(currency);
+  }, []);
 
   return {
     records,
@@ -163,5 +188,9 @@ export const useRecords = () => {
     updateIncomeRule,
     refreshIncomeRules,
     getOrCreateAccountByCurrency,
+    createCurrencyAccounts,
+    getCurrencyBalance,
+    disableCurrency,
+    isCurrencyEnabled,
   };
 };
