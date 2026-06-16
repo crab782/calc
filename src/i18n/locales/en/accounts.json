@@ -14,5 +14,7 @@
   "deleteFailed": "At least one account must be kept",
   "addSuccess": "Account added successfully",
   "cancel": "Cancel",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "singleAccountTip": "Currently using the master account. Add accounts for other currencies to manage multi-currency.",
+  "defaultAccountName": "Master Account"
 }

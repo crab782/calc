@@ -31,6 +31,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -52,6 +53,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -83,6 +85,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -103,6 +106,7 @@ describe('RecordDAO', () => {
         note: '测试记录1',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record1);
@@ -125,6 +129,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
 
@@ -145,6 +150,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -168,6 +174,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -199,6 +206,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -220,6 +228,7 @@ describe('RecordDAO', () => {
         note: '测试记录1',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       const record2: ExpenseRecord = {
@@ -229,6 +238,7 @@ describe('RecordDAO', () => {
         note: '测试记录2',
         category: 'inc-salary',
         date: '2024-01-16',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record1);
@@ -426,6 +436,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -451,6 +462,7 @@ describe('RecordDAO', () => {
         note: '测试记录1',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       const record2: ExpenseRecord = {
@@ -460,6 +472,7 @@ describe('RecordDAO', () => {
         note: '测试记录2',
         category: 'inc-salary',
         date: '2024-01-16',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record1);
@@ -487,6 +500,7 @@ describe('RecordDAO', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
@@ -535,6 +549,7 @@ describe('RecordDAO', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         categories: [],
@@ -561,6 +576,7 @@ describe('RecordDAO', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         categories: [],
@@ -588,6 +604,7 @@ describe('RecordDAO', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         categories: [],
@@ -615,6 +632,7 @@ describe('RecordDAO', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         categories: [],
@@ -669,6 +687,7 @@ describe('RecordDAO', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
@@ -707,6 +726,7 @@ describe('RecordDAO', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         // 没有 categories 字段
@@ -816,6 +836,7 @@ describe('RecordDAO', () => {
           category: i % 2 === 0 ? 'exp-food' : 'inc-salary',
           date: '2024-01-15',
           createdAt: Date.now() + i,
+          currency: 'CNY',
         };
         dao.save(record);
       }
@@ -838,6 +859,7 @@ describe('RecordDAO', () => {
         note: '特殊字符测试: <script>alert("xss")</script> & "quotes" \'apostrophe\'',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
 
@@ -859,6 +881,7 @@ describe('RecordDAO', () => {
         note: '中文测试 日本語 한국어 العربية 🎉🎊',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
 
@@ -880,6 +903,7 @@ describe('RecordDAO', () => {
         note: '极大金额测试',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
 
@@ -901,6 +925,7 @@ describe('RecordDAO', () => {
         note: '极小金额测试',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
 
@@ -926,6 +951,7 @@ describe('RecordDAO', () => {
         note: '测试记录1',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record1);
@@ -938,6 +964,7 @@ describe('RecordDAO', () => {
         note: '测试记录2',
         category: 'inc-salary',
         date: '2024-01-16',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record2);
@@ -955,6 +982,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);
@@ -978,6 +1006,7 @@ describe('RecordDAO', () => {
         note: '测试记录1',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       const record2: ExpenseRecord = {
@@ -988,6 +1017,7 @@ describe('RecordDAO', () => {
         category: 'exp-food',
         date: '2024-02-15',
         createdAt: Date.now(),
+        currency: 'CNY',
       };
       dao.save(record1);
       dao.save(record2);
@@ -1009,6 +1039,7 @@ describe('RecordDAO', () => {
         note: '测试记录',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: Date.now(),
       };
       dao.save(record);

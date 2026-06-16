@@ -57,7 +57,9 @@ export class RecordService {
     note: string;
     category: string;
     date: string;
+    currency?: string;
   }): void {
+    const currency = data.currency || 'CNY';
     const record: ExpenseRecord = {
       id: this.generateId(),
       type: data.type,
@@ -65,9 +67,11 @@ export class RecordService {
       note: data.note,
       category: data.category,
       date: data.date,
+      currency,
       createdAt: Date.now(),
     };
     recordDAO.save(record);
+    this.getOrCreateAccountByCurrency(currency);
   }
 
   updateRecord(id: string, data: Partial<ExpenseRecord>): void {
@@ -348,6 +352,25 @@ export class RecordService {
 
   updateIncomeRule(incomeRule: IncomeRule): void {
     recordDAO.updateIncomeRule(incomeRule);
+  }
+
+  // 按币种查找/创建账户
+  getOrCreateAccountByCurrency(currency: string): Account {
+    const accounts = recordDAO.getAccounts();
+    const existing = accounts.find(a => a.currency === currency);
+    if (existing) {
+      return existing;
+    }
+    
+    const newAccount: Account = {
+      id: this.generateAccountId(),
+      name: `${currency}账户`,
+      currency: currency,
+      balance: 0,
+      createdAt: Date.now(),
+    };
+    recordDAO.addAccount(newAccount);
+    return newAccount;
   }
 }
 

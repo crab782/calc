@@ -669,6 +669,7 @@ describe('RecordService', () => {
         note: '记录1',
         category: 'exp-food',
         date: '2024-01-15',
+        currency: 'CNY',
         createdAt: baseTime,
       };
       mockStore.records.push(record1);
@@ -680,6 +681,7 @@ describe('RecordService', () => {
         note: '记录2',
         category: 'exp-food',
         date: '2024-01-16',
+        currency: 'CNY',
         createdAt: baseTime + 100,
       };
       mockStore.records.push(record2);
@@ -691,6 +693,7 @@ describe('RecordService', () => {
         note: '记录3',
         category: 'exp-food',
         date: '2024-01-17',
+        currency: 'CNY',
         createdAt: baseTime + 200,
       };
       mockStore.records.push(record3);
@@ -809,6 +812,7 @@ describe('RecordService', () => {
           note: '测试记录',
           category: 'exp-food',
           date: '2024-01-15',
+          currency: 'CNY',
           createdAt: Date.now(),
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],

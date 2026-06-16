@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Accounts } from './Accounts';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 
 // Mock hooks
+vi.mock('../contexts/LanguageContext');
 vi.mock('../hooks/useRecords');
 
 describe('Accounts', () => {
@@ -16,6 +18,33 @@ describe('Accounts', () => {
   }));
   const mockDeleteAccount = vi.fn(() => ({ success: true, message: '' }));
 
+  const defaultLanguageMock = {
+    language: 'zh' as const,
+    t: {
+      accounts: {
+        title: '账户管理',
+        addAccount: '添加账户',
+        deleteAccount: '删除账户',
+        accountName: '账户名称',
+        accountNamePlaceholder: '请输入账户名称',
+        currency: '币种',
+        balance: '余额',
+        noAccounts: '暂无账户',
+        addFirstAccount: '点击右上角按钮添加第一个账户',
+        deleteConfirm: '确认删除账户',
+        deleteMessage: '删除后无法恢复，确定要删除这个账户吗？',
+        deleteSuccess: '账户删除成功',
+        deleteFailed: '至少需要保留一个账户',
+        addSuccess: '账户添加成功',
+        cancel: '取消',
+        confirm: '确认',
+        singleAccountTip: '当前使用总账户，添加其他币种账户可进行多币种管理',
+        defaultAccountName: '总账户',
+      },
+    },
+    toggleLanguage: vi.fn(),
+  };
+
   const defaultRecordsMock = {
     accounts: [],
     addAccount: mockAddAccount,
@@ -24,6 +53,7 @@ describe('Accounts', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useLanguage).mockReturnValue(defaultLanguageMock as any);
     vi.mocked(useRecords).mockReturnValue(defaultRecordsMock as any);
   });
 
@@ -42,7 +72,7 @@ describe('Accounts', () => {
   describe('空状态显示', () => {
     it('当没有账户时应该显示空状态提示', () => {
       render(<Accounts />);
-      expect(screen.getByText('暂无账户，点击上方按钮添加')).toBeInTheDocument();
+      expect(screen.getByText('暂无账户')).toBeInTheDocument();
     });
   });
 
@@ -116,6 +146,13 @@ describe('Accounts', () => {
           balance: 1000.50,
           createdAt: Date.now(),
         },
+        {
+          id: '2',
+          name: 'USD账户',
+          currency: 'USD',
+          balance: 0,
+          createdAt: Date.now(),
+        },
       ];
 
       vi.mocked(useRecords).mockReturnValue({
@@ -126,7 +163,7 @@ describe('Accounts', () => {
 
       render(<Accounts />);
       
-      expect(screen.getByText('余额')).toBeInTheDocument();
+      expect(screen.getAllByText('余额').length).toBeGreaterThan(0);
       // 余额应该格式化显示
       expect(screen.getByText('¥1,000.50')).toBeInTheDocument();
     });
@@ -138,6 +175,13 @@ describe('Accounts', () => {
           name: '负债账户',
           currency: 'CNY',
           balance: -500,
+          createdAt: Date.now(),
+        },
+        {
+          id: '2',
+          name: 'USD账户',
+          currency: 'USD',
+          balance: 0,
           createdAt: Date.now(),
         },
       ];
@@ -202,7 +246,7 @@ describe('Accounts', () => {
       fireEvent.change(nameInput, { target: { value: '新账户' } });
       
       // 点击添加按钮
-      const confirmButton = screen.getByRole('button', { name: '添加' });
+      const confirmButton = screen.getByRole('button', { name: '确认' });
       fireEvent.click(confirmButton);
       
       expect(mockAddAccount).toHaveBeenCalledWith({
@@ -228,7 +272,7 @@ describe('Accounts', () => {
       fireEvent.change(currencySelect, { target: { value: 'USD' } });
       
       // 点击添加按钮
-      const confirmButton = screen.getByRole('button', { name: '添加' });
+      const confirmButton = screen.getByRole('button', { name: '确认' });
       fireEvent.click(confirmButton);
       
       expect(mockAddAccount).toHaveBeenCalledWith({
@@ -246,7 +290,7 @@ describe('Accounts', () => {
       fireEvent.click(addButton);
       
       // 不输入账户名称
-      const confirmButton = screen.getByRole('button', { name: '添加' });
+      const confirmButton = screen.getByRole('button', { name: '确认' });
       expect(confirmButton).toBeDisabled();
     });
 
@@ -291,6 +335,13 @@ describe('Accounts', () => {
           name: '现金账户',
           currency: 'CNY',
           balance: 1000,
+          createdAt: Date.now(),
+        },
+        {
+          id: '2',
+          name: '银行账户',
+          currency: 'USD',
+          balance: 500,
           createdAt: Date.now(),
         },
       ];
@@ -432,7 +483,7 @@ describe('Accounts', () => {
       fireEvent.change(nameInput, { target: { value: '新账户' } });
       
       // 点击添加按钮
-      const confirmButton = screen.getByRole('button', { name: '添加' });
+      const confirmButton = screen.getByRole('button', { name: '确认' });
       fireEvent.click(confirmButton);
       
       await waitFor(() => {
@@ -490,7 +541,7 @@ describe('Accounts', () => {
       fireEvent.change(nameInput, { target: { value: '新账户' } });
       
       // 点击添加按钮
-      const confirmButton = screen.getByRole('button', { name: '添加' });
+      const confirmButton = screen.getByRole('button', { name: '确认' });
       fireEvent.click(confirmButton);
       
       await waitFor(() => {
@@ -511,7 +562,7 @@ describe('Accounts', () => {
       fireEvent.change(nameInput, { target: { value: '新账户' } });
       
       // 点击添加按钮
-      const confirmButton = screen.getByRole('button', { name: '添加' });
+      const confirmButton = screen.getByRole('button', { name: '确认' });
       fireEvent.click(confirmButton);
       
       await waitFor(() => {

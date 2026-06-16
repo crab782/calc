@@ -50,6 +50,7 @@ export const useRecords = () => {
     note: string;
     category: string;
     date: string;
+    currency?: string;
   }) => {
     recordService.addRecord(data);
     refresh();
@@ -125,6 +126,12 @@ export const useRecords = () => {
     refreshIncomeRules();
   }, [refreshIncomeRules]);
 
+  const getOrCreateAccountByCurrency = useCallback((currency: string): Account => {
+    const account = recordService.getOrCreateAccountByCurrency(currency);
+    refreshAccounts();
+    return account;
+  }, [refreshAccounts]);
+
   return {
     records,
     addRecord,
@@ -149,5 +156,6 @@ export const useRecords = () => {
     deleteIncomeRule,
     updateIncomeRule,
     refreshIncomeRules,
+    getOrCreateAccountByCurrency,
   };
 };

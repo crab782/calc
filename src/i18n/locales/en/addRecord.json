@@ -3,6 +3,7 @@
   "type": "Type",
   "income": "Income",
   "expense": "Expense",
+  "currency": "Currency",
   "amount": "Amount",
   "category": "Category",
   "selectCategory": "Select a category",

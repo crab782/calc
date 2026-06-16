@@ -14,5 +14,7 @@
   "deleteFailed": "至少需要保留一个账户",
   "addSuccess": "账户添加成功",
   "cancel": "取消",
-  "confirm": "确认"
+  "confirm": "确认",
+  "singleAccountTip": "当前使用总账户，添加其他币种账户可进行多币种管理",
+  "defaultAccountName": "总账户"
 }

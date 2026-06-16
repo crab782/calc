@@ -3,6 +3,14 @@ import { PlusCircle, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 
+const CURRENCY_OPTIONS = [
+  { value: 'CNY', label: 'CNY (¥)' },
+  { value: 'USD', label: 'USD ($)' },
+  { value: 'EUR', label: 'EUR (€)' },
+  { value: 'GBP', label: 'GBP (£)' },
+  { value: 'JPY', label: 'JPY (¥)' },
+];
+
 export const AddRecord = () => {
   const { t } = useLanguage();
   const { addRecord, incomeCategories, expenseCategories } = useRecords();
@@ -11,6 +19,7 @@ export const AddRecord = () => {
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [currency, setCurrency] = useState('CNY');
   const [saved, setSaved] = useState(false);
 
   const categories = type === 'income' 
@@ -30,6 +39,7 @@ export const AddRecord = () => {
       category,
       note,
       date,
+      currency,
     });
 
     setAmount('');
@@ -83,9 +93,26 @@ export const AddRecord = () => {
           </div>
 
           <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.currency}</label>
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              {CURRENCY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">{t.addRecord.amount}</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">¥</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                {CURRENCY_OPTIONS.find(o => o.value === currency)?.label.match(/\(.+\)/)?.[1] || '¥'}
+              </span>
               <input
                 type="number"
                 value={amount}

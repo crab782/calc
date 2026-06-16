@@ -5,6 +5,7 @@ export interface ExpenseRecord {
   note: string;
   category: string;
   date: string;
+  currency: string;
   createdAt: number;
 }
 
@@ -66,7 +67,7 @@ export const EXPENSE_CATEGORIES: Category[] = [
 
 export const DEFAULT_ACCOUNT: Account = {
   id: 'default-account',
-  name: '默认账户',
+  name: '总账户',
   currency: 'CNY',
   balance: 0,
   createdAt: Date.now(),

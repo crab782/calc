@@ -3,6 +3,7 @@
   "type": "类型",
   "income": "收入",
   "expense": "支出",
+  "currency": "币种",
   "amount": "金额",
   "category": "分类",
   "selectCategory": "请选择分类",

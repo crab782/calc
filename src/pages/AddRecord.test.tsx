@@ -27,6 +27,7 @@ describe('AddRecord', () => {
         notePlaceholder: '添加备注（可选）',
         addRecord: '添加记录',
         saved: '保存成功',
+        currency: '币种',
       },
     },
     toggleLanguage: vi.fn(),
@@ -109,7 +110,7 @@ describe('AddRecord', () => {
       render(<AddRecord />);
       
       // 默认支出类型，显示支出分类
-      const categorySelect = screen.getByRole('combobox');
+      const categorySelect = screen.getAllByRole('combobox')[1];
       fireEvent.click(categorySelect);
       expect(screen.getByText('餐饮')).toBeInTheDocument();
       expect(screen.getByText('交通')).toBeInTheDocument();
@@ -134,7 +135,7 @@ describe('AddRecord', () => {
 
     it('应该能够选择分类', () => {
       render(<AddRecord />);
-      const categorySelect = screen.getByRole('combobox');
+      const categorySelect = screen.getAllByRole('combobox')[1];
       fireEvent.change(categorySelect, { target: { value: '餐饮' } });
       expect(categorySelect).toHaveValue('餐饮');
     });
@@ -185,7 +186,7 @@ describe('AddRecord', () => {
       const amountInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(amountInput, { target: { value: '100' } });
       
-      const categorySelect = screen.getByRole('combobox');
+      const categorySelect = screen.getAllByRole('combobox')[1];
       fireEvent.change(categorySelect, { target: { value: '餐饮' } });
       
       const submitButton = screen.getByRole('button', { name: '添加记录' });
@@ -201,7 +202,7 @@ describe('AddRecord', () => {
       const amountInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(amountInput, { target: { value: '100.50' } });
       
-      const categorySelect = screen.getByRole('combobox');
+      const categorySelect = screen.getAllByRole('combobox')[1];
       fireEvent.change(categorySelect, { target: { value: '餐饮' } });
       
       const noteTextarea = screen.getByPlaceholderText('添加备注（可选）');
@@ -222,6 +223,7 @@ describe('AddRecord', () => {
         category: '餐饮',
         note: '午餐',
         date: '2024-01-15',
+        currency: 'CNY',
       });
     });
 
@@ -231,7 +233,7 @@ describe('AddRecord', () => {
       const amountInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(amountInput, { target: { value: '100' } });
       
-      const categorySelect = screen.getByRole('combobox');
+      const categorySelect = screen.getAllByRole('combobox')[1];
       fireEvent.change(categorySelect, { target: { value: '餐饮' } });
       
       const submitButton = screen.getByRole('button', { name: '添加记录' });
@@ -249,7 +251,7 @@ describe('AddRecord', () => {
       const amountInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(amountInput, { target: { value: '100' } });
       
-      const categorySelect = screen.getByRole('combobox');
+      const categorySelect = screen.getAllByRole('combobox')[1];
       fireEvent.change(categorySelect, { target: { value: '餐饮' } });
       
       const noteTextarea = screen.getByPlaceholderText('添加备注（可选）');
@@ -275,7 +277,7 @@ describe('AddRecord', () => {
       const amountInput = screen.getByPlaceholderText('0.00');
       fireEvent.change(amountInput, { target: { value: '5000' } });
       
-      const categorySelect = screen.getByRole('combobox');
+      const categorySelect = screen.getAllByRole('combobox')[1];
       fireEvent.change(categorySelect, { target: { value: '工资' } });
       
       const submitButton = screen.getByRole('button', { name: '添加记录' });
