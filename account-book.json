@@ -1,0 +1,119 @@
+{
+  "version": "1.2.0",
+  "records": [
+    {
+      "id": "mqfcbbqpfj0di0rrdcg",
+      "type": "income",
+      "amount": 334,
+      "note": "",
+      "category": "工资",
+      "date": "2026-06-15",
+      "createdAt": 1781535627313
+    },
+    {
+      "id": "mqfcbkdgz62rlt4qfq",
+      "type": "income",
+      "amount": 3535,
+      "note": "",
+      "category": "工资",
+      "date": "2026-05-15",
+      "createdAt": 1781535638500
+    },
+    {
+      "id": "mqfcbrcfgkeq7icnqp5",
+      "type": "expense",
+      "amount": 44,
+      "note": "",
+      "category": "餐饮",
+      "date": "2026-06-04",
+      "createdAt": 1781535647535
+    },
+    {
+      "id": "mqfk419dvrnxzxgecmn",
+      "type": "income",
+      "amount": 34,
+      "note": "34",
+      "category": "兼职",
+      "date": "2026-06-17",
+      "createdAt": 1781548724065
+    },
+    {
+      "id": "mqgk6gxscjpzi03qrsn",
+      "type": "income",
+      "amount": 100,
+      "note": "100test",
+      "category": "11",
+      "date": "2026-06-05",
+      "currency": "CNY",
+      "createdAt": 1781609303872
+    }
+  ],
+  "categories": [
+    {
+      "id": "inc-salary",
+      "name": "工资",
+      "type": "income",
+      "icon": "briefcase"
+    },
+    {
+      "id": "inc-bonus",
+      "name": "奖金",
+      "type": "income",
+      "icon": "gift"
+    },
+    {
+      "id": "exp-shopping",
+      "name": "购物",
+      "type": "expense",
+      "icon": "shopping-bag"
+    },
+    {
+      "name": "11",
+      "type": "income",
+      "icon": "tag",
+      "id": "inc-mqfkn1uisc0gc"
+    },
+    {
+      "name": "22",
+      "type": "expense",
+      "icon": "tag",
+      "id": "exp-mqfkn3a591lk3"
+    }
+  ],
+  "createdAt": 1781535627313,
+  "updatedAt": 1781609303872,
+  "accounts": [
+    {
+      "id": "default-account",
+      "name": "默认账户",
+      "currency": "CNY",
+      "balance": 0,
+      "createdAt": 1781594362307
+    },
+    {
+      "name": "1",
+      "currency": "USD",
+      "balance": 0,
+      "id": "acc-mqgd4kbb64q9z",
+      "createdAt": 1781597457623
+    }
+  ],
+  "incomeRules": [
+    {
+      "id": "default-income-rule",
+      "name": "工资",
+      "currency": "CNY",
+      "amount": 0,
+      "period": "monthly",
+      "createdAt": 1781594362307
+    },
+    {
+      "name": "工资2",
+      "currency": "CNY",
+      "amount": 2000,
+      "period": "monthly",
+      "id": "income-rule-mqgbhwfhqdb0i",
+      "createdAt": 1781594720621
+    }
+  ]
+}

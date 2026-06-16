@@ -183,6 +183,35 @@ npm run build
 npm run lint
 ```
 
+### 6.5 JSON 数据分析工具
+
+项目导出格式为 `JSON.stringify(data, null, 2)`（格式化缩进输出），可使用 jq 命令行工具分析导出的 JSON 数据。
+
+**安装**：`scoop install jq`（Windows）
+
+**常用命令示例**（以 `account-book.json` 为例）：
+
+```bash
+# 统计收入/支出记录数量
+jq '[.records[] | select(.type=="income")] | length' account-book.json
+jq '[.records[] | select(.type=="expense")] | length' account-book.json
+
+# 找出没有 currency 字段的旧记录
+jq '[.records[] | select(.currency == null or .currency == "undefined")]' account-book.json
+
+# 统计总收入/总支出
+jq '{income: ([.records[] | select(.type=="income") | .amount] | add), expense: ([.records[] | select(.type=="expense") | .amount] | add)}' account-book.json
+
+# 按月份分组统计
+jq '.records | group_by(.date[0:7]) | map({month: .[0].date[0:7], count: length})' account-book.json
+
+# 查看特定账户信息
+jq '.accounts[] | {name, currency, balance}' account-book.json
+
+# 查看特定记录详情
+jq '.records[] | select(.id == "mqfcbbqpfj0di0rrdcg")' account-book.json
+```
+
 ---
 
 ## 7. 部署说明
