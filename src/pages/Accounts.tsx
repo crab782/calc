@@ -34,12 +34,8 @@ export const Accounts = () => {
   const [editName, setEditName] = useState('');
   const [editBalance, setEditBalance] = useState('');
 
-  // 账户排序：默认账户排在最前，其余按创建时间排序
-  const sortedAccounts = [...accounts].sort((a, b) => {
-    if (a.isDefault && !b.isDefault) return -1;
-    if (b.isDefault && !a.isDefault) return 1;
-    return a.createdAt - b.createdAt;
-  });
+  // 账户列表：保持原有顺序，不按 isDefault 调整
+  const sortedAccounts = accounts;
 
   // 格式化余额显示
   const formatBalance = (balance: number, currency: string) => {

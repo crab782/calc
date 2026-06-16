@@ -22,8 +22,8 @@ export const History = () => {
   const groupedRecords = useMemo(() => {
     const grouped: GroupedRecords = {};
 
-    // 按时间从新到旧排序
-    const sortedRecords = [...records].sort((a, b) => b.createdAt - a.createdAt);
+    // 按实际日期从新到旧排序
+    const sortedRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
 
     sortedRecords.forEach((record) => {
       const monthKey = record.date.substring(0, 7); // YYYY-MM

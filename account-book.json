@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "records": [
     {
       "id": "mqfcbbqpfj0di0rrdcg",
@@ -8,7 +8,8 @@
       "note": "",
       "category": "工资",
       "date": "2026-06-15",
-      "createdAt": 1781535627313
+      "createdAt": 1781535627313,
+      "currency": "CNY"
     },
     {
       "id": "mqfcbkdgz62rlt4qfq",
@@ -17,7 +18,8 @@
       "note": "",
       "category": "工资",
       "date": "2026-05-15",
-      "createdAt": 1781535638500
+      "createdAt": 1781535638500,
+      "currency": "CNY"
     },
     {
       "id": "mqfcbrcfgkeq7icnqp5",
@@ -26,7 +28,8 @@
       "note": "",
       "category": "餐饮",
       "date": "2026-06-04",
-      "createdAt": 1781535647535
+      "createdAt": 1781535647535,
+      "currency": "CNY"
     },
     {
       "id": "mqfk419dvrnxzxgecmn",
@@ -35,7 +38,8 @@
       "note": "34",
       "category": "兼职",
       "date": "2026-06-17",
-      "createdAt": 1781548724065
+      "createdAt": 1781548724065,
+      "currency": "CNY"
     },
     {
       "id": "mqgk6gxscjpzi03qrsn",
@@ -81,21 +85,23 @@
     }
   ],
   "createdAt": 1781535627313,
-  "updatedAt": 1781609303872,
+  "updatedAt": 1781612107343,
   "accounts": [
     {
       "id": "default-account",
       "name": "默认账户",
       "currency": "CNY",
       "balance": 0,
-      "createdAt": 1781594362307
+      "createdAt": 1781594362307,
+      "isDefault": true
     },
     {
       "name": "1",
       "currency": "USD",
       "balance": 0,
       "id": "acc-mqgd4kbb64q9z",
-      "createdAt": 1781597457623
+      "createdAt": 1781597457623,
+      "isDefault": false
     }
   ],
   "incomeRules": [
