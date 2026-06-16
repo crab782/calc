@@ -71,3 +71,20 @@ export default defineConfig([
   },
 ])
 ```
+## 运行测试
+```bash
+# 运行所有单元测试和组件测试
+npm run test
+
+# 运行测试并查看 UI
+npm run test:ui
+
+# 运行测试并生成覆盖率报告
+npm run test:coverage
+
+# 运行 E2E 测试
+npm run test:e2e
+
+# 运行 E2E 测试并查看 UI
+npm run test:e2e:ui
+```
