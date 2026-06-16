@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RecordService } from './record';
 import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT } from '../types/record';
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT, DEFAULT_INCOME_RULE } from '../types/record';
 
 // Create a mock store that can be reset
 const createMockStore = (): DataSchema => ({
-  version: '1.1.0',
+  version: '1.2.0',
   records: [],
   categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
   accounts: [{ ...DEFAULT_ACCOUNT }],
+  incomeRules: [{ ...DEFAULT_INCOME_RULE }],
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });
@@ -800,7 +801,7 @@ describe('RecordService', () => {
     it('应成功导入有效数据', () => {
       // Arrange
       const data: DataSchema = {
-        version: '1.1.0',
+        version: '1.2.0',
         records: [{
           id: 'test-id-1',
           type: 'expense',
@@ -812,6 +813,7 @@ describe('RecordService', () => {
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [{ ...DEFAULT_ACCOUNT }],
+        incomeRules: [{ ...DEFAULT_INCOME_RULE }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

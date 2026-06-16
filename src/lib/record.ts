@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule } from '../types/record';
 import { recordDAO } from './storage';
 
 export interface Statistics {
@@ -314,6 +314,40 @@ export class RecordService {
 
   updateAccount(account: Account): void {
     recordDAO.updateAccount(account);
+  }
+
+  // 收入规则管理方法
+  getIncomeRules(): IncomeRule[] {
+    return recordDAO.getIncomeRules();
+  }
+
+  generateIncomeRuleId(): string {
+    return 'income-rule-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  addIncomeRule(incomeRule: Omit<IncomeRule, 'id' | 'createdAt'> & { id?: string }): IncomeRule {
+    const newIncomeRule: IncomeRule = {
+      ...incomeRule,
+      id: incomeRule.id || this.generateIncomeRuleId(),
+      createdAt: Date.now(),
+    };
+    recordDAO.addIncomeRule(newIncomeRule);
+    return newIncomeRule;
+  }
+
+  deleteIncomeRule(id: string): { success: boolean; message: string } {
+    // 检查是否只有一个收入规则（至少保留一个规则）
+    const incomeRules = recordDAO.getIncomeRules();
+    if (incomeRules.length <= 1) {
+      return { success: false, message: '至少需要保留一个收入规则' };
+    }
+
+    recordDAO.deleteIncomeRule(id);
+    return { success: true, message: '收入规则删除成功' };
+  }
+
+  updateIncomeRule(incomeRule: IncomeRule): void {
+    recordDAO.updateIncomeRule(incomeRule);
   }
 }
 

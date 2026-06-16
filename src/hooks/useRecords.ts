@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { ExpenseRecord, Category, Account } from '../types/record';
+import type { ExpenseRecord, Category, Account, IncomeRule } from '../types/record';
 import { recordService } from '../lib/record';
 
 export const useRecords = () => {
@@ -13,6 +13,10 @@ export const useRecords = () => {
 
   const [accounts, setAccounts] = useState<Account[]>(() => {
     return recordService.getAccounts();
+  });
+
+  const [incomeRules, setIncomeRules] = useState<IncomeRule[]>(() => {
+    return recordService.getIncomeRules();
   });
 
   // 派生状态：收入分类和支出分类
@@ -34,6 +38,10 @@ export const useRecords = () => {
 
   const refreshAccounts = useCallback(() => {
     setAccounts(recordService.getAccounts());
+  }, []);
+
+  const refreshIncomeRules = useCallback(() => {
+    setIncomeRules(recordService.getIncomeRules());
   }, []);
 
   const addRecord = useCallback((data: {
@@ -97,6 +105,26 @@ export const useRecords = () => {
     refreshAccounts();
   }, [refreshAccounts]);
 
+  // 收入规则管理方法
+  const addIncomeRule = useCallback((incomeRule: Omit<IncomeRule, 'id' | 'createdAt'> & { id?: string }): IncomeRule => {
+    const newIncomeRule = recordService.addIncomeRule(incomeRule);
+    refreshIncomeRules();
+    return newIncomeRule;
+  }, [refreshIncomeRules]);
+
+  const deleteIncomeRule = useCallback((id: string): { success: boolean; message: string } => {
+    const result = recordService.deleteIncomeRule(id);
+    if (result.success) {
+      refreshIncomeRules();
+    }
+    return result;
+  }, [refreshIncomeRules]);
+
+  const updateIncomeRule = useCallback((incomeRule: IncomeRule) => {
+    recordService.updateIncomeRule(incomeRule);
+    refreshIncomeRules();
+  }, [refreshIncomeRules]);
+
   return {
     records,
     addRecord,
@@ -116,5 +144,10 @@ export const useRecords = () => {
     deleteAccount,
     updateAccount,
     refreshAccounts,
+    incomeRules,
+    addIncomeRule,
+    deleteIncomeRule,
+    updateIncomeRule,
+    refreshIncomeRules,
   };
 };

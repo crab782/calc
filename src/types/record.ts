@@ -23,11 +23,23 @@ export interface Account {
   createdAt: number;
 }
 
+export type IncomePeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+export interface IncomeRule {
+  id: string;
+  name: string;
+  currency: string;
+  amount: number;
+  period: IncomePeriod;
+  createdAt: number;
+}
+
 export interface DataSchema {
   version: string;
   records: ExpenseRecord[];
   categories: Category[];
   accounts: Account[];
+  incomeRules: IncomeRule[];
   createdAt: number;
   updatedAt: number;
 }
@@ -60,4 +72,13 @@ export const DEFAULT_ACCOUNT: Account = {
   createdAt: Date.now(),
 };
 
-export const CURRENT_VERSION = '1.1.0';
+export const DEFAULT_INCOME_RULE: IncomeRule = {
+  id: 'default-income-rule',
+  name: '工资',
+  currency: 'CNY',
+  amount: 0,
+  period: 'monthly',
+  createdAt: Date.now(),
+};
+
+export const CURRENT_VERSION = '1.2.0';

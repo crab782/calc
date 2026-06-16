@@ -6,6 +6,7 @@ import { AddRecord } from './pages/AddRecord';
 import { History } from './pages/History';
 import { Settings } from './pages/Settings';
 import { Accounts } from './pages/Accounts';
+import { IncomeRules } from './pages/IncomeRules';
 import type { PageType } from './types';
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
         {currentPage === 'history' && <History />}
         {currentPage === 'settings' && <Settings />}
         {currentPage === 'accounts' && <Accounts />}
+        {currentPage === 'income-rules' && <IncomeRules />}
       </main>
     </div>
   );

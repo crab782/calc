@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { RecordDAO } from './storage';
 import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
-import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT } from '../types/record';
+import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT, DEFAULT_INCOME_RULE } from '../types/record';
 
 const STORAGE_KEY = 'expense_tracker_data';
 
@@ -491,6 +491,7 @@ describe('RecordDAO', () => {
         }],
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [DEFAULT_ACCOUNT],
+        incomeRules: [{ ...DEFAULT_INCOME_RULE }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -564,6 +565,7 @@ describe('RecordDAO', () => {
         }],
         categories: [],
         accounts: [],
+        incomeRules: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -590,6 +592,7 @@ describe('RecordDAO', () => {
         }],
         categories: [],
         accounts: [],
+        incomeRules: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -616,6 +619,7 @@ describe('RecordDAO', () => {
         }],
         categories: [],
         accounts: [],
+        incomeRules: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -640,6 +644,7 @@ describe('RecordDAO', () => {
           balance: 1000,
           // 缺少 createdAt 字段
         }] as Account[],
+        incomeRules: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -679,11 +684,16 @@ describe('RecordDAO', () => {
       const accounts = newDao.getAccounts();
       const data = newDao.exportData();
 
-      // Assert
-      expect(data.version).toBe('1.1.0');
+      // Assert - 连续迁移：v1.0.0 → v1.1.0 → v1.2.0
+      expect(data.version).toBe('1.2.0');
       expect(accounts).toBeDefined();
       expect(accounts.length).toBe(1);
       expect(accounts[0].id).toBe('default-account');
+      // 验证 incomeRules 也被迁移
+      const incomeRules = newDao.getIncomeRules();
+      expect(incomeRules).toBeDefined();
+      expect(incomeRules.length).toBe(1);
+      expect(incomeRules[0].name).toBe('工资');
     });
 
     it('应从 v0.1.0 迁移到 v1.0.0（添加 categories 字段）', () => {
@@ -711,10 +721,15 @@ describe('RecordDAO', () => {
       const categories = newDao.getCategories();
       const data = newDao.exportData();
 
-      // Assert - 当前迁移逻辑只执行一次迁移，从 0.1.0 到 1.0.0
-      expect(data.version).toBe('1.0.0');
+      // Assert - 连续迁移：v0.1.0 → v1.0.0 → v1.1.0 → v1.2.0
+      expect(data.version).toBe('1.2.0');
       expect(categories).toBeDefined();
       expect(categories.length).toBeGreaterThan(0);
+      // 验证 accounts 和 incomeRules 也被迁移
+      const accounts = newDao.getAccounts();
+      expect(accounts.length).toBe(1);
+      const incomeRules = newDao.getIncomeRules();
+      expect(incomeRules.length).toBe(1);
     });
 
     it('应保留现有数据在迁移过程中', () => {

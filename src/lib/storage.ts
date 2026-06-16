@@ -1,5 +1,5 @@
-import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
-import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule } from '../types/record';
+import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT, DEFAULT_INCOME_RULE } from '../types/record';
 
 const STORAGE_KEY = 'expense_tracker_data';
 
@@ -24,6 +24,7 @@ export class RecordDAO {
       records: [],
       categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
       accounts: [DEFAULT_ACCOUNT],
+      incomeRules: [DEFAULT_INCOME_RULE],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -35,26 +36,39 @@ export class RecordDAO {
   }
 
   private migrateSchema(schema: DataSchema): DataSchema {
-    const migrations: Record<string, (schema: DataSchema) => DataSchema> = {
+    const migrations: Record<string, (schema: DataSchema) => void> = {
       '0.1.0': (s) => {
         s.version = '1.0.0';
         if (!s.categories) {
           s.categories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
         }
-        return s;
       },
       '1.0.0': (s) => {
         s.version = '1.1.0';
         if (!s.accounts) {
           s.accounts = [DEFAULT_ACCOUNT];
         }
-        return s;
+      },
+      '1.1.0': (s) => {
+        s.version = '1.2.0';
+        if (!s.incomeRules) {
+          s.incomeRules = [DEFAULT_INCOME_RULE];
+        }
       },
     };
 
-    if (migrations[schema.version]) {
-      return migrations[schema.version](schema);
+    // 连续迁移，直到达到当前版本
+    while (schema.version !== CURRENT_VERSION) {
+      if (!migrations[schema.version]) {
+        // 未知版本，重置为当前版本
+        schema.version = CURRENT_VERSION;
+        schema.incomeRules = [DEFAULT_INCOME_RULE];
+        schema.accounts = schema.accounts || [DEFAULT_ACCOUNT];
+        break;
+      }
+      migrations[schema.version](schema);
     }
+
     return schema;
   }
 
@@ -167,6 +181,39 @@ export class RecordDAO {
     }
   }
 
+  // 收入规则管理方法
+  getIncomeRules(): IncomeRule[] {
+    const schema = this.getSchema();
+    return [...schema.incomeRules];
+  }
+
+  saveIncomeRules(incomeRules: IncomeRule[]): void {
+    const schema = this.getSchema();
+    schema.incomeRules = incomeRules;
+    this.saveSchema(schema);
+  }
+
+  addIncomeRule(incomeRule: IncomeRule): void {
+    const schema = this.getSchema();
+    schema.incomeRules.push(incomeRule);
+    this.saveSchema(schema);
+  }
+
+  deleteIncomeRule(id: string): void {
+    const schema = this.getSchema();
+    schema.incomeRules = schema.incomeRules.filter((r) => r.id !== id);
+    this.saveSchema(schema);
+  }
+
+  updateIncomeRule(incomeRule: IncomeRule): void {
+    const schema = this.getSchema();
+    const index = schema.incomeRules.findIndex((r) => r.id === incomeRule.id);
+    if (index >= 0) {
+      schema.incomeRules[index] = incomeRule;
+      this.saveSchema(schema);
+    }
+  }
+
   exportData(): DataSchema {
     return this.getSchema();
   }
@@ -217,6 +264,17 @@ export class RecordDAO {
       }
     }
 
+    // 验证 incomeRules 字段（可选，用于兼容旧版本数据）
+    if (schema.incomeRules !== undefined && !Array.isArray(schema.incomeRules)) {
+      return false;
+    }
+
+    for (const incomeRule of schema.incomeRules || []) {
+      if (!this.validateIncomeRule(incomeRule)) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -247,6 +305,21 @@ export class RecordDAO {
       typeof a.currency === 'string' &&
       typeof a.balance === 'number' &&
       typeof a.createdAt === 'number'
+    );
+  }
+
+  private validateIncomeRule(incomeRule: unknown): incomeRule is IncomeRule {
+    if (typeof incomeRule !== 'object' || incomeRule === null) return false;
+    
+    const r = incomeRule as IncomeRule;
+    
+    return (
+      typeof r.id === 'string' &&
+      typeof r.name === 'string' &&
+      typeof r.currency === 'string' &&
+      typeof r.amount === 'number' &&
+      (r.period === 'daily' || r.period === 'weekly' || r.period === 'monthly' || r.period === 'yearly') &&
+      typeof r.createdAt === 'number'
     );
   }
 }

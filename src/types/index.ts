@@ -13,4 +13,4 @@ export interface Statistics {
   balance: number;
 }
 
-export type PageType = 'dashboard' | 'add-record' | 'history' | 'settings' | 'accounts';
+export type PageType = 'dashboard' | 'add-record' | 'history' | 'settings' | 'accounts' | 'income-rules';
