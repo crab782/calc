@@ -127,12 +127,13 @@ export const Accounts = () => {
         title: '名称',
         dataIndex: 'name',
         key: 'name',
+        width: 150,
         render: (_: any, record: Account) => (
-          <span>
-            <Wallet style={{ fontSize: 16, color: '#1677ff', marginRight: 6, verticalAlign: 'middle' }} />
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Wallet style={{ fontSize: 16, color: '#1677ff', flexShrink: 0 }} />
             <Text strong>{record.name}</Text>
             {record.isDefault && (
-              <Tag color="blue" style={{ marginLeft: 8, fontSize: 11 }}>
+              <Tag color="blue" style={{ fontSize: 11 }}>
                 {t.accounts.defaultAccountLabel}
               </Tag>
             )}
@@ -258,9 +259,9 @@ export const Accounts = () => {
   return (
     <div style={{ padding: 24 }}>
       {/* 页面标题和添加按钮 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>{t.accounts.title}</Title>
-        <Button type="primary" icon={<Plus style={{ fontSize: 14 }} />} onClick={() => setShowAddModal(true)}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <Title level={4} style={{ margin: 0 }}>{t.accounts.title}</Title>
+        <Button type="primary" size="small" icon={<Plus style={{ fontSize: 14 }} />} onClick={() => setShowAddModal(true)}>
           {t.accounts.addAccount}
         </Button>
       </div>
@@ -294,7 +295,7 @@ export const Accounts = () => {
                 dataSource={accountsByCurrency.groups[currency]}
                 rowKey="id"
                 pagination={false}
-                size="middle"
+                size="small"
               />
             </Panel>
           ))}

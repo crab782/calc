@@ -146,15 +146,16 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <Button
           type="text"
+          size="small"
           icon={<ArrowLeft size={18} />}
           onClick={onBack}
         >
           返回预算计划
         </Button>
-        <Title level={2} style={{ margin: 0 }}>
+        <Title level={4} style={{ margin: 0 }}>
           <Space>
             {budgetTypeIcons[budgetType]}
             {budgetTypeNames[budgetType]}

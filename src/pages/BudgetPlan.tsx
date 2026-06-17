@@ -34,7 +34,7 @@ const budgetTypes = [
 export const BudgetPlan = ({ onNavigate }: BudgetPlanProps) => {
   return (
     <div>
-      <Title level={2} style={{ marginBottom: 24 }}>预算计划</Title>
+      <Title level={4} style={{ marginBottom: 16 }}>预算计划</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 32, fontSize: 16 }}>
         选择一个预算类型开始规划您的财务未来
       </Text>

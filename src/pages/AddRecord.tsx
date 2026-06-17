@@ -101,7 +101,7 @@ export const AddRecord = () => {
 
   return (
     <div>
-      <Title level={2} style={{ marginBottom: 24 }}>{t.addRecord.title}</Title>
+      <Title level={4} style={{ marginBottom: 16 }}>{t.addRecord.title}</Title>
 
       <Card style={{ maxWidth: 640, margin: '0 auto' }}>
         <Form

@@ -7,7 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 import { useStatistics } from '../hooks/useStatistics';
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
 export const Dashboard = () => {
   const { t, language, toggleLanguage } = useLanguage();
@@ -18,9 +18,10 @@ export const Dashboard = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 'bold', margin: 0 }}>{t.dashboard.title}</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <Title level={4} style={{ margin: 0 }}>{t.dashboard.title}</Title>
         <Button
+          size="small"
           onClick={toggleLanguage}
           icon={<Globe className="w-4 h-4" />}
         >

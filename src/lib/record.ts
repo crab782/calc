@@ -990,6 +990,7 @@ export class RecordService {
             baseCurrency,
             lastUpdatedAt: Date.now(),
             source: 'api',
+            apiSource: api.name,
           });
           return { success: true, message: `成功从 ${api.name} 获取汇率`, rates };
         }

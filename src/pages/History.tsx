@@ -103,7 +103,7 @@ export const History = () => {
   if (sortedMonths.length === 0) {
     return (
       <div>
-        <Title level={2} style={{ marginBottom: 24 }}>
+        <Title level={4} style={{ marginBottom: 16 }}>
           <HistoryIcon className="w-8 h-8 inline-block mr-2" style={{ verticalAlign: 'middle' }} />
           {t.history.title}
         </Title>
@@ -125,7 +125,7 @@ export const History = () => {
 
   return (
     <div>
-      <Title level={2} style={{ marginBottom: 24 }}>
+      <Title level={4} style={{ marginBottom: 16 }}>
         <HistoryIcon className="w-8 h-8 inline-block mr-2" style={{ verticalAlign: 'middle', color: '#1677ff' }} />
         {t.history.title}
       </Title>

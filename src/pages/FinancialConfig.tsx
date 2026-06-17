@@ -464,7 +464,7 @@ export const FinancialConfig = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Title level={2}>财务配置</Title>
+      <Title level={4}>财务配置</Title>
 
       {/* 财务总览 */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>

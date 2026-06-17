@@ -113,6 +113,7 @@ export interface ExchangeRateData {
   baseCurrency: string;            // 基准币种，如 "CNY"
   lastUpdatedAt: number;           // 最后更新时间戳
   source: 'manual' | 'api' | 'default';  // 汇率来源
+  apiSource?: string;              // API 来源名称，如 'frankfurter (CNY base)'
 }
 
 export interface DataSchema {

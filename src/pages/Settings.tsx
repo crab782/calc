@@ -166,9 +166,9 @@ export const Settings = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>{t.settings.title}</Title>
-        <Button onClick={toggleLanguage} icon={<Globe className="w-4 h-4" />}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <Title level={4} style={{ margin: 0 }}>{t.settings.title}</Title>
+        <Button size="small" onClick={toggleLanguage} icon={<Globe className="w-4 h-4" />}>
           {language === 'zh' ? 'EN' : '中文'}
         </Button>
       </div>

@@ -3,7 +3,7 @@ import { Card, Button, Input, Space, Typography, Table, message, Alert, Tag } fr
 import { RefreshCw, Save, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
-import { DEFAULT_EXCHANGE_RATES } from '../types/record';
+import { DEFAULT_EXCHANGE_RATES, EXCHANGE_RATE_APIS } from '../types/record';
 import type { PageType } from '../types';
 
 const { Title, Text } = Typography;
@@ -126,7 +126,7 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
     try {
       const result = await fetchExchangeRatesFromAPI(defaultCurrency);
       if (result.success) {
-        message.success(t.exchangeRate.fetchSuccess);
+        message.success(result.message || t.exchangeRate.fetchSuccess);
       } else {
         message.error(result.message || t.exchangeRate.fetchError);
       }
@@ -171,12 +171,12 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <Space>
           <Button type="text" icon={<ArrowLeft className="w-4 h-4" />} onClick={() => onBack('settings')}>
             {'返回'}
           </Button>
-          <Title level={2} style={{ margin: 0 }}>{t.exchangeRate.title}</Title>
+          <Title level={4} style={{ margin: 0 }}>{t.exchangeRate.title}</Title>
         </Space>
       </div>
 
@@ -243,7 +243,20 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
                 <Tag color={exchangeRates.source === 'api' ? 'green' : exchangeRates.source === 'manual' ? 'blue' : 'default'}>
                   {getSourceText(exchangeRates.source)}
                 </Tag>
+                {exchangeRates.source === 'api' && exchangeRates.apiSource && (
+                  <Text type="secondary" style={{ marginLeft: 8 }}>{exchangeRates.apiSource}</Text>
+                )}
               </div>
+              {isEditing && (
+                <div>
+                  <Text type="secondary">{t.exchangeRate.availableApis}: </Text>
+                  <Space wrap>
+                    {EXCHANGE_RATE_APIS.map(api => (
+                      <Tag key={api.name} color="default">{api.name}</Tag>
+                    ))}
+                  </Space>
+                </div>
+              )}
             </Space>
           </Card>
 
