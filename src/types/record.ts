@@ -77,6 +77,30 @@ export interface FinancialSource {
   createdAt: number;
 }
 
+export type BudgetPeriodUnit = 'month' | 'year';
+
+export interface BudgetPlan {
+  id: string;
+  name: string;
+  accountIds: string[];  // 最多3个账户
+  periodUnit: BudgetPeriodUnit;
+  periodCount: number;   // 月份1-60或年份1-5
+  createdAt: number;
+}
+
+export interface BudgetCalculationResult {
+  accountId: string;
+  accountName: string;
+  currency: string;
+  periods: BudgetPeriod[];
+}
+
+export interface BudgetPeriod {
+  index: number;
+  label: string;  // 如 "第1月" 或 "第1年"
+  estimatedAmount: number;
+}
+
 export interface DataSchema {
   version: string;
   records: ExpenseRecord[];
@@ -84,6 +108,7 @@ export interface DataSchema {
   accounts: Account[];
   incomeRules: IncomeRule[];
   financialSources: FinancialSource[];
+  budgetPlans: BudgetPlan[];
   createdAt: number;
   updatedAt: number;
 }
@@ -128,4 +153,4 @@ export const DEFAULT_INCOME_RULE: IncomeRule = {
   createdAt: Date.now(),
 };
 
-export const CURRENT_VERSION = '1.6.0';
+export const CURRENT_VERSION = '1.7.0';

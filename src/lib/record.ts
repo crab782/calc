@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, FinancialPeriod } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, FinancialPeriod, BudgetPlan, BudgetCalculationResult, BudgetPeriod, BudgetPeriodUnit } from '../types/record';
 import { recordDAO } from './storage';
 
 /**
@@ -746,6 +746,169 @@ export class RecordService {
       default:
         return 0;
     }
+  }
+
+  // ========== 预算计划相关方法 ==========
+
+  /**
+   * 生成预算计划唯一ID
+   */
+  generateBudgetPlanId(): string {
+    return 'budget-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  /**
+   * 保存预算计划
+   */
+  saveBudgetPlan(plan: Omit<BudgetPlan, 'id' | 'createdAt'>): BudgetPlan {
+    const budgetPlan: BudgetPlan = {
+      ...plan,
+      id: this.generateBudgetPlanId(),
+      createdAt: Date.now(),
+    };
+    recordDAO.addBudgetPlan(budgetPlan);
+    return budgetPlan;
+  }
+
+  /**
+   * 获取所有预算计划
+   */
+  getBudgetPlans(): BudgetPlan[] {
+    return recordDAO.getBudgetPlans();
+  }
+
+  /**
+   * 删除预算计划
+   */
+  deleteBudgetPlan(id: string): void {
+    recordDAO.deleteBudgetPlan(id);
+  }
+
+  /**
+   * 计算预算
+   * 基于账户当前余额和历史记录的平均月收支变化，预测未来各周期的余额
+   * @param accountIds 选择的账户ID列表
+   * @param periodUnit 周期单位（month/year）
+   * @param periodCount 周期数
+   */
+  calculateBudget(accountIds: string[], periodUnit: BudgetPeriodUnit, periodCount: number): BudgetCalculationResult[] {
+    const accounts = recordDAO.getAccounts().filter(a => accountIds.includes(a.id));
+    const allRecords = recordDAO.findAll();
+    const results: BudgetCalculationResult[] = [];
+
+    for (const account of accounts) {
+      // 获取该账户的当前余额
+      const currentBalance = this.getAccountBalance(account.id);
+
+      // 计算该账户的历史月均收支变化
+      const monthlyChange = this._calculateAccountMonthlyChange(account.id, allRecords);
+
+      // 生成各周期的预算数据
+      const periods: BudgetPeriod[] = [];
+      let runningBalance = currentBalance;
+
+      for (let i = 0; i < periodCount; i++) {
+        let change: number;
+        let label: string;
+
+        if (periodUnit === 'month') {
+          change = monthlyChange;
+          label = `第${i + 1}月`;
+        } else {
+          // 年周期：月均变化 * 12
+          change = monthlyChange * 12;
+          label = `第${i + 1}年`;
+        }
+
+        runningBalance += change;
+
+        periods.push({
+          index: i + 1,
+          label,
+          estimatedAmount: parseFloat(runningBalance.toFixed(2)),
+        });
+      }
+
+      results.push({
+        accountId: account.id,
+        accountName: account.name,
+        currency: account.currency,
+        periods,
+      });
+    }
+
+    return results;
+  }
+
+  /**
+   * 计算指定账户的历史月均收支变化
+   * 基于该账户所有相关记录的总收入和总支出，计算平均每月净变化
+   */
+  private _calculateAccountMonthlyChange(accountId: string, records: ExpenseRecord[]): number {
+    const accountRecords = records.filter(r =>
+      r.entries?.some(e => e.accountId === accountId)
+    );
+
+    if (accountRecords.length === 0) {
+      return 0;
+    }
+
+    // 计算总借方和总贷方
+    let totalDebit = 0;
+    let totalCredit = 0;
+    let minDate = '';
+    let maxDate = '';
+
+    accountRecords.forEach(record => {
+      record.entries?.forEach(entry => {
+        if (entry.accountId === accountId) {
+          if (entry.direction === 'debit') {
+            totalDebit += entry.amount;
+          } else {
+            totalCredit += entry.amount;
+          }
+        }
+      });
+      if (!minDate || record.date < minDate) minDate = record.date;
+      if (!maxDate || record.date > maxDate) maxDate = record.date;
+    });
+
+    // 计算月份跨度
+    let monthSpan = 1;
+    if (minDate && maxDate) {
+      const [minYear, minMonth] = minDate.split('-').map(Number);
+      const [maxYear, maxMonth] = maxDate.split('-').map(Number);
+      monthSpan = (maxYear - minYear) * 12 + (maxMonth - minMonth) + 1;
+      if (monthSpan < 1) monthSpan = 1;
+    }
+
+    // 净变化 = 总借方 - 总贷方
+    const netChange = totalDebit - totalCredit;
+    return parseFloat((netChange / monthSpan).toFixed(2));
+  }
+
+  /**
+   * 将预算计算结果导出为 CSV 格式
+   */
+  exportBudgetToCSV(results: BudgetCalculationResult[]): string {
+    // CSV header
+    const headers = ['账户名称', '币种', '周期', '预计金额'];
+    let csv = headers.join(',') + '\n';
+
+    // CSV body
+    for (const result of results) {
+      for (const period of result.periods) {
+        const row = [
+          `"${result.accountName}"`,
+          result.currency,
+          `"${period.label}"`,
+          period.estimatedAmount,
+        ];
+        csv += row.join(',') + '\n';
+      }
+    }
+
+    return csv;
   }
 }
 

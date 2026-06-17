@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, BudgetPlan } from '../types/record';
 import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_INCOME_RULE } from '../types/record';
 
 const STORAGE_KEY = 'expense_tracker_data';
@@ -42,6 +42,7 @@ export class RecordDAO {
       accounts: createDefaultAccounts(),
       incomeRules: [DEFAULT_INCOME_RULE],
       financialSources: [],
+      budgetPlans: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -134,6 +135,13 @@ export class RecordDAO {
         }
         // 删除旧的 incomeRules 字段（保留字段以兼容旧版本）
         // 注意：这里不删除 incomeRules 字段，以保持向后兼容
+      },
+      '1.6.0': (s) => {
+        s.version = '1.7.0';
+        // 添加 budgetPlans 字段
+        if (!s.budgetPlans) {
+          s.budgetPlans = [];
+        }
       },
     };
 
@@ -509,6 +517,30 @@ export class RecordDAO {
       schema.financialSources = [];
     }
     schema.financialSources = schema.financialSources.filter((s) => s.id !== id);
+    this.saveSchema(schema);
+  }
+
+  // 预算计划管理方法
+  getBudgetPlans(): BudgetPlan[] {
+    const schema = this.getSchema();
+    return [...(schema.budgetPlans || [])];
+  }
+
+  addBudgetPlan(plan: BudgetPlan): void {
+    const schema = this.getSchema();
+    if (!schema.budgetPlans) {
+      schema.budgetPlans = [];
+    }
+    schema.budgetPlans.push(plan);
+    this.saveSchema(schema);
+  }
+
+  deleteBudgetPlan(id: string): void {
+    const schema = this.getSchema();
+    if (!schema.budgetPlans) {
+      schema.budgetPlans = [];
+    }
+    schema.budgetPlans = schema.budgetPlans.filter((p) => p.id !== id);
     this.saveSchema(schema);
   }
 
