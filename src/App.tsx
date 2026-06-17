@@ -8,6 +8,8 @@ import { History } from './pages/History';
 import { Settings } from './pages/Settings';
 import { Accounts } from './pages/Accounts';
 import { FinancialConfig } from './pages/FinancialConfig';
+import { BudgetPlan } from './pages/BudgetPlan';
+import { BudgetCalculator } from './pages/BudgetCalculator';
 import type { PageType } from './types';
 
 const { Content } = Layout;
@@ -15,13 +17,19 @@ const { Content } = Layout;
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [budgetType, setBudgetType] = useState<string>('balance');
+
+  const handleBudgetNavigate = (type: string) => {
+    setBudgetType(type);
+    setCurrentPage('budget-calculator');
+  };
 
   return (
     <Layout style={{ minHeight: '100vh', flexDirection: 'row' }}>
       {isSidebarOpen && (
         <Sidebar
           currentPage={currentPage}
-          onPageChange={setCurrentPage}
+          onPageChange={(page) => { setCurrentPage(page); if (page === 'budget-calculator') setBudgetType('balance'); }}
           onCollapse={() => setIsSidebarOpen(false)}
         />
       )}
@@ -42,6 +50,8 @@ function App() {
             {currentPage === 'settings' && <Settings />}
             {currentPage === 'accounts' && <Accounts />}
             {currentPage === 'financial-config' && <FinancialConfig />}
+            {currentPage === 'budget-plan' && <BudgetPlan onNavigate={handleBudgetNavigate} />}
+            {currentPage === 'budget-calculator' && <BudgetCalculator budgetType={budgetType} onBack={() => setCurrentPage('budget-plan')} />}
           </div>
         </Content>
       </Layout>

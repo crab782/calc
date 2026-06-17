@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { ExpenseRecord, Category, Account, IncomeRule, FinancialSource } from '../types/record';
+import type { ExpenseRecord, Category, Account, IncomeRule, FinancialSource, BudgetPlan, BudgetPeriodUnit, BudgetCalculationResult } from '../types/record';
 import { recordService } from '../lib/record';
 
 export const useRecords = () => {
@@ -218,6 +218,27 @@ export const useRecords = () => {
     return recordService.isCurrencyEnabled(currency);
   }, []);
 
+  // 预算计划管理方法
+  const budgetPlans = useMemo(() => {
+    return recordService.getBudgetPlans();
+  }, [records, accounts, financialSources]);
+
+  const saveBudgetPlan = useCallback((plan: Omit<BudgetPlan, 'id' | 'createdAt'>): BudgetPlan => {
+    return recordService.saveBudgetPlan(plan);
+  }, []);
+
+  const deleteBudgetPlan = useCallback((id: string): void => {
+    recordService.deleteBudgetPlan(id);
+  }, []);
+
+  const calculateBudget = useCallback((accountIds: string[], periodUnit: BudgetPeriodUnit, periodCount: number): BudgetCalculationResult[] => {
+    return recordService.calculateBudget(accountIds, periodUnit, periodCount);
+  }, []);
+
+  const exportBudgetToCSV = useCallback((results: BudgetCalculationResult[]): string => {
+    return recordService.exportBudgetToCSV(results);
+  }, []);
+
   return {
     records,
     addRecord,
@@ -258,5 +279,10 @@ export const useRecords = () => {
     getCurrencyBalance,
     disableCurrency,
     isCurrencyEnabled,
+    budgetPlans,
+    saveBudgetPlan,
+    deleteBudgetPlan,
+    calculateBudget,
+    exportBudgetToCSV,
   };
 };

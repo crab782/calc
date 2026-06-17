@@ -6,6 +6,7 @@ import {
   X,
   Wallet,
   Settings2,
+  Target,
 } from 'lucide-react';
 import { Layout, Menu, Button } from 'antd';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -27,6 +28,7 @@ export const Sidebar = ({ currentPage, onPageChange, onCollapse }: SidebarProps)
     { key: 'history', label: t.sidebar.history, icon: <History className="w-[16px] h-[16px]" /> },
     { key: 'accounts', label: t.sidebar.accounts, icon: <Wallet className="w-[16px] h-[16px]" /> },
     { key: 'financial-config', label: t.sidebar.financialConfig, icon: <Settings2 className="w-[16px] h-[16px]" /> },
+    { key: 'budget-plan', label: t.sidebar.budgetPlan, icon: <Target className="w-[16px] h-[16px]" /> },
     { key: 'add-record', label: t.sidebar.addRecord, icon: <PlusCircle className="w-[16px] h-[16px]" /> },
     { key: 'settings', label: t.sidebar.settings, icon: <Settings className="w-[16px] h-[16px]" /> },
   ];
