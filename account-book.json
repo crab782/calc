@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.8.0",
   "records": [
     {
       "id": "mqfcbbqpfj0di0rrdcg",
@@ -12,13 +12,13 @@
       "currency": "CNY",
       "entries": [
         {
-          "accountId": "cash",
+          "accountId": "CNY-cash",
           "accountName": "现金",
           "direction": "debit",
           "amount": 334
         },
         {
-          "accountId": "income",
+          "accountId": "CNY-income",
           "accountName": "收入",
           "direction": "credit",
           "amount": 334
@@ -36,13 +36,13 @@
       "currency": "CNY",
       "entries": [
         {
-          "accountId": "cash",
+          "accountId": "CNY-cash",
           "accountName": "现金",
           "direction": "debit",
           "amount": 3535
         },
         {
-          "accountId": "income",
+          "accountId": "CNY-income",
           "accountName": "收入",
           "direction": "credit",
           "amount": 3535
@@ -60,13 +60,13 @@
       "currency": "CNY",
       "entries": [
         {
-          "accountId": "expense",
+          "accountId": "CNY-expense",
           "accountName": "支出",
           "direction": "debit",
           "amount": 44
         },
         {
-          "accountId": "cash",
+          "accountId": "CNY-cash",
           "accountName": "现金",
           "direction": "credit",
           "amount": 44
@@ -84,13 +84,13 @@
       "currency": "CNY",
       "entries": [
         {
-          "accountId": "cash",
+          "accountId": "CNY-cash",
           "accountName": "现金",
           "direction": "debit",
           "amount": 34
         },
         {
-          "accountId": "income",
+          "accountId": "CNY-income",
           "accountName": "收入",
           "direction": "credit",
           "amount": 34
@@ -108,13 +108,13 @@
       "createdAt": 1781609303872,
       "entries": [
         {
-          "accountId": "cash",
+          "accountId": "CNY-cash",
           "accountName": "现金",
           "direction": "debit",
           "amount": 100
         },
         {
-          "accountId": "income",
+          "accountId": "CNY-income",
           "accountName": "收入",
           "direction": "credit",
           "amount": 100
@@ -155,23 +155,165 @@
     }
   ],
   "createdAt": 1781535627313,
-  "updatedAt": 1781612107343,
+  "updatedAt": 1781700134243,
   "accounts": [
     {
-      "id": "default-account",
-      "name": "默认账户",
+      "id": "CNY-cash",
+      "name": "现金",
       "currency": "CNY",
+      "accountType": "cash",
       "balance": 0,
-      "createdAt": 1781594362307,
+      "createdAt": 1781634125187,
       "isDefault": true,
       "visible": true
     },
     {
-      "name": "1",
-      "currency": "USD",
+      "id": "CNY-investment",
+      "name": "投资",
+      "currency": "CNY",
+      "accountType": "investment",
       "balance": 0,
-      "id": "acc-mqgd4kbb64q9z",
-      "createdAt": 1781597457623,
+      "createdAt": 1781634125187,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "CNY-loan",
+      "name": "贷款",
+      "currency": "CNY",
+      "accountType": "loan",
+      "balance": 0,
+      "createdAt": 1781634125187,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "CNY-expense",
+      "name": "支出",
+      "currency": "CNY",
+      "accountType": "expense",
+      "balance": 0,
+      "createdAt": 1781634125187,
+      "isDefault": false,
+      "visible": false
+    },
+    {
+      "id": "CNY-income",
+      "name": "收入",
+      "currency": "CNY",
+      "accountType": "income",
+      "balance": 0,
+      "createdAt": 1781634125187,
+      "isDefault": false,
+      "visible": false
+    },
+    {
+      "id": "acc-mqgzeiqq2eogw",
+      "name": "cny 现金2",
+      "currency": "CNY",
+      "accountType": "cash",
+      "balance": 0,
+      "createdAt": 1781634873698,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "USD-cash",
+      "name": "现金",
+      "currency": "USD",
+      "accountType": "cash",
+      "balance": 0,
+      "createdAt": 1781700128463,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "USD-investment",
+      "name": "投资",
+      "currency": "USD",
+      "accountType": "investment",
+      "balance": 0,
+      "createdAt": 1781700128463,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "USD-loan",
+      "name": "贷款",
+      "currency": "USD",
+      "accountType": "loan",
+      "balance": 0,
+      "createdAt": 1781700128463,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "USD-expense",
+      "name": "支出",
+      "currency": "USD",
+      "accountType": "expense",
+      "balance": 0,
+      "createdAt": 1781700128463,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "USD-income",
+      "name": "收入",
+      "currency": "USD",
+      "accountType": "income",
+      "balance": 0,
+      "createdAt": 1781700128463,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "EUR-cash",
+      "name": "现金",
+      "currency": "EUR",
+      "accountType": "cash",
+      "balance": 0,
+      "createdAt": 1781700131981,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "EUR-investment",
+      "name": "投资",
+      "currency": "EUR",
+      "accountType": "investment",
+      "balance": 0,
+      "createdAt": 1781700131981,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "EUR-loan",
+      "name": "贷款",
+      "currency": "EUR",
+      "accountType": "loan",
+      "balance": 0,
+      "createdAt": 1781700131981,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "EUR-expense",
+      "name": "支出",
+      "currency": "EUR",
+      "accountType": "expense",
+      "balance": 0,
+      "createdAt": 1781700131981,
+      "isDefault": false,
+      "visible": true
+    },
+    {
+      "id": "EUR-income",
+      "name": "收入",
+      "currency": "EUR",
+      "accountType": "income",
+      "balance": 0,
+      "createdAt": 1781700131981,
       "isDefault": false,
       "visible": true
     }
@@ -193,5 +335,37 @@
       "id": "income-rule-mqgbhwfhqdb0i",
       "createdAt": 1781594720621
     }
-  ]
+  ],
+  "financialSources": [
+    {
+      "id": "income-rule-mqgbhwfhqdb0i",
+      "type": "income",
+      "name": "工资2",
+      "currency": "CNY",
+      "amount": 2000,
+      "period": "monthly",
+      "createdAt": 1781594720621
+    }
+  ],
+  "budgetPlans": [],
+  "customCurrencies": [],
+  "exchangeRates": {
+    "rates": {
+      "USD": 0.14,
+      "EUR": 0.13,
+      "GBP": 0.11,
+      "JPY": 21.5,
+      "KRW": 195,
+      "TWD": 4.5,
+      "HKD": 1.09,
+      "AUD": 0.22,
+      "CAD": 0.2,
+      "SGD": 0.19,
+      "THB": 4.8,
+      "MYR": 0.63
+    },
+    "baseCurrency": "CNY",
+    "lastUpdatedAt": 1781700128463,
+    "source": "default"
+  }
 }

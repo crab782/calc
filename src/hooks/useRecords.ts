@@ -51,6 +51,7 @@ export const useRecords = () => {
 
   const refresh = useCallback(() => {
     setRecords(recordService.getAllRecords());
+    setAccounts(recordService.getAccounts());
   }, []);
 
   const refreshCategories = useCallback(() => {
@@ -259,19 +260,26 @@ export const useRecords = () => {
 
   const addCustomCurrency = useCallback((currency: CustomCurrency) => {
     recordService.addCustomCurrency(currency);
-  }, []);
+    refreshAccounts();
+  }, [refreshAccounts]);
 
   const deleteCustomCurrency = useCallback((code: string) => {
     recordService.deleteCustomCurrency(code);
-  }, []);
+    refreshAccounts();
+  }, [refreshAccounts]);
 
   const enableCurrency = useCallback((currency: string) => {
     recordService.createCurrencyAccounts(currency);
-  }, []);
+    refreshAccounts();
+  }, [refreshAccounts]);
 
   const disableCurrency = useCallback((currency: string): { success: boolean; message: string } => {
-    return recordService.disableCurrency(currency);
-  }, []);
+    const result = recordService.disableCurrency(currency);
+    if (result.success) {
+      refreshAccounts();
+    }
+    return result;
+  }, [refreshAccounts]);
 
   return {
     records,
