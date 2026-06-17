@@ -7,7 +7,7 @@ import { useStatistics } from '../hooks/useStatistics';
 export const ExpenseChart = () => {
   const { t, language } = useLanguage();
   const { effectiveTheme } = useTheme();
-  const { monthlyDataWithPrediction } = useStatistics();
+  const { monthlyDataWithPrediction, dailyDataWithPrediction } = useStatistics();
 
   const isDark = effectiveTheme === 'dark';
   const textColor = isDark ? '#9ca3af' : '#6b7280';
@@ -27,14 +27,31 @@ export const ExpenseChart = () => {
     return `${monthNames[monthNum - 1]} ${year}`;
   };
 
-  const boundaryIndex = monthlyDataWithPrediction.findIndex((item) => !item.isActual);
+  // Group daily data by month for tooltip detail
+  const dailyByMonth: Record<string, typeof dailyDataWithPrediction> = {};
+  dailyDataWithPrediction.forEach(day => {
+    const month = day.date.substring(0, 7);
+    if (!dailyByMonth[month]) dailyByMonth[month] = [];
+    dailyByMonth[month].push(day);
+  });
 
-  const actualData = monthlyDataWithPrediction.map((item, i) =>
-    item.isActual || i === boundaryIndex ? item.expense : null
-  );
-  const predictedData = monthlyDataWithPrediction.map((item, i) =>
-    !item.isActual || i === boundaryIndex - 1 ? item.expense : null
-  );
+  // 构建数据系列：处理当前月的实际/预测边界
+  // 过去月份：实线（actual）
+  // 当前月：实线和虚线共享边界点（作为过渡）
+  // 未来月份：虚线（predicted）
+  const actualData = monthlyDataWithPrediction.map((item) => {
+    if (item.isActual || item.isPartialActual) {
+      return item.expense;
+    }
+    return null;
+  });
+
+  const predictedData = monthlyDataWithPrediction.map((item) => {
+    if (item.isPartialActual || !item.isActual) {
+      return item.expense;
+    }
+    return null;
+  });
 
   const option = {
     tooltip: {
@@ -45,9 +62,11 @@ export const ExpenseChart = () => {
       textStyle: {
         color: tooltipText,
       },
-      formatter: (params: { axisValue: string; marker: string; seriesName: string; value: number | null }[]) => {
+      formatter: (params: { axisValue: string; marker: string; seriesName: string; value: number | null; dataIndex: number }[]) => {
         const validParams = params.filter((p) => p.value !== null);
         if (validParams.length === 0) return '';
+        const monthStr = monthlyDataWithPrediction[validParams[0].dataIndex]?.month;
+        const monthDays = monthStr ? dailyByMonth[monthStr] : [];
         let result = `<div style="font-weight: 600; margin-bottom: 8px;">${validParams[0].axisValue}</div>`;
         validParams.forEach((item) => {
           const value = item.value ?? 0;
@@ -56,6 +75,17 @@ export const ExpenseChart = () => {
             <span>${item.seriesName}: ¥${value.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
           </div>`;
         });
+        // Show daily breakdown for the hovered month
+        if (monthDays.length > 0) {
+          result += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid ${tooltipBorder};">`;
+          result += `<div style="font-size: 12px; color: ${textColor}; margin-bottom: 4px;">${t.chart.dailyDetail || 'Daily Detail'}</div>`;
+          monthDays.forEach(day => {
+            const dateLabel = day.date.substring(5); // MM-DD
+            const marker = day.isActual ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#52c41a;margin-right:4px;"></span>' : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#faad14;margin-right:4px;"></span>';
+            result += `<div style="font-size: 12px; margin: 2px 0;">${marker}${dateLabel}: +¥${day.income.toFixed(2)} / -¥${day.expense.toFixed(2)}</div>`;
+          });
+          result += '</div>';
+        }
         return result;
       },
     },

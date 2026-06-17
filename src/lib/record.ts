@@ -106,6 +106,17 @@ export interface MonthlyDataWithPrediction {
   expense: number;
   balance: number;
   isActual: boolean; // true = 用户实际输入, false = 未来预测
+  isPartialActual?: boolean; // 当前月：部分实际部分预测
+  boundaryDay?: number; // 当前月的边界日（今天是几号）
+  balanceAtBoundary?: number; // 边界日的结余（用于图表过渡点）
+}
+
+export interface DailyData {
+  date: string;
+  income: number;
+  expense: number;
+  balance: number;
+  isActual: boolean;
 }
 
 export class RecordService {
@@ -241,106 +252,205 @@ export class RecordService {
       .slice(-12);
   }
 
-  generateMonthlyDataWithPrediction(): MonthlyDataWithPrediction[] {
+  /**
+   * 生成日级预测数据（过去6个月第一天 + 未来6个月最后一天）
+   * 底层按日粒度计算，前端可按需聚合为月级展示
+   * 覆盖约13个月，约400天
+   */
+  generateDailyDataWithPrediction(): DailyData[] {
     const records = recordDAO.findAll();
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-
-    // 生成过去6个月 + 未来6个月（共12个月）的月份列表
-    const generateMonthList = (): string[] => {
-      const months: string[] = [];
-      for (let i = -6; i <= 5; i++) {
-        const date = new Date(currentYear, currentMonth + i, 1);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        months.push(`${year}-${month}`);
-      }
-      return months;
-    };
-
-    const monthList = generateMonthList();
-
-    // 从记录中获取实际月度数据（仅默认账户币种）
     const currency = this.getDefaultAccountCurrency();
-    const filteredRecords = records.filter(r => r.currency === currency);
-    const actualMonthlyData = filteredRecords.reduce((acc, record) => {
-      const month = record.date.substring(0, 7);
-      if (!acc[month]) {
-        acc[month] = { month, income: 0, expense: 0 };
-      }
-      if (record.type === 'income') {
-        acc[month].income += record.amount;
-      } else {
-        acc[month].expense += record.amount;
-      }
-      return acc;
-    }, {} as Record<string, MonthlyData>);
 
-    // 找到最近有数据的月份并计算累计结余
-    const sortedActualMonths = Object.keys(actualMonthlyData).sort((a, b) => a.localeCompare(b));
-    
-    // 计算到最近实际月份的累计结余
-    let lastActualBalance = 0;
-    for (const month of sortedActualMonths) {
-      lastActualBalance += actualMonthlyData[month].income - actualMonthlyData[month].expense;
+    // 计算日期范围：过去6个月的第一天到未来6个月的最后一天
+    const startDate = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+    const endDate = new Date(now.getFullYear(), now.getMonth() + 7, 0); // +7月第0天 = +6月最后一天
+
+    const dates: string[] = [];
+    const current = new Date(startDate);
+    while (current <= endDate) {
+      dates.push(this._formatDateISO(current));
+      current.setDate(current.getDate() + 1);
     }
 
-    // 当前月份
-    const currentMonthStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+    // 按日聚合实际记录数据
+    const actualDailyData: Record<string, { income: number; expense: number }> = {};
+    const filteredRecords = records.filter(r => r.currency === currency);
+    filteredRecords.forEach(record => {
+      const day = record.date;
+      if (!actualDailyData[day]) {
+        actualDailyData[day] = { income: 0, expense: 0 };
+      }
+      if (record.type === 'income') {
+        actualDailyData[day].income += record.amount;
+      } else {
+        actualDailyData[day].expense += record.amount;
+      }
+    });
 
-    // 计算预期月收入和支出（基于财务来源，仅默认账户币种）
-    const expectedIncomeSources = this.getFinancialSourcesByType('income').filter(
-      source => source.currency === currency
-    );
-    const expectedExpenseSources = this.getFinancialSourcesByType('expense').filter(
-      source => source.currency === currency
-    );
+    // 获取财务来源（仅收入/支出，默认币种）
+    const incomeSources = this.getFinancialSourcesByType('income').filter(s => s.currency === currency);
+    const expenseSources = this.getFinancialSourcesByType('expense').filter(s => s.currency === currency);
 
-    const expectedMonthlyIncome = expectedIncomeSources.reduce(
-      (total, source) => total + this.convertToMonthlyAmount(source.amount, source.period), 0
-    );
-    const expectedMonthlyExpense = expectedExpenseSources.reduce(
-      (total, source) => total + this.convertToMonthlyAmount(source.amount, source.period), 0
-    );
+    // 生成结果
+    const result: DailyData[] = [];
+    let runningBalance = 0;
 
-    // 生成结果数据
-    const result: MonthlyDataWithPrediction[] = [];
+    // 计算范围之前所有天的实际结余作为起点
+    const sortedActualDays = Object.keys(actualDailyData).filter(day => day < dates[0]).sort();
+    for (const day of sortedActualDays) {
+      runningBalance += actualDailyData[day].income - actualDailyData[day].expense;
+    }
 
-    for (const month of monthList) {
-      const isFuture = month > currentMonthStr;
-      const hasActualData = actualMonthlyData[month] !== undefined;
+    const todayStr = this._formatDateISO(now);
 
-      let income: number;
-      let expense: number;
-      let balance: number;
-      // 过去月份（无论是否有数据）都属于记账历史，使用实线
-      // 只有未来月份才使用虚线样式
-      const isActual = !isFuture;
+    for (let i = 0; i < dates.length; i++) {
+      const date = dates[i];
+      const isFuture = date > todayStr;
+      const hasActualData = actualDailyData[date] !== undefined;
+
+      let income = 0;
+      let expense = 0;
 
       if (hasActualData) {
-        // 有实际数据，使用实际值
-        income = actualMonthlyData[month].income;
-        expense = actualMonthlyData[month].expense;
+        // 有实际记录，使用实际值
+        income = actualDailyData[date].income;
+        expense = actualDailyData[date].expense;
       } else if (isFuture) {
-        // 未来月份：使用财务来源的预期值
-        income = expectedMonthlyIncome;
-        expense = expectedMonthlyExpense;
-      } else {
-        // 过去无数据月份：填充为0（属于记账历史的一部分）
-        income = 0;
-        expense = 0;
+        // 未来日期：根据财务来源计算预期
+        const d = this._parseDateISO(date);
+        const dayOfWeek = d.getDay(); // 0=周日, 1=周一, ..., 6=周六
+
+        // 计算当天的预期收入
+        incomeSources.forEach(source => {
+          if (this._isSourceActiveOnDay(source, d, dayOfWeek)) {
+            income += source.amount;
+          }
+        });
+
+        // 计算当天的预期支出
+        expenseSources.forEach(source => {
+          if (this._isSourceActiveOnDay(source, d, dayOfWeek)) {
+            expense += source.amount;
+          }
+        });
       }
 
-      // 计算累计结余
-      const monthIndex = monthList.indexOf(month);
-      const previousBalance = monthIndex > 0 ? result[monthIndex - 1].balance : 0;
-      balance = previousBalance + income - expense;
-
-      result.push({ month, income, expense, balance, isActual });
+      runningBalance += income - expense;
+      result.push({ date, income, expense, balance: runningBalance, isActual: !isFuture });
     }
 
     return result;
+  }
+
+  /**
+   * 判断财务来源是否在指定日期触发
+   */
+  private _isSourceActiveOnDay(source: FinancialSource, date: Date, dayOfWeek: number): boolean {
+    switch (source.period) {
+      case 'daily':
+        return true;
+      case 'weekly':
+        return source.dayOfWeek !== undefined && dayOfWeek === source.dayOfWeek;
+      case 'monthly':
+        if (source.dayOfMonth === undefined) return false;
+        if (source.dayOfMonth === -1) {
+          // 每月最后一天
+          return date.getDate() === this._getLastDayOfMonth(date.getFullYear(), date.getMonth());
+        }
+        return date.getDate() === source.dayOfMonth;
+      case 'yearly':
+        // 每年按配置日期触发
+        if (source.dayOfMonth === undefined) return false;
+        return date.getDate() === source.dayOfMonth && date.getMonth() === 0; // 每年1月
+      case 'once':
+        return false; // 一次性不触发
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * 获取指定年月的最后一天
+   */
+  private _getLastDayOfMonth(year: number, month: number): number {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  /**
+   * 格式化日期为 ISO 字符串 YYYY-MM-DD
+   */
+  private _formatDateISO(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  /**
+   * 解析 YYYY-MM-DD 为 Date 对象（使用本地时区）
+   */
+  private _parseDateISO(dateStr: string): Date {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  /**
+   * 将日级数据聚合为月级数据
+   * 用于前端图表按月展示
+   * 支持当前月的实际/预测边界（以今天为分界）
+   */
+  aggregateDailyToMonthly(dailyData: DailyData[]): MonthlyDataWithPrediction[] {
+    const now = new Date();
+    const currentMonth = this._formatDateISO(now).substring(0, 7);
+    const todayStr = this._formatDateISO(now);
+    const boundaryDay = now.getDate(); // 今天是几号（如17）
+
+    const monthlyMap: Record<string, {
+      month: string;
+      income: number;
+      expense: number;
+      balance: number;
+      isActual: boolean;
+      isPartialActual?: boolean;
+      boundaryDay?: number;
+      balanceAtBoundary?: number;
+    }> = {};
+
+    dailyData.forEach(day => {
+      const month = day.date.substring(0, 7);
+      if (!monthlyMap[month]) {
+        monthlyMap[month] = { month, income: 0, expense: 0, balance: 0, isActual: true };
+      }
+      monthlyMap[month].income += day.income;
+      monthlyMap[month].expense += day.expense;
+      monthlyMap[month].balance = day.balance;
+
+      if (month === currentMonth) {
+        // 当前月：标记为部分实际部分预测
+        monthlyMap[month].isActual = false; // 整体标记为预测月
+        monthlyMap[month].isPartialActual = true;
+        monthlyMap[month].boundaryDay = boundaryDay;
+        // 记录边界日（今天）的结余
+        if (day.date === todayStr) {
+          monthlyMap[month].balanceAtBoundary = day.balance;
+        }
+      } else if (day.date <= todayStr) {
+        // 过去日期：保持实际
+      } else {
+        // 未来日期：标记为非实际
+        if (month !== currentMonth) {
+          monthlyMap[month].isActual = false;
+        }
+      }
+    });
+
+    return Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month));
+  }
+
+  generateMonthlyDataWithPrediction(): MonthlyDataWithPrediction[] {
+    const dailyData = this.generateDailyDataWithPrediction();
+    return this.aggregateDailyToMonthly(dailyData);
   }
 
   getRecentRecords(limit: number = 10): ExpenseRecord[] {

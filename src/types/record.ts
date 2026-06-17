@@ -69,8 +69,13 @@ export interface FinancialSource {
   currency: string;
   amount: number;
   period: FinancialPeriod;
+  // 精确日期定位字段
+  dayOfMonth?: number;   // 1-31（仅 period=monthly 时有效），null 表示不适用
+  dayOfWeek?: number;    // 0-6 周日到周六（仅 period=weekly 时有效），null 表示不适用
+  // 投资特有字段
   investmentType?: InvestmentType; // 投资特有字段
   expectedReturn?: number; // 投资特有字段：预期收益率
+  // 贷款特有字段
   principal?: number; // 贷款特有字段：本金
   interestRate?: number; // 贷款特有字段：利率
   interestType?: InterestType; // 贷款特有字段：还款方式

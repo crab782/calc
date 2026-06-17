@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { recordService } from '../lib/record';
-import type { Statistics, MonthlyData, MonthlyDataWithPrediction } from '../lib/record';
+import type { Statistics, MonthlyData, MonthlyDataWithPrediction, DailyData } from '../lib/record';
 
 export const useStatistics = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -15,6 +15,10 @@ export const useStatistics = () => {
 
   const monthlyDataWithPrediction: MonthlyDataWithPrediction[] = useMemo(() => {
     return recordService.generateMonthlyDataWithPrediction();
+  }, [refreshKey]);
+
+  const dailyDataWithPrediction: DailyData[] = useMemo(() => {
+    return recordService.generateDailyDataWithPrediction();
   }, [refreshKey]);
 
   const refresh = useCallback(() => {
@@ -33,6 +37,7 @@ export const useStatistics = () => {
     statistics,
     monthlyData,
     monthlyDataWithPrediction,
+    dailyDataWithPrediction,
     refresh,
     formatCurrency,
     formatDate,

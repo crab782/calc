@@ -7,7 +7,8 @@
     "expense": "支出",
     "monthSuffix": "年{month}月",
     "predicted": "预测数据",
-    "actual": "实际数据"
+    "actual": "实际数据",
+    "dailyDetail": "每日明细"
   },
   "balanceChart": {
     "title": "结余趋势",

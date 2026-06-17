@@ -41,6 +41,65 @@ const PERIOD_OPTIONS: { value: FinancialPeriod; label: string }[] = [
   { value: 'once', label: '一次性' },
 ];
 
+// 每月几号选项
+const DAY_OF_MONTH_OPTIONS = [
+  { value: 1, label: '1日' },
+  { value: 2, label: '2日' },
+  { value: 3, label: '3日' },
+  { value: 4, label: '4日' },
+  { value: 5, label: '5日' },
+  { value: 6, label: '6日' },
+  { value: 7, label: '7日' },
+  { value: 8, label: '8日' },
+  { value: 9, label: '9日' },
+  { value: 10, label: '10日' },
+  { value: 11, label: '11日' },
+  { value: 12, label: '12日' },
+  { value: 13, label: '13日' },
+  { value: 14, label: '14日' },
+  { value: 15, label: '15日' },
+  { value: 16, label: '16日' },
+  { value: 17, label: '17日' },
+  { value: 18, label: '18日' },
+  { value: 19, label: '19日' },
+  { value: 20, label: '20日' },
+  { value: 21, label: '21日' },
+  { value: 22, label: '22日' },
+  { value: 23, label: '23日' },
+  { value: 24, label: '24日' },
+  { value: 25, label: '25日' },
+  { value: 26, label: '26日' },
+  { value: 27, label: '27日' },
+  { value: 28, label: '28日' },
+  { value: 29, label: '29日' },
+  { value: 30, label: '30日' },
+  { value: 31, label: '31日' },
+  { value: -1, label: '最后一天' },
+];
+
+// 星期选项
+const DAY_OF_WEEK_OPTIONS = [
+  { value: 1, label: '周一' },
+  { value: 2, label: '周二' },
+  { value: 3, label: '周三' },
+  { value: 4, label: '周四' },
+  { value: 5, label: '周五' },
+  { value: 6, label: '周六' },
+  { value: 0, label: '周日' },
+];
+
+// 获取星期显示文本
+const getDayOfWeekLabel = (dayOfWeek: number): string => {
+  const label = DAY_OF_WEEK_OPTIONS.find(d => d.value === dayOfWeek);
+  return label ? label.label : String(dayOfWeek);
+};
+
+// 获取月份日期显示文本
+const getDayOfMonthLabel = (dayOfMonth: number): string => {
+  if (dayOfMonth === -1) return '最后一天';
+  return `${dayOfMonth}日`;
+};
+
 // 投资类型选项
 const INVESTMENT_TYPE_OPTIONS: { value: InvestmentType; label: string }[] = [
   { value: 'once', label: '一次性投资' },
@@ -133,7 +192,12 @@ export const FinancialConfig = () => {
   const openAddModal = (type: FinancialSourceType) => {
     setCurrentType(type);
     form.resetFields();
-    form.setFieldsValue({ period: 'monthly', currency: 'CNY' });
+    form.setFieldsValue({
+      period: 'monthly',
+      currency: 'CNY',
+      dayOfMonth: -1,  // 默认每月最后一天
+      dayOfWeek: 6,    // 默认周六
+    });
     setShowAddModal(true);
   };
 
@@ -146,6 +210,8 @@ export const FinancialConfig = () => {
       currency: source.currency,
       amount: source.amount,
       period: source.period,
+      dayOfMonth: source.dayOfMonth ?? (source.period === 'monthly' ? -1 : undefined),
+      dayOfWeek: source.dayOfWeek ?? (source.period === 'weekly' ? 6 : undefined),
       investmentType: source.investmentType || 'once',
       expectedReturn: source.expectedReturn,
       principal: source.principal,
@@ -172,6 +238,8 @@ export const FinancialConfig = () => {
         currency: values.currency,
         amount: values.amount,
         period: values.period,
+        dayOfMonth: values.period === 'monthly' ? values.dayOfMonth : undefined,
+        dayOfWeek: values.period === 'weekly' ? values.dayOfWeek : undefined,
         ...(currentType === 'investment' && {
           investmentType: values.investmentType,
           expectedReturn: values.expectedReturn,
@@ -203,6 +271,8 @@ export const FinancialConfig = () => {
         currency: values.currency,
         amount: values.amount,
         period: values.period,
+        dayOfMonth: values.period === 'monthly' ? values.dayOfMonth : undefined,
+        dayOfWeek: values.period === 'weekly' ? values.dayOfWeek : undefined,
         ...(currentType === 'investment' && {
           investmentType: values.investmentType,
           expectedReturn: values.expectedReturn,
@@ -264,8 +334,17 @@ export const FinancialConfig = () => {
         title: '周期',
         dataIndex: 'period',
         key: 'period',
-        width: 80,
-        render: (period: FinancialPeriod) => <Tag>{periodLabel(period)}</Tag>,
+        width: 120,
+        render: (period: FinancialPeriod, record: FinancialSource) => {
+          const base = periodLabel(period);
+          if (period === 'monthly' && record.dayOfMonth !== undefined) {
+            return <Tag>{`${base} ${getDayOfMonthLabel(record.dayOfMonth)}`}</Tag>;
+          }
+          if (period === 'weekly' && record.dayOfWeek !== undefined) {
+            return <Tag>{`${base} ${getDayOfWeekLabel(record.dayOfWeek)}`}</Tag>;
+          }
+          return <Tag>{base}</Tag>;
+        },
       },
       {
         title: '月度金额',
@@ -418,7 +497,10 @@ export const FinancialConfig = () => {
   };
 
   // 渲染表单
-  const renderForm = () => (
+  const renderForm = () => {
+    const selectedPeriod = Form.useWatch('period', form) as FinancialPeriod | undefined;
+
+    return (
     <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
       <Form.Item label="名称" name="name" rules={[{ required: true, message: '请输入名称' }]}>
         <Input placeholder="请输入名称" />
@@ -432,6 +514,16 @@ export const FinancialConfig = () => {
       <Form.Item label="周期" name="period" rules={[{ required: true }]}>
         <Select options={PERIOD_OPTIONS} />
       </Form.Item>
+      {selectedPeriod === 'monthly' && (
+        <Form.Item label="每月几号" name="dayOfMonth" rules={[{ required: true, message: '请选择日期' }]}>
+          <Select options={DAY_OF_MONTH_OPTIONS} placeholder="选择每月几号" />
+        </Form.Item>
+      )}
+      {selectedPeriod === 'weekly' && (
+        <Form.Item label="每周几" name="dayOfWeek" rules={[{ required: true, message: '请选择星期' }]}>
+          <Select options={DAY_OF_WEEK_OPTIONS} placeholder="选择每周几" />
+        </Form.Item>
+      )}
       {currentType === 'investment' && (
         <>
           <Form.Item label="投资类型" name="investmentType">
@@ -457,6 +549,7 @@ export const FinancialConfig = () => {
       )}
     </Form>
   );
+  };
 
   // 渲染汇总
   const renderSummaryCard = (title: string, _subtitle: string, data: Record<string, number>, icon: React.ReactNode, color: string) => (

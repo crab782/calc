@@ -7,7 +7,8 @@
     "expense": "Expense",
     "monthSuffix": "{month}, {year}",
     "predicted": "Predicted",
-    "actual": "Actual"
+    "actual": "Actual",
+    "dailyDetail": "Daily Detail"
   },
   "balanceChart": {
     "title": "Balance Trend",
