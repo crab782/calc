@@ -1,0 +1,21 @@
+{
+  "title": "汇率管理",
+  "baseCurrency": "基准币种",
+  "currency": "币种",
+  "rate": "汇率",
+  "manualEdit": "手动编辑",
+  "save": "保存",
+  "cancel": "取消",
+  "fetchFromAPI": "从网络获取",
+  "lastUpdate": "最后更新",
+  "source": "来源",
+  "noMultiCurrency": "请先在设置中启用外币",
+  "sourceManual": "手动设置",
+  "sourceApi": "API 获取",
+  "sourceDefault": "默认值",
+  "fetchSuccess": "汇率更新成功",
+  "fetchError": "获取汇率失败",
+  "saveSuccess": "汇率保存成功",
+  "invalidRate": "请输入有效的汇率",
+  "hoursLeft": "每 24 小时只能获取一次，还需等待 {hours} 小时"
+}

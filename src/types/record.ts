@@ -101,6 +101,20 @@ export interface BudgetPeriod {
   estimatedAmount: number;
 }
 
+// 自定义货币
+export interface CustomCurrency {
+  code: string;  // 如 "HKD"
+  name: string;  // 如 "港币"
+}
+
+// 汇率数据
+export interface ExchangeRateData {
+  rates: Record<string, number>;  // 本币到外币的汇率映射，如 { USD: 0.14, EUR: 0.13 }
+  baseCurrency: string;            // 基准币种，如 "CNY"
+  lastUpdatedAt: number;           // 最后更新时间戳
+  source: 'manual' | 'api' | 'default';  // 汇率来源
+}
+
 export interface DataSchema {
   version: string;
   records: ExpenseRecord[];
@@ -109,6 +123,8 @@ export interface DataSchema {
   incomeRules: IncomeRule[];
   financialSources: FinancialSource[];
   budgetPlans: BudgetPlan[];
+  customCurrencies: CustomCurrency[];
+  exchangeRates: ExchangeRateData;
   createdAt: number;
   updatedAt: number;
 }
@@ -153,4 +169,95 @@ export const DEFAULT_INCOME_RULE: IncomeRule = {
   createdAt: Date.now(),
 };
 
-export const CURRENT_VERSION = '1.7.0';
+export const CURRENT_VERSION = '1.8.0';
+
+// 硬编码默认汇率表（以 CNY 为基准）
+// 1 CNY = X 外币
+export const DEFAULT_EXCHANGE_RATES: Record<string, number> = {
+  USD: 0.14,
+  EUR: 0.13,
+  GBP: 0.11,
+  JPY: 21.5,
+  KRW: 195.0,
+  TWD: 4.5,
+  HKD: 1.09,
+  AUD: 0.22,
+  CAD: 0.20,
+  SGD: 0.19,
+  THB: 4.8,
+  MYR: 0.63,
+};
+
+// 汇率 API 列表（按优先级排序）
+export const EXCHANGE_RATE_APIS = [
+  {
+    name: 'frankfurter (CNY base)',
+    url: 'https://api.frankfurter.app/latest?from=CNY',
+    parser: (data: any, _base: string) => {
+      // { "amount": 1.0, "base": "CNY", "date": "2024-01-01", "rates": { "USD": 0.14, ... } }
+      return data.rates || {};
+    },
+  },
+  {
+    name: 'frankfurter (USD base)',
+    url: 'https://api.frankfurter.app/latest?from=USD',
+    parser: (data: any, base: string) => {
+      // 返回 USD 对其他币种的汇率，需要转换
+      const rates: Record<string, number> = data.rates || {};
+      const usdToBase = rates[base] || 7.1;
+      const result: Record<string, number> = {};
+      for (const [currency, rate] of Object.entries(rates)) {
+        if (currency !== base) {
+          result[currency] = (rate as number) / usdToBase;
+        }
+      }
+      return result;
+    },
+  },
+  {
+    name: 'open.er-api (USD base)',
+    url: 'https://open.er-api.com/v6/latest/USD',
+    parser: (data: any, base: string) => {
+      const rates: Record<string, number> = data.conversion_rates || {};
+      const usdToBase = rates[base] || 7.1;
+      const result: Record<string, number> = {};
+      for (const [currency, rate] of Object.entries(rates)) {
+        if (currency !== base) {
+          result[currency] = (rate as number) / usdToBase;
+        }
+      }
+      return result;
+    },
+  },
+  {
+    name: 'exchangerate-api (USD base)',
+    url: 'https://api.exchangerate-api.com/v4/latest/USD',
+    parser: (data: any, base: string) => {
+      const rates: Record<string, number> = data.rates || {};
+      const usdToBase = rates[base] || 7.1;
+      const result: Record<string, number> = {};
+      for (const [currency, rate] of Object.entries(rates)) {
+        if (currency !== base) {
+          result[currency] = (rate as number) / usdToBase;
+        }
+      }
+      return result;
+    },
+  },
+  {
+    name: 'currency-api (CNY base)',
+    url: 'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/cny.json',
+    parser: (data: any, _base: string) => {
+      const baseKey = Object.keys(data).find(k => k !== 'date');
+      if (baseKey) {
+        const rates = data[baseKey];
+        const result: Record<string, number> = {};
+        for (const [currency, rate] of Object.entries(rates)) {
+          result[currency.toUpperCase()] = rate as number;
+        }
+        return result;
+      }
+      return {};
+    },
+  },
+];

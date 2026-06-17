@@ -1,5 +1,5 @@
-import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, BudgetPlan } from '../types/record';
-import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_INCOME_RULE } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, BudgetPlan, ExchangeRateData, CustomCurrency } from '../types/record';
+import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_INCOME_RULE, DEFAULT_EXCHANGE_RATES } from '../types/record';
 
 const STORAGE_KEY = 'expense_tracker_data';
 
@@ -43,6 +43,13 @@ export class RecordDAO {
       incomeRules: [DEFAULT_INCOME_RULE],
       financialSources: [],
       budgetPlans: [],
+      customCurrencies: [],
+      exchangeRates: {
+        rates: { ...DEFAULT_EXCHANGE_RATES },
+        baseCurrency: 'CNY',
+        lastUpdatedAt: Date.now(),
+        source: 'default',
+      },
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -141,6 +148,21 @@ export class RecordDAO {
         // 添加 budgetPlans 字段
         if (!s.budgetPlans) {
           s.budgetPlans = [];
+        }
+      },
+      '1.7.0': (s) => {
+        s.version = '1.8.0';
+        // 添加 customCurrencies 和 exchangeRates 字段
+        if (!s.customCurrencies) {
+          s.customCurrencies = [];
+        }
+        if (!s.exchangeRates) {
+          s.exchangeRates = {
+            rates: { ...DEFAULT_EXCHANGE_RATES },
+            baseCurrency: 'CNY',
+            lastUpdatedAt: Date.now(),
+            source: 'default',
+          };
         }
       },
     };
@@ -541,6 +563,65 @@ export class RecordDAO {
       schema.budgetPlans = [];
     }
     schema.budgetPlans = schema.budgetPlans.filter((p) => p.id !== id);
+    this.saveSchema(schema);
+  }
+
+  // ========== 汇率和自定义货币管理方法 ==========
+
+  /**
+   * 获取汇率数据
+   */
+  getExchangeRates(): ExchangeRateData {
+    const schema = this.getSchema();
+    return schema.exchangeRates || {
+      rates: { ...DEFAULT_EXCHANGE_RATES },
+      baseCurrency: 'CNY',
+      lastUpdatedAt: Date.now(),
+      source: 'default',
+    };
+  }
+
+  /**
+   * 更新汇率数据
+   */
+  updateExchangeRates(exchangeRates: ExchangeRateData): void {
+    const schema = this.getSchema();
+    schema.exchangeRates = exchangeRates;
+    this.saveSchema(schema);
+  }
+
+  /**
+   * 获取自定义货币列表
+   */
+  getCustomCurrencies(): CustomCurrency[] {
+    const schema = this.getSchema();
+    return [...(schema.customCurrencies || [])];
+  }
+
+  /**
+   * 添加自定义货币
+   */
+  addCustomCurrency(currency: CustomCurrency): void {
+    const schema = this.getSchema();
+    if (!schema.customCurrencies) {
+      schema.customCurrencies = [];
+    }
+    // 检查是否已存在
+    if (!schema.customCurrencies.some(c => c.code === currency.code)) {
+      schema.customCurrencies.push(currency);
+      this.saveSchema(schema);
+    }
+  }
+
+  /**
+   * 删除自定义货币
+   */
+  deleteCustomCurrency(code: string): void {
+    const schema = this.getSchema();
+    if (!schema.customCurrencies) {
+      schema.customCurrencies = [];
+    }
+    schema.customCurrencies = schema.customCurrencies.filter(c => c.code !== code);
     this.saveSchema(schema);
   }
 

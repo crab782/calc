@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { Card, Button, Typography, Space, Tag, message, Modal, Input, Divider, Alert, Popconfirm } from 'antd';
-import { Download, Upload, Trash2, Plus, Sun, Moon, Monitor, Globe } from 'lucide-react';
+import { Card, Button, Typography, Space, Tag, message, Modal, Input, Divider, Alert, Popconfirm, Checkbox } from 'antd';
+import { Download, Upload, Trash2, Plus, Sun, Moon, Monitor, Globe, Coins, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useRecords } from '../hooks/useRecords';
@@ -8,15 +8,77 @@ import { recordService } from '../lib/record';
 
 const { Title, Text } = Typography;
 
+// 预设外币列表（用于币种管理弹窗）
+const FOREIGN_CURRENCIES = [
+  { value: 'USD', label: '美元 (USD)' },
+  { value: 'EUR', label: '欧元 (EUR)' },
+  { value: 'GBP', label: '英镑 (GBP)' },
+  { value: 'JPY', label: '日元 (JPY)' },
+];
+
 export const Settings = () => {
   const { t, language, toggleLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
-  const { count, refresh, incomeCategories, expenseCategories, addCategory, deleteCategory } = useRecords();
+  const { count, refresh, incomeCategories, expenseCategories, addCategory, deleteCategory, accounts, enableCurrency, disableCurrency, customCurrencies, addCustomCurrency, deleteCustomCurrency } = useRecords();
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState<'income' | 'expense' | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 币种管理弹窗
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const [showAddCustomCurrency, setShowAddCustomCurrency] = useState(false);
+  const [newCurrencyCode, setNewCurrencyCode] = useState('');
+  const [newCurrencyName, setNewCurrencyName] = useState('');
+
+  // 获取所有可用币种（去重）
+  const availableCurrencies = Array.from(new Set(accounts.map(a => a.currency)));
+
+  // 检查外币是否启用
+  const isCurrencyEnabled = (currency: string): boolean => {
+    return accounts.some(a => a.currency === currency && a.visible === true);
+  };
+
+  // 处理外币启用/禁用
+  const handleCurrencyToggle = (currency: string, enabled: boolean) => {
+    if (enabled) {
+      enableCurrency(currency);
+      message.success(`${currency} 币种已启用`);
+    } else {
+      const result = disableCurrency(currency);
+      if (result.success) {
+        message.success(`${currency} 币种已禁用`);
+      } else {
+        message.error(result.message);
+      }
+    }
+  };
+
+  // 添加自定义货币
+  const handleAddCustomCurrency = () => {
+    const code = newCurrencyCode.trim().toUpperCase();
+    const name = newCurrencyName.trim();
+    if (!code || !name) {
+      message.error('请输入货币代码和名称');
+      return;
+    }
+    if (availableCurrencies.includes(code)) {
+      message.error('该货币代码已存在');
+      return;
+    }
+    addCustomCurrency({ code, name });
+    message.success(`自定义货币 ${name} (${code}) 已添加`);
+    setNewCurrencyCode('');
+    setNewCurrencyName('');
+    setShowAddCustomCurrency(false);
+  };
+
+  // 删除自定义货币
+  const handleDeleteCustomCurrency = (code: string) => {
+    deleteCustomCurrency(code);
+    message.success('自定义货币已删除');
+  };
 
   const handleExport = () => {
     const jsonData = recordService.exportData();
@@ -201,6 +263,24 @@ export const Settings = () => {
           </Space>
         </Card>
 
+        {/* 币种管理区块 */}
+        <Card
+          title={t.settings.currencyManagement}
+          bordered={false}
+          extra={
+            <Button icon={<Coins className="w-4 h-4" />} onClick={() => setShowCurrencyModal(true)}>
+              {t.settings.manageCurrencies}
+            </Button>
+          }
+        >
+          <Text type="secondary">
+            {t.settings.foreignCurrencies}: {FOREIGN_CURRENCIES.filter(fc => isCurrencyEnabled(fc.value)).map(fc => fc.value).join(', ') || '无'}
+            {customCurrencies.length > 0 && (
+              <>, {t.settings.customCurrencies}: {customCurrencies.map(c => c.code).join(', ')}</>
+            )}
+          </Text>
+        </Card>
+
         {/* 数据管理区块 */}
         <Card title={t.settings.dataManagement} bordered={false}>
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
@@ -259,6 +339,86 @@ export const Settings = () => {
           }
         />
       </Space>
+
+      {/* 币种管理弹窗 */}
+      <Modal
+        title={t.settings.currencyManagement}
+        open={showCurrencyModal}
+        onCancel={() => { setShowCurrencyModal(false); setShowAddCustomCurrency(false); setNewCurrencyCode(''); setNewCurrencyName(''); }}
+        footer={
+          <Button onClick={() => { setShowCurrencyModal(false); setShowAddCustomCurrency(false); setNewCurrencyCode(''); setNewCurrencyName(''); }}>
+            {t.settings.cancel}
+          </Button>
+        }
+      >
+        <div style={{ marginTop: 16 }}>
+          {/* 预设外币 */}
+          <Text strong style={{ display: 'block', marginBottom: 12 }}>{t.settings.foreignCurrencies}</Text>
+          <Space direction="vertical" size={8} style={{ width: '100%', marginBottom: 24 }}>
+            {FOREIGN_CURRENCIES.map((fc) => (
+              <Checkbox
+                key={fc.value}
+                checked={isCurrencyEnabled(fc.value)}
+                onChange={(e) => handleCurrencyToggle(fc.value, e.target.checked)}
+              >
+                {fc.label}
+              </Checkbox>
+            ))}
+          </Space>
+
+          {/* 自定义币种 */}
+          <Text strong style={{ display: 'block', marginBottom: 12 }}>{t.settings.customCurrencies}</Text>
+          {customCurrencies.length > 0 ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {customCurrencies.map((c) => (
+                <Tag
+                  key={c.code}
+                  closable
+                  onClose={() => handleDeleteCustomCurrency(c.code)}
+                  color="blue"
+                  style={{ padding: '4px 8px' }}
+                >
+                  {c.name} ({c.code})
+                </Tag>
+              ))}
+            </div>
+          ) : (
+            <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>{t.settings.noCustomCurrencies}</Text>
+          )}
+          {!showAddCustomCurrency ? (
+            <Button
+              type="dashed"
+              icon={<Plus className="w-3 h-3" />}
+              onClick={() => setShowAddCustomCurrency(true)}
+              style={{ width: '100%' }}
+            >
+              {t.settings.addCustomCurrency}
+            </Button>
+          ) : (
+            <Space style={{ width: '100%' }}>
+              <Input
+                placeholder={t.settings.currencyCode}
+                value={newCurrencyCode}
+                onChange={(e) => setNewCurrencyCode(e.target.value.toUpperCase())}
+                style={{ width: 100 }}
+                maxLength={5}
+              />
+              <Input
+                placeholder={t.settings.currencyName}
+                value={newCurrencyName}
+                onChange={(e) => setNewCurrencyName(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <Button type="primary" onClick={handleAddCustomCurrency}>
+                {t.settings.addCustomCurrency}
+              </Button>
+              <Button onClick={() => { setShowAddCustomCurrency(false); setNewCurrencyCode(''); setNewCurrencyName(''); }} icon={<X className="w-3 h-3" />}>
+                {t.settings.cancel}
+              </Button>
+            </Space>
+          )}
+        </div>
+      </Modal>
 
       {/* 添加分类弹窗 */}
       <Modal

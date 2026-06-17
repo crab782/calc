@@ -1,0 +1,21 @@
+{
+  "title": "Exchange Rates",
+  "baseCurrency": "Base Currency",
+  "currency": "Currency",
+  "rate": "Rate",
+  "manualEdit": "Manual Edit",
+  "save": "Save",
+  "cancel": "Cancel",
+  "fetchFromAPI": "Fetch from API",
+  "lastUpdate": "Last Update",
+  "source": "Source",
+  "noMultiCurrency": "Please enable foreign currencies in settings first",
+  "sourceManual": "Manual",
+  "sourceApi": "API",
+  "sourceDefault": "Default",
+  "fetchSuccess": "Exchange rates updated successfully",
+  "fetchError": "Failed to fetch exchange rates",
+  "saveSuccess": "Exchange rates saved successfully",
+  "invalidRate": "Please enter a valid rate",
+  "hoursLeft": "You can only fetch once per 24 hours, please wait {hours} more hours"
+}

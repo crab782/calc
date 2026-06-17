@@ -1,5 +1,6 @@
-import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, FinancialPeriod, BudgetPlan, BudgetCalculationResult, BudgetPeriod, BudgetPeriodUnit } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, FinancialPeriod, BudgetPlan, BudgetCalculationResult, BudgetPeriod, BudgetPeriodUnit, ExchangeRateData, CustomCurrency } from '../types/record';
 import { recordDAO } from './storage';
+import { EXCHANGE_RATE_APIS } from '../types/record';
 
 /**
  * 根据交易类型生成分录
@@ -909,6 +910,96 @@ export class RecordService {
     }
 
     return csv;
+  }
+
+  // ========== 汇率和自定义货币管理方法 ==========
+
+  /**
+   * 获取当前汇率数据
+   */
+  getExchangeRates(): ExchangeRateData {
+    return recordDAO.getExchangeRates();
+  }
+
+  /**
+   * 更新汇率数据
+   */
+  updateExchangeRates(exchangeRates: ExchangeRateData): void {
+    recordDAO.updateExchangeRates(exchangeRates);
+  }
+
+  /**
+   * 获取自定义货币列表
+   */
+  getCustomCurrencies(): CustomCurrency[] {
+    return recordDAO.getCustomCurrencies();
+  }
+
+  /**
+   * 添加自定义货币
+   */
+  addCustomCurrency(currency: CustomCurrency): void {
+    recordDAO.addCustomCurrency(currency);
+  }
+
+  /**
+   * 删除自定义货币
+   */
+  deleteCustomCurrency(code: string): void {
+    recordDAO.deleteCustomCurrency(code);
+  }
+
+  /**
+   * 检查是否可以从API获取汇率（24小时频率限制）
+   */
+  canFetchRatesFromAPI(): { allowed: boolean; remainingHours: number } {
+    const rates = this.getExchangeRates();
+    if (rates.source === 'api' && rates.lastUpdatedAt) {
+      const hoursSinceLastUpdate = (Date.now() - rates.lastUpdatedAt) / (1000 * 60 * 60);
+      if (hoursSinceLastUpdate < 24) {
+        return { allowed: false, remainingHours: Math.ceil(24 - hoursSinceLastUpdate) };
+      }
+    }
+    return { allowed: true, remainingHours: 0 };
+  }
+
+  /**
+   * 从API获取汇率数据（按顺序尝试多个API）
+   * @returns 汇率数据或错误信息
+   */
+  async fetchExchangeRatesFromAPI(baseCurrency: string = 'CNY'): Promise<{ success: boolean; message: string; rates?: Record<string, number> }> {
+    // 检查频率限制
+    const rateLimit = this.canFetchRatesFromAPI();
+    if (!rateLimit.allowed) {
+      return { success: false, message: `请等待 ${rateLimit.remainingHours} 小时后再次获取` };
+    }
+
+    for (const api of EXCHANGE_RATE_APIS) {
+      try {
+        const response = await fetch(api.url, { signal: AbortSignal.timeout(5000) });
+        if (!response.ok) {
+          console.warn(`汇率API ${api.name} 返回错误: ${response.status}`);
+          continue;
+        }
+        const data = await response.json();
+        const rates = api.parser(data, baseCurrency);
+        if (Object.keys(rates).length > 0) {
+          // 更新汇率数据
+          this.updateExchangeRates({
+            rates,
+            baseCurrency,
+            lastUpdatedAt: Date.now(),
+            source: 'api',
+          });
+          return { success: true, message: `成功从 ${api.name} 获取汇率`, rates };
+        }
+      } catch (e) {
+        console.warn(`汇率API ${api.name} 请求失败:`, e);
+        continue;
+      }
+    }
+
+    return { success: false, message: '所有汇率API均不可用，请检查网络连接' };
   }
 }
 

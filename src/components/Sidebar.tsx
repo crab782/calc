@@ -7,9 +7,11 @@ import {
   Wallet,
   Settings2,
   Target,
+  Banknote,
 } from 'lucide-react';
 import { Layout, Menu, Button } from 'antd';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useRecords } from '../hooks/useRecords';
 import type { PageType } from '../types';
 
 const { Sider } = Layout;
@@ -22,11 +24,19 @@ interface SidebarProps {
 
 export const Sidebar = ({ currentPage, onPageChange, onCollapse }: SidebarProps) => {
   const { t } = useLanguage();
+  const { accounts } = useRecords();
+
+  // 获取默认币种
+  const defaultCurrency = accounts.find(a => a.isDefault)?.currency || 'CNY';
+
+  // 检查是否启用了多币种（有非默认币种且可见的账户）
+  const hasMultiCurrency = accounts.some(a => a.currency !== defaultCurrency && a.visible);
 
   const menuItems = [
     { key: 'dashboard', label: t.sidebar.dashboard, icon: <LayoutDashboard className="w-[16px] h-[16px]" /> },
     { key: 'history', label: t.sidebar.history, icon: <History className="w-[16px] h-[16px]" /> },
     { key: 'accounts', label: t.sidebar.accounts, icon: <Wallet className="w-[16px] h-[16px]" /> },
+    ...(hasMultiCurrency ? [{ key: 'exchange-rate' as const, label: t.sidebar.exchangeRate, icon: <Banknote className="w-[16px] h-[16px]" /> }] : []),
     { key: 'financial-config', label: t.sidebar.financialConfig, icon: <Settings2 className="w-[16px] h-[16px]" /> },
     { key: 'budget-plan', label: t.sidebar.budgetPlan, icon: <Target className="w-[16px] h-[16px]" /> },
     { key: 'add-record', label: t.sidebar.addRecord, icon: <PlusCircle className="w-[16px] h-[16px]" /> },

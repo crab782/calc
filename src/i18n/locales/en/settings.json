@@ -34,5 +34,13 @@
   "deleteCategoryConfirm": "Are you sure you want to delete this category?",
   "categoryInUse": "This category is in use and cannot be deleted",
   "addCategorySuccess": "Category added successfully",
-  "deleteCategorySuccess": "Category deleted successfully"
+  "deleteCategorySuccess": "Category deleted successfully",
+  "currencyManagement": "Currency Management",
+  "manageCurrencies": "Manage Currencies",
+  "foreignCurrencies": "Foreign Currencies",
+  "customCurrencies": "Custom Currencies",
+  "addCustomCurrency": "Add Custom Currency",
+  "noCustomCurrencies": "No custom currencies",
+  "currencyCode": "Currency Code",
+  "currencyName": "Currency Name"
 }

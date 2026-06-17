@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { ExpenseRecord, Category, Account, IncomeRule, FinancialSource, BudgetPlan, BudgetPeriodUnit, BudgetCalculationResult } from '../types/record';
+import type { ExpenseRecord, Category, Account, IncomeRule, FinancialSource, BudgetPlan, BudgetPeriodUnit, BudgetCalculationResult, CustomCurrency } from '../types/record';
 import { recordService } from '../lib/record';
 
 export const useRecords = () => {
@@ -206,14 +206,6 @@ export const useRecords = () => {
     return recordService.getCurrencyBalance(currency);
   }, []);
 
-  const disableCurrency = useCallback((currency: string): { success: boolean; message: string } => {
-    const result = recordService.disableCurrency(currency);
-    if (result.success) {
-      refreshAccounts();
-    }
-    return result;
-  }, [refreshAccounts]);
-
   const isCurrencyEnabled = useCallback((currency: string): boolean => {
     return recordService.isCurrencyEnabled(currency);
   }, []);
@@ -237,6 +229,48 @@ export const useRecords = () => {
 
   const exportBudgetToCSV = useCallback((results: BudgetCalculationResult[]): string => {
     return recordService.exportBudgetToCSV(results);
+  }, []);
+
+  // 汇率和自定义货币管理方法
+  const exchangeRates = useMemo(() => {
+    return recordService.getExchangeRates();
+  }, [records, accounts, financialSources]);
+
+  const customCurrencies = useMemo(() => {
+    return recordService.getCustomCurrencies();
+  }, [records, accounts, financialSources]);
+
+  const updateExchangeRate = useCallback((rates: Record<string, number>, baseCurrency: string = 'CNY') => {
+    recordService.updateExchangeRates({
+      rates,
+      baseCurrency,
+      lastUpdatedAt: Date.now(),
+      source: 'manual',
+    });
+  }, []);
+
+  const fetchExchangeRatesFromAPI = useCallback(async (baseCurrency: string = 'CNY'): Promise<{ success: boolean; message: string; rates?: Record<string, number> }> => {
+    return recordService.fetchExchangeRatesFromAPI(baseCurrency);
+  }, []);
+
+  const canFetchRatesFromAPI = useCallback((): { allowed: boolean; remainingHours: number } => {
+    return recordService.canFetchRatesFromAPI();
+  }, []);
+
+  const addCustomCurrency = useCallback((currency: CustomCurrency) => {
+    recordService.addCustomCurrency(currency);
+  }, []);
+
+  const deleteCustomCurrency = useCallback((code: string) => {
+    recordService.deleteCustomCurrency(code);
+  }, []);
+
+  const enableCurrency = useCallback((currency: string) => {
+    recordService.createCurrencyAccounts(currency);
+  }, []);
+
+  const disableCurrency = useCallback((currency: string): { success: boolean; message: string } => {
+    return recordService.disableCurrency(currency);
   }, []);
 
   return {
@@ -284,5 +318,13 @@ export const useRecords = () => {
     deleteBudgetPlan,
     calculateBudget,
     exportBudgetToCSV,
+    exchangeRates,
+    customCurrencies,
+    updateExchangeRate,
+    fetchExchangeRatesFromAPI,
+    canFetchRatesFromAPI,
+    addCustomCurrency,
+    deleteCustomCurrency,
+    enableCurrency,
   };
 };

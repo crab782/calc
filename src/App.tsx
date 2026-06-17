@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard';
 import { AddRecord } from './pages/AddRecord';
 import { History } from './pages/History';
 import { Settings } from './pages/Settings';
+import { ExchangeRate } from './pages/ExchangeRate';
 import { Accounts } from './pages/Accounts';
 import { FinancialConfig } from './pages/FinancialConfig';
 import { BudgetPlan } from './pages/BudgetPlan';
@@ -48,6 +49,7 @@ function App() {
             {currentPage === 'add-record' && <AddRecord />}
             {currentPage === 'history' && <History />}
             {currentPage === 'settings' && <Settings />}
+            {currentPage === 'exchange-rate' && <ExchangeRate onBack={(page) => setCurrentPage(page)} />}
             {currentPage === 'accounts' && <Accounts />}
             {currentPage === 'financial-config' && <FinancialConfig />}
             {currentPage === 'budget-plan' && <BudgetPlan onNavigate={handleBudgetNavigate} />}

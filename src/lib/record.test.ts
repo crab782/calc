@@ -5,13 +5,15 @@ import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT, DEFAULT_INCOME_
 
 // Create a mock store that can be reset
 const createMockStore = (): DataSchema => ({
-  version: '1.2.0',
+  version: '1.8.0',
   records: [],
   categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
   accounts: [{ ...DEFAULT_ACCOUNT }],
   incomeRules: [{ ...DEFAULT_INCOME_RULE }],
   financialSources: [],
   budgetPlans: [],
+  customCurrencies: [],
+  exchangeRates: { rates: {}, baseCurrency: 'CNY', lastUpdatedAt: Date.now(), source: 'default' },
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });
@@ -855,7 +857,7 @@ describe('RecordService', () => {
     it('应成功导入有效数据', () => {
       // Arrange
       const data: DataSchema = {
-        version: '1.2.0',
+        version: '1.8.0',
         records: [{
           id: 'test-id-1',
           type: 'expense',
@@ -875,6 +877,8 @@ describe('RecordService', () => {
         incomeRules: [{ ...DEFAULT_INCOME_RULE }],
         financialSources: [],
         budgetPlans: [],
+        customCurrencies: [],
+        exchangeRates: { rates: {}, baseCurrency: 'CNY', lastUpdatedAt: Date.now(), source: 'default' },
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

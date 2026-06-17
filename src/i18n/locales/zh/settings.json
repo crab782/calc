@@ -34,5 +34,13 @@
   "deleteCategoryConfirm": "确定删除此分类？",
   "categoryInUse": "该分类正在使用中，无法删除",
   "addCategorySuccess": "分类添加成功",
-  "deleteCategorySuccess": "分类删除成功"
+  "deleteCategorySuccess": "分类删除成功",
+  "currencyManagement": "币种管理",
+  "manageCurrencies": "管理可用币种",
+  "foreignCurrencies": "预设外币",
+  "customCurrencies": "自定义币种",
+  "addCustomCurrency": "添加自定义币种",
+  "noCustomCurrencies": "暂无自定义币种",
+  "currencyCode": "货币代码",
+  "currencyName": "货币名称"
 }

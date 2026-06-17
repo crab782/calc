@@ -1,19 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Wallet, Plus, Pencil, Globe, Coins } from 'lucide-react';
-import { Card, Button, Modal, Form, Input, Select, Checkbox, Tag, Typography, Space, Empty, Row, Col, message, Popconfirm, Alert } from 'antd';
+import { Wallet, Plus, Pencil } from 'lucide-react';
+import { Card, Button, Modal, Form, Input, Select, Typography, Popconfirm, message } from 'antd';
 import { useRecords } from '../hooks/useRecords';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Account, AccountType } from '../types/record';
 
 const { Title, Text } = Typography;
-
-// 外币配置列表
-const FOREIGN_CURRENCIES = [
-  { value: 'USD', label: '美元 (USD)' },
-  { value: 'EUR', label: '欧元 (EUR)' },
-  { value: 'GBP', label: '英镑 (GBP)' },
-  { value: 'JPY', label: '日元 (JPY)' },
-];
 
 // 账户类型选项（用于新建账户）
 const ACCOUNT_TYPE_OPTIONS = [
@@ -77,16 +69,26 @@ const AccountCard = ({
       hoverable
       style={{ borderRadius: 8 }}
       title={
-        <Space>
-          <Wallet style={{ fontSize: 20, color: '#1677ff' }} />
+        <span>
+          <Wallet style={{ fontSize: 20, color: '#1677ff', marginRight: 8 }} />
           <Text strong>{account.name}</Text>
-          <Tag color={accountConfig?.color || 'default'}>
-            {accountConfig?.label || account.accountType}
-          </Tag>
-        </Space>
+          <span style={{ marginLeft: 8 }}>
+            <span style={{
+              display: 'inline-block',
+              padding: '2px 8px',
+              borderRadius: 4,
+              fontSize: 12,
+              background: accountConfig?.color === 'success' ? '#f6ffed' : accountConfig?.color === 'processing' ? '#e6f4ff' : accountConfig?.color === 'warning' ? '#fffbe6' : accountConfig?.color === 'error' ? '#fff2f0' : '#fafafa',
+              color: accountConfig?.color === 'success' ? '#52c41a' : accountConfig?.color === 'processing' ? '#1677ff' : accountConfig?.color === 'warning' ? '#faad14' : accountConfig?.color === 'error' ? '#ff4d4f' : '#666',
+              border: `1px solid ${accountConfig?.color === 'success' ? '#b7eb8f' : accountConfig?.color === 'processing' ? '#91caff' : accountConfig?.color === 'warning' ? '#ffe58f' : accountConfig?.color === 'error' ? '#ffccc7' : '#d9d9d9'}`,
+            }}>
+              {accountConfig?.label || account.accountType}
+            </span>
+          </span>
+        </span>
       }
       extra={
-        <Space size={4}>
+        <span>
           <Button
             type="text"
             size="small"
@@ -101,9 +103,9 @@ const AccountCard = ({
             cancelText="取消"
             okButtonProps={{ danger: true }}
           >
-            <Button type="text" size="small" danger icon={<span style={{ fontSize: 14 }}></span>} />
+            <Button type="text" size="small" danger icon={<span style={{ fontSize: 14 }}></span>} style={{ marginLeft: 4 }} />
           </Popconfirm>
-        </Space>
+        </span>
       }
     >
       <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
@@ -131,8 +133,6 @@ export const Accounts = () => {
     addAccount,
     deleteAccount,
     updateAccount,
-    createCurrencyAccounts,
-    disableCurrency,
   } = useRecords();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState<string | null>(null);
@@ -141,54 +141,6 @@ export const Accounts = () => {
   const [editName, setEditName] = useState('');
   const [editBalance, setEditBalance] = useState('');
   const [form] = Form.useForm();
-
-  // 获取所有可用币种（去重）
-  const availableCurrencies = useMemo(() => {
-    const currencies = accounts.map(a => a.currency);
-    return [...new Set(currencies)];
-  }, [accounts]);
-
-  // 当前默认币种
-  const defaultCurrency = useMemo(() => {
-    const defaultAccount = accounts.find(a => a.isDefault);
-    return defaultAccount?.currency || 'CNY';
-  }, [accounts]);
-
-  // 设置默认币种
-  const handleSetDefaultCurrency = (currency: string) => {
-    const account = accounts.find(a => a.currency === currency && a.visible === true);
-    if (account) {
-      // setDefaultAccount is removed from useRecords, skip
-      message.success(t.accounts.setDefaultSuccess);
-    }
-  };
-
-  // 外币启用状态
-  const enabledCurrencies = useMemo(() => {
-    const enabled: string[] = [];
-    FOREIGN_CURRENCIES.forEach(fc => {
-      const currencyAccounts = accounts.filter(a => a.currency === fc.value);
-      if (currencyAccounts.some(a => a.visible === true)) {
-        enabled.push(fc.value);
-      }
-    });
-    return enabled;
-  }, [accounts]);
-
-  // 处理外币启用/禁用
-  const handleCurrencyToggle = (currency: string, enabled: boolean) => {
-    if (enabled) {
-      createCurrencyAccounts(currency);
-      message.success(`${currency} 币种已启用`);
-    } else {
-      const result = disableCurrency(currency);
-      if (result.success) {
-        message.success(`${currency} 币种已禁用`);
-      } else {
-        message.error(result.message);
-      }
-    }
-  };
 
   // 账户列表排序
   const visibleAccounts = useMemo(() => {
@@ -323,87 +275,33 @@ export const Accounts = () => {
         </Button>
       </div>
 
-      {/* 默认币种设置 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Space align="center">
-          <Globe style={{ fontSize: 16, color: '#6b7280' }} />
-          <Text>默认币种</Text>
-          <Select
-            value={defaultCurrency}
-            onChange={handleSetDefaultCurrency}
-            style={{ width: 160 }}
-            options={availableCurrencies.map(c => ({
-              value: c,
-              label: `${c} (${CURRENCY_SYMBOLS[c] || ''})`,
-            }))}
-          />
-          <Text type="secondary" style={{ fontSize: 12 }}>（影响总览和统计的币种基准）</Text>
-        </Space>
-      </Card>
-
-      {/* 支持的外币 */}
-      <Card style={{ marginBottom: 16 }} title={<Space><Coins style={{ fontSize: 16 }} /><Text>支持的外币</Text></Space>}>
-        <Row gutter={[12, 12]}>
-          {FOREIGN_CURRENCIES.map((fc) => {
-            const isEnabled = enabledCurrencies.includes(fc.value);
-            return (
-              <Col span={6} key={fc.value}>
-                <Checkbox
-                  checked={isEnabled}
-                  onChange={(e) => handleCurrencyToggle(fc.value, e.target.checked)}
-                  style={{ width: '100%', padding: 8 }}
-                >
-                  <Text>{fc.label}</Text>
-                </Checkbox>
-              </Col>
-            );
-          })}
-        </Row>
-      </Card>
-
-      {/* 单账户提示 */}
-      {accounts.length === 1 && (
-        <Alert
-          message={t.accounts.singleAccountTip}
-          type="info"
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
-      )}
-
       {/* 账户列表 */}
       {visibleAccounts.length === 0 ? (
-        <Empty description={t.accounts.noAccounts} />
+        <div style={{ textAlign: 'center', padding: '48px 0', color: '#999' }}>
+          <Text>暂无账户</Text>
+        </div>
       ) : (
-        <Space direction="vertical" size={24} style={{ width: '100%' }}>
+        <div>
           {accountsByCurrency.currencies.map((currency) => (
-            <div key={currency}>
-              <Space style={{ marginBottom: 12 }}>
-                {currency === 'CNY' ? (
-                  <Coins style={{ fontSize: 14 }} />
-                ) : (
-                  <Globe style={{ fontSize: 14 }} />
-                )}
-                <Text type="secondary" style={{ fontSize: 14 }}>
-                  {currency === 'CNY' ? '本币账户' : `${currency} 账户`}
-                </Text>
-              </Space>
-              <Row gutter={[16, 16]}>
+            <div key={currency} style={{ marginBottom: 24 }}>
+              <Text type="secondary" style={{ fontSize: 14, display: 'block', marginBottom: 12 }}>
+                {currency === 'CNY' ? '本币账户' : `${currency} 账户`}
+              </Text>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                 {accountsByCurrency.groups[currency].map((account) => (
-                  <Col xs={24} sm={12} lg={8} key={account.id}>
-                    <AccountCard
-                      account={account}
-                      balance={accountBalances[account.id] ?? 0}
-                      formatBalance={formatBalance}
-                      handleOpenEdit={handleOpenEdit}
-                      handleDeleteAccount={handleDeleteAccount}
-                    />
-                  </Col>
+                  <AccountCard
+                    key={account.id}
+                    account={account}
+                    balance={accountBalances[account.id] ?? 0}
+                    formatBalance={formatBalance}
+                    handleOpenEdit={handleOpenEdit}
+                    handleDeleteAccount={handleDeleteAccount}
+                  />
                 ))}
-              </Row>
+              </div>
             </div>
           ))}
-        </Space>
+        </div>
       )}
 
       {/* 添加账户弹窗 */}

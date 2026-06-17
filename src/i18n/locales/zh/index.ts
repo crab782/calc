@@ -3,6 +3,7 @@ import dashboard from './dashboard.json';
 import addRecord from './addRecord.json';
 import accounts from './accounts.json';
 import financialConfig from './financialConfig.json';
+import exchangeRate from './exchangeRate.json';
 import settings from './settings.json';
 import charts from './charts.json';
 import history from './history.json';
@@ -14,6 +15,7 @@ export default {
   addRecord,
   accounts,
   financialConfig,
+  exchangeRate,
   settings,
   ...charts,
   history,

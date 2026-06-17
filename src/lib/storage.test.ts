@@ -576,6 +576,8 @@ describe('RecordDAO', () => {
         incomeRules: [{ ...DEFAULT_INCOME_RULE }],
         financialSources: [],
         budgetPlans: [],
+        customCurrencies: [],
+        exchangeRates: { rates: {}, baseCurrency: 'CNY', lastUpdatedAt: Date.now(), source: 'default' },
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -658,6 +660,8 @@ describe('RecordDAO', () => {
         incomeRules: [],
         financialSources: [],
         budgetPlans: [],
+        customCurrencies: [],
+        exchangeRates: { rates: {}, baseCurrency: 'CNY', lastUpdatedAt: Date.now(), source: 'default' as const },
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -692,6 +696,8 @@ describe('RecordDAO', () => {
         incomeRules: [],
         financialSources: [],
         budgetPlans: [],
+        customCurrencies: [],
+        exchangeRates: { rates: {}, baseCurrency: 'CNY', lastUpdatedAt: Date.now(), source: 'default' as const },
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -726,6 +732,8 @@ describe('RecordDAO', () => {
         incomeRules: [],
         financialSources: [],
         budgetPlans: [],
+        customCurrencies: [],
+        exchangeRates: { rates: {}, baseCurrency: 'CNY', lastUpdatedAt: Date.now(), source: 'default' as const },
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -756,6 +764,8 @@ describe('RecordDAO', () => {
         incomeRules: [],
         financialSources: [],
         budgetPlans: [],
+        customCurrencies: [],
+        exchangeRates: { rates: {}, baseCurrency: 'CNY', lastUpdatedAt: Date.now(), source: 'default' as const },
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
