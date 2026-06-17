@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType } from '../types/record';
 import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_INCOME_RULE } from '../types/record';
 
 const STORAGE_KEY = 'expense_tracker_data';
@@ -41,6 +41,7 @@ export class RecordDAO {
       categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
       accounts: createDefaultAccounts(),
       incomeRules: [DEFAULT_INCOME_RULE],
+      financialSources: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -105,6 +106,34 @@ export class RecordDAO {
             r.entries = this.generateEntriesForOldRecord(r, 'CNY');
           });
         }
+      },
+      '1.5.0': (s) => {
+        s.version = '1.6.0';
+        // 将旧的 incomeRules 迁移到 financialSources
+        if (!s.financialSources) {
+          s.financialSources = [];
+        }
+        // 迁移 incomeRules 到 financialSources（类型设置为 'income'）
+        if (s.incomeRules && s.incomeRules.length > 0) {
+          s.incomeRules.forEach((rule) => {
+            // 跳过默认规则
+            if (rule.id === 'default-income-rule') {
+              return;
+            }
+            // 转换为 FinancialSource
+            s.financialSources.push({
+              id: rule.id,
+              type: 'income',
+              name: rule.name,
+              currency: rule.currency,
+              amount: rule.amount,
+              period: rule.period,
+              createdAt: rule.createdAt,
+            });
+          });
+        }
+        // 删除旧的 incomeRules 字段（保留字段以兼容旧版本）
+        // 注意：这里不删除 incomeRules 字段，以保持向后兼容
       },
     };
 
@@ -442,6 +471,47 @@ export class RecordDAO {
     }
   }
 
+  // 财务来源管理方法
+  getFinancialSources(): FinancialSource[] {
+    const schema = this.getSchema();
+    return [...(schema.financialSources || [])];
+  }
+
+  getFinancialSourcesByType(type: FinancialSourceType): FinancialSource[] {
+    const schema = this.getSchema();
+    return (schema.financialSources || []).filter((s) => s.type === type);
+  }
+
+  addFinancialSource(source: FinancialSource): void {
+    const schema = this.getSchema();
+    if (!schema.financialSources) {
+      schema.financialSources = [];
+    }
+    schema.financialSources.push(source);
+    this.saveSchema(schema);
+  }
+
+  updateFinancialSource(id: string, updates: Partial<FinancialSource>): void {
+    const schema = this.getSchema();
+    if (!schema.financialSources) {
+      schema.financialSources = [];
+    }
+    const index = schema.financialSources.findIndex((s) => s.id === id);
+    if (index >= 0) {
+      schema.financialSources[index] = { ...schema.financialSources[index], ...updates };
+      this.saveSchema(schema);
+    }
+  }
+
+  deleteFinancialSource(id: string): void {
+    const schema = this.getSchema();
+    if (!schema.financialSources) {
+      schema.financialSources = [];
+    }
+    schema.financialSources = schema.financialSources.filter((s) => s.id !== id);
+    this.saveSchema(schema);
+  }
+
   exportData(): DataSchema {
     return this.getSchema();
   }
@@ -509,6 +579,17 @@ export class RecordDAO {
       }
     }
 
+    // 验证 financialSources 字段（可选，用于兼容旧版本数据）
+    if (schema.financialSources !== undefined && !Array.isArray(schema.financialSources)) {
+      return false;
+    }
+
+    for (const financialSource of schema.financialSources || []) {
+      if (!this.validateFinancialSource(financialSource)) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -558,6 +639,51 @@ export class RecordDAO {
       (r.period === 'daily' || r.period === 'weekly' || r.period === 'monthly' || r.period === 'yearly') &&
       typeof r.createdAt === 'number'
     );
+  }
+
+  private validateFinancialSource(source: unknown): source is FinancialSource {
+    if (typeof source !== 'object' || source === null) return false;
+    
+    const s = source as FinancialSource;
+    
+    const validTypes = ['income', 'expense', 'investment', 'loan'];
+    const validPeriods = ['daily', 'weekly', 'monthly', 'yearly', 'once'];
+    const validInvestmentTypes = ['once', 'recurring'];
+    const validInterestTypes = ['equal-payment', 'equal-principal', 'interest-first'];
+    
+    // 必填字段验证
+    if (
+      typeof s.id !== 'string' ||
+      !validTypes.includes(s.type) ||
+      typeof s.name !== 'string' ||
+      typeof s.currency !== 'string' ||
+      typeof s.amount !== 'number' ||
+      !validPeriods.includes(s.period) ||
+      typeof s.createdAt !== 'number'
+    ) {
+      return false;
+    }
+    
+    // 投资特有字段验证（可选）
+    if (s.investmentType !== undefined && !validInvestmentTypes.includes(s.investmentType)) {
+      return false;
+    }
+    if (s.expectedReturn !== undefined && typeof s.expectedReturn !== 'number') {
+      return false;
+    }
+    
+    // 贷款特有字段验证（可选）
+    if (s.principal !== undefined && typeof s.principal !== 'number') {
+      return false;
+    }
+    if (s.interestRate !== undefined && typeof s.interestRate !== 'number') {
+      return false;
+    }
+    if (s.interestType !== undefined && !validInterestTypes.includes(s.interestType)) {
+      return false;
+    }
+    
+    return true;
   }
 }
 

@@ -1,4 +1,4 @@
-import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry } from '../types/record';
+import type { ExpenseRecord, DataSchema, Category, Account, IncomeRule, Entry, FinancialSource, FinancialSourceType, FinancialPeriod } from '../types/record';
 import { recordDAO } from './storage';
 
 /**
@@ -542,6 +542,210 @@ export class RecordService {
   // 检查币种是否启用
   isCurrencyEnabled(currency: string): boolean {
     return recordDAO.isCurrencyEnabled(currency);
+  }
+
+  // ========== 财务来源管理方法 ==========
+
+  /**
+   * 获取所有财务来源
+   */
+  getFinancialSources(): FinancialSource[] {
+    return recordDAO.getFinancialSources();
+  }
+
+  /**
+   * 按类型获取财务来源
+   */
+  getFinancialSourcesByType(type: FinancialSourceType): FinancialSource[] {
+    return recordDAO.getFinancialSourcesByType(type);
+  }
+
+  /**
+   * 生成财务来源ID
+   */
+  generateFinancialSourceId(): string {
+    return 'fs-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  /**
+   * 添加财务来源
+   */
+  addFinancialSource(source: Omit<FinancialSource, 'id' | 'createdAt'> & { id?: string }): FinancialSource {
+    const newSource: FinancialSource = {
+      ...source,
+      id: source.id || this.generateFinancialSourceId(),
+      createdAt: Date.now(),
+    };
+    recordDAO.addFinancialSource(newSource);
+    return newSource;
+  }
+
+  /**
+   * 更新财务来源
+   */
+  updateFinancialSource(id: string, updates: Partial<FinancialSource>): void {
+    recordDAO.updateFinancialSource(id, updates);
+  }
+
+  /**
+   * 删除财务来源
+   */
+  deleteFinancialSource(id: string): { success: boolean; message: string } {
+    recordDAO.deleteFinancialSource(id);
+    return { success: true, message: '财务来源删除成功' };
+  }
+
+  // ========== 汇总计算方法 ==========
+
+  /**
+   * 将周期金额转换为月度金额
+   * @param amount 金额
+   * @param period 周期
+   * @returns 月度金额
+   */
+  private convertToMonthlyAmount(amount: number, period: FinancialPeriod): number {
+    switch (period) {
+      case 'daily':
+        return amount * 30;
+      case 'weekly':
+        return amount * 4;
+      case 'monthly':
+        return amount;
+      case 'yearly':
+        return amount / 12;
+      case 'once':
+        return 0; // 一次性不计入月度
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * 计算预期月收入
+   * 将所有收入类型的财务来源按周期转换为月度金额
+   */
+  calculateMonthlyIncome(): number {
+    const incomeSources = this.getFinancialSourcesByType('income');
+    return incomeSources.reduce((total, source) => {
+      return total + this.convertToMonthlyAmount(source.amount, source.period);
+    }, 0);
+  }
+
+  /**
+   * 计算预期月支出
+   * 将所有支出类型的财务来源按周期转换为月度金额
+   */
+  calculateMonthlyExpense(): number {
+    const expenseSources = this.getFinancialSourcesByType('expense');
+    return expenseSources.reduce((total, source) => {
+      return total + this.convertToMonthlyAmount(source.amount, source.period);
+    }, 0);
+  }
+
+  /**
+   * 计算预期月结余
+   * 收入 - 支出
+   */
+  calculateMonthlyBalance(): number {
+    return this.calculateMonthlyIncome() - this.calculateMonthlyExpense();
+  }
+
+  // ========== 投资收益计算方法 ==========
+
+  /**
+   * 计算预期投资收益
+   * 对于一次性投资：预期收益 = 金额 * 预期收益率
+   * 对于定投：预期月收益 = 月投入金额 * 预期月收益率
+   */
+  calculateExpectedInvestmentReturn(): number {
+    const investmentSources = this.getFinancialSourcesByType('investment');
+    return investmentSources.reduce((total, source) => {
+      const expectedReturn = source.expectedReturn || 0;
+      if (expectedReturn === 0) {
+        return total;
+      }
+
+      // 一次性投资：计算总收益（不计入月度）
+      if (source.investmentType === 'once') {
+        return total; // 一次性投资收益不计入月度收益
+      }
+
+      // 定投：计算月收益
+      const monthlyAmount = this.convertToMonthlyAmount(source.amount, source.period);
+      // 预期收益率是年化收益率，转换为月收益率
+      const monthlyReturnRate = expectedReturn / 100 / 12;
+      return total + (monthlyAmount * monthlyReturnRate);
+    }, 0);
+  }
+
+  // ========== 贷款还款计算方法 ==========
+
+  /**
+   * 计算月还款金额
+   * 根据还款方式计算月还款金额
+   */
+  calculateMonthlyLoanPayment(): number {
+    const loanSources = this.getFinancialSourcesByType('loan');
+    return loanSources.reduce((total, source) => {
+      const principal = source.principal || source.amount;
+      const interestRate = source.interestRate || 0;
+      const interestType = source.interestType || 'equal-payment';
+
+      if (interestRate === 0) {
+        // 无息贷款，按周期平摊本金
+        return total + this.convertToMonthlyAmount(principal, source.period);
+      }
+
+      // 年利率转换为月利率
+      const monthlyRate = interestRate / 100 / 12;
+
+      // 根据还款方式计算月还款金额
+      switch (interestType) {
+        case 'equal-payment': {
+          // 等额本息：月还款 = 本金 * 月利率 * (1+月利率)^还款月数 / ((1+月利率)^还款月数 - 1)
+          // 假设还款周期为月，还款月数为 1（简化计算）
+          // 实际应该有还款期限，这里简化处理
+          const months = this.getLoanMonths(source.period);
+          if (months <= 0) return total;
+          const temp = Math.pow(1 + monthlyRate, months);
+          return total + (principal * monthlyRate * temp) / (temp - 1);
+        }
+        case 'equal-principal': {
+          // 等额本金：月还款 = 本金/还款月数 + (本金-已还本金)*月利率
+          // 简化计算：首月还款
+          const months = this.getLoanMonths(source.period);
+          if (months <= 0) return total;
+          const monthlyPrincipal = principal / months;
+          return total + monthlyPrincipal + (principal * monthlyRate);
+        }
+        case 'interest-first': {
+          // 先息后本：月还款 = 本金 * 月利率（只还利息）
+          return total + (principal * monthlyRate);
+        }
+        default:
+          return total;
+      }
+    }, 0);
+  }
+
+  /**
+   * 根据周期获取还款月数
+   */
+  private getLoanMonths(period: FinancialPeriod): number {
+    switch (period) {
+      case 'daily':
+        return 1 / 30;
+      case 'weekly':
+        return 1 / 4;
+      case 'monthly':
+        return 1;
+      case 'yearly':
+        return 12;
+      case 'once':
+        return 0;
+      default:
+        return 0;
+    }
   }
 }
 

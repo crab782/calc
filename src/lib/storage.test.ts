@@ -574,6 +574,7 @@ describe('RecordDAO', () => {
         categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES],
         accounts: [DEFAULT_ACCOUNT],
         incomeRules: [{ ...DEFAULT_INCOME_RULE }],
+        financialSources: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -654,6 +655,7 @@ describe('RecordDAO', () => {
         categories: [],
         accounts: [],
         incomeRules: [],
+        financialSources: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -686,6 +688,7 @@ describe('RecordDAO', () => {
         categories: [],
         accounts: [],
         incomeRules: [],
+        financialSources: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -718,6 +721,7 @@ describe('RecordDAO', () => {
         categories: [],
         accounts: [],
         incomeRules: [],
+        financialSources: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -746,6 +750,7 @@ describe('RecordDAO', () => {
           visible: true,
         }] as Account[],
         incomeRules: [],
+        financialSources: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

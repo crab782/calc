@@ -49,12 +49,41 @@ export interface IncomeRule {
   createdAt: number;
 }
 
+// 资金来源类型
+export type FinancialSourceType = 'income' | 'expense' | 'investment' | 'loan';
+
+// 投资类型
+export type InvestmentType = 'once' | 'recurring';
+
+// 贷款还款方式
+export type InterestType = 'equal-payment' | 'equal-principal' | 'interest-first';
+
+// 资金来源周期
+export type FinancialPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'once';
+
+// 资金来源接口
+export interface FinancialSource {
+  id: string;
+  type: FinancialSourceType;
+  name: string;
+  currency: string;
+  amount: number;
+  period: FinancialPeriod;
+  investmentType?: InvestmentType; // 投资特有字段
+  expectedReturn?: number; // 投资特有字段：预期收益率
+  principal?: number; // 贷款特有字段：本金
+  interestRate?: number; // 贷款特有字段：利率
+  interestType?: InterestType; // 贷款特有字段：还款方式
+  createdAt: number;
+}
+
 export interface DataSchema {
   version: string;
   records: ExpenseRecord[];
   categories: Category[];
   accounts: Account[];
   incomeRules: IncomeRule[];
+  financialSources: FinancialSource[];
   createdAt: number;
   updatedAt: number;
 }
@@ -99,4 +128,4 @@ export const DEFAULT_INCOME_RULE: IncomeRule = {
   createdAt: Date.now(),
 };
 
-export const CURRENT_VERSION = '1.5.0';
+export const CURRENT_VERSION = '1.6.0';

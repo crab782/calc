@@ -2,7 +2,7 @@ import sidebar from './sidebar.json';
 import dashboard from './dashboard.json';
 import addRecord from './addRecord.json';
 import accounts from './accounts.json';
-import incomeRules from './incomeRules.json';
+import financialConfig from './financialConfig.json';
 import settings from './settings.json';
 import charts from './charts.json';
 import history from './history.json';
@@ -13,7 +13,7 @@ export default {
   dashboard,
   addRecord,
   accounts,
-  incomeRules,
+  financialConfig,
   settings,
   ...charts,
   history,
