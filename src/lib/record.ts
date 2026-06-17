@@ -289,6 +289,21 @@ export class RecordService {
     // 当前月份
     const currentMonthStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
 
+    // 计算预期月收入和支出（基于财务来源，仅默认账户币种）
+    const expectedIncomeSources = this.getFinancialSourcesByType('income').filter(
+      source => source.currency === currency
+    );
+    const expectedExpenseSources = this.getFinancialSourcesByType('expense').filter(
+      source => source.currency === currency
+    );
+
+    const expectedMonthlyIncome = expectedIncomeSources.reduce(
+      (total, source) => total + this.convertToMonthlyAmount(source.amount, source.period), 0
+    );
+    const expectedMonthlyExpense = expectedExpenseSources.reduce(
+      (total, source) => total + this.convertToMonthlyAmount(source.amount, source.period), 0
+    );
+
     // 生成结果数据
     const result: MonthlyDataWithPrediction[] = [];
 
@@ -308,12 +323,9 @@ export class RecordService {
         income = actualMonthlyData[month].income;
         expense = actualMonthlyData[month].expense;
       } else if (isFuture) {
-        // 未来月份：收入=0，支出=0，结余保持最近实际月份的值
-        income = 0;
-        expense = 0;
-        balance = lastActualBalance;
-        result.push({ month, income, expense, balance, isActual });
-        continue;
+        // 未来月份：使用财务来源的预期值
+        income = expectedMonthlyIncome;
+        expense = expectedMonthlyExpense;
       } else {
         // 过去无数据月份：填充为0（属于记账历史的一部分）
         income = 0;

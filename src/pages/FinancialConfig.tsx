@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Wallet, Plus, PiggyBank, CreditCard } from 'lucide-react';
-import { Card, Button, Modal, Form, Input, Select, Typography, Space, Empty, Row, Col, message, Popconfirm, Divider, Tag } from 'antd';
+import { TrendingUp, TrendingDown, Wallet, Plus, PiggyBank, CreditCard, Pencil, Delete } from 'lucide-react';
+import { Card, Button, Modal, Form, Input, Select, Typography, Space, Empty, Row, Col, message, Popconfirm, Collapse, Table, Tag } from 'antd';
+import type { TableColumnsType } from 'antd';
 import { useRecords } from '../hooks/useRecords';
 import type {
   FinancialSourceType,
@@ -11,6 +12,7 @@ import type {
 } from '../types/record';
 
 const { Title, Text } = Typography;
+const { Panel } = Collapse;
 
 // 币种选项
 const CURRENCY_OPTIONS = [
@@ -57,129 +59,6 @@ const INTEREST_TYPE_LABELS: Record<InterestType, string> = {
   'equal-payment': '等额本息',
   'equal-principal': '等额本金',
   'interest-first': '先息后本',
-};
-
-// SourceCard 子组件
-const SourceCard = ({
-  source,
-  formatAmount,
-  openEditModal,
-  handleDelete,
-}: {
-  source: FinancialSource;
-  formatAmount: (amount: number, currency: string) => string;
-  openEditModal: (source: FinancialSource) => void;
-  handleDelete: (id: string) => void;
-}) => {
-  const iconMap: Record<FinancialSourceType, { icon: React.ReactNode; color: string; tagColor: string }> = {
-    income: {
-      icon: <TrendingUp style={{ fontSize: 20, color: '#52c41a' }} />,
-      color: '#52c41a',
-      tagColor: 'success',
-    },
-    expense: {
-      icon: <TrendingDown style={{ fontSize: 20, color: '#ff4d4f' }} />,
-      color: '#ff4d4f',
-      tagColor: 'error',
-    },
-    investment: {
-      icon: <PiggyBank style={{ fontSize: 20, color: '#722ed1' }} />,
-      color: '#722ed1',
-      tagColor: 'purple',
-    },
-    loan: {
-      icon: <CreditCard style={{ fontSize: 20, color: '#fa8c16' }} />,
-      color: '#fa8c16',
-      tagColor: 'orange',
-    },
-  };
-
-  const typeNames: Record<FinancialSourceType, string> = {
-    income: '收入',
-    expense: '支出',
-    investment: '投资',
-    loan: '贷款',
-  };
-
-  const config = iconMap[source.type];
-
-  return (
-    <Card
-      hoverable
-      style={{ borderRadius: 8 }}
-      title={
-        <Space>
-          {config.icon}
-          <Text strong>{source.name}</Text>
-          <Tag color={config.tagColor}>{typeNames[source.type]}</Tag>
-        </Space>
-      }
-      extra={
-        <Space size={4}>
-          <Button type="text" size="small" onClick={() => openEditModal(source)}>编辑</Button>
-          <Popconfirm
-            title="确认删除"
-            description="确定要删除这条记录吗？此操作无法撤销。"
-            onConfirm={() => handleDelete(source.id)}
-            okText="确定"
-            cancelText="取消"
-            okButtonProps={{ danger: true }}
-          >
-            <Button type="text" size="small" danger>删除</Button>
-          </Popconfirm>
-        </Space>
-      }
-    >
-      <Space direction="vertical" style={{ width: '100%' }} size="small">
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Text type="secondary">金额</Text>
-          <Text strong style={{ fontSize: 18 }}>{formatAmount(source.amount, source.currency)}</Text>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Text type="secondary">周期</Text>
-          <Tag>{PERIOD_OPTIONS.find(p => p.value === source.period)?.label}</Tag>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Text type="secondary">币种</Text>
-          <Text>{source.currency}</Text>
-        </div>
-        {source.type === 'investment' && source.expectedReturn !== undefined && (
-          <>
-            <Divider style={{ margin: '8px 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text type="secondary">预期收益率</Text>
-              <Text>{source.expectedReturn}%</Text>
-            </div>
-            {source.investmentType && (
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text type="secondary">投资类型</Text>
-                <Text>{INVESTMENT_TYPE_OPTIONS.find(i => i.value === source.investmentType)?.label}</Text>
-              </div>
-            )}
-          </>
-        )}
-        {source.type === 'loan' && source.principal !== undefined && (
-          <>
-            <Divider style={{ margin: '8px 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text type="secondary">本金</Text>
-              <Text>{formatAmount(source.principal, source.currency)}</Text>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text type="secondary">利率</Text>
-              <Text>{source.interestRate}%</Text>
-            </div>
-            {source.interestType && (
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text type="secondary">还款方式</Text>
-                <Text>{INTEREST_TYPE_LABELS[source.interestType]}</Text>
-              </div>
-            )}
-          </>
-        )}
-      </Space>
-    </Card>
-  );
 };
 
 export const FinancialConfig = () => {
@@ -286,29 +165,25 @@ export const FinancialConfig = () => {
   const handleAdd = async () => {
     try {
       const values = await form.validateFields();
-      const baseData = {
+
+      const sourceData: Omit<FinancialSource, 'id' | 'createdAt'> = {
         type: currentType,
         name: values.name.trim(),
         currency: values.currency,
         amount: values.amount,
         period: values.period,
-      };
-
-      let additionalData = {};
-      if (currentType === 'investment') {
-        additionalData = {
+        ...(currentType === 'investment' && {
           investmentType: values.investmentType,
           expectedReturn: values.expectedReturn,
-        };
-      } else if (currentType === 'loan') {
-        additionalData = {
+        }),
+        ...(currentType === 'loan' && {
           principal: values.principal,
           interestRate: values.interestRate,
           interestType: values.interestType,
-        };
-      }
+        }),
+      };
 
-      addFinancialSource({ ...baseData, ...additionalData } as any);
+      addFinancialSource(sourceData);
       message.success('添加成功');
       resetForm();
       setShowAddModal(false);
@@ -322,28 +197,24 @@ export const FinancialConfig = () => {
     try {
       if (!editingSource) return;
       const values = await form.validateFields();
-      const baseData = {
+
+      const updates: Partial<FinancialSource> = {
         name: values.name.trim(),
         currency: values.currency,
         amount: values.amount,
         period: values.period,
-      };
-
-      let additionalData = {};
-      if (currentType === 'investment') {
-        additionalData = {
+        ...(currentType === 'investment' && {
           investmentType: values.investmentType,
           expectedReturn: values.expectedReturn,
-        };
-      } else if (currentType === 'loan') {
-        additionalData = {
+        }),
+        ...(currentType === 'loan' && {
           principal: values.principal,
           interestRate: values.interestRate,
           interestType: values.interestType,
-        };
-      }
+        }),
+      };
 
-      updateFinancialSource(editingSource.id, { ...baseData, ...additionalData });
+      updateFinancialSource(editingSource.id, updates);
       message.success('更新成功');
       resetForm();
       setShowEditModal(false);
@@ -360,6 +231,190 @@ export const FinancialConfig = () => {
     } else {
       message.error(result.message);
     }
+  };
+
+  // Table 列配置
+  const getBaseColumns = (): TableColumnsType<FinancialSource> => {
+    const periodLabel = (period: FinancialPeriod) => PERIOD_OPTIONS.find(p => p.value === period)?.label || period;
+
+    return [
+      {
+        title: '名称',
+        dataIndex: 'name',
+        key: 'name',
+        width: 150,
+        render: (text: string) => <Text strong>{text}</Text>,
+      },
+      {
+        title: '币种',
+        dataIndex: 'currency',
+        key: 'currency',
+        width: 80,
+      },
+      {
+        title: '金额',
+        dataIndex: 'amount',
+        key: 'amount',
+        width: 120,
+        render: (amount: number, record: FinancialSource) => (
+          <Text strong>{formatAmount(amount, record.currency)}</Text>
+        ),
+      },
+      {
+        title: '周期',
+        dataIndex: 'period',
+        key: 'period',
+        width: 80,
+        render: (period: FinancialPeriod) => <Tag>{periodLabel(period)}</Tag>,
+      },
+      {
+        title: '月度金额',
+        key: 'monthly',
+        width: 120,
+        render: (_: unknown, record: FinancialSource) => {
+          const monthly = calculateMonthlyAmount(record.amount, record.period);
+          return monthly > 0 ? (
+            <Text>{formatAmount(monthly, record.currency)}</Text>
+          ) : (
+            <Text type="secondary">—</Text>
+          );
+        },
+      },
+      {
+        title: '操作',
+        key: 'action',
+        width: 100,
+        render: (_: unknown, record: FinancialSource) => (
+          <Space size="small">
+            <Button
+              type="text"
+              size="small"
+              icon={<Pencil style={{ fontSize: 14 }} />}
+              onClick={() => openEditModal(record)}
+            />
+            <Popconfirm
+              title="确认删除"
+              description="确定要删除这条记录吗？此操作无法撤销。"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+            >
+              <Button type="text" size="small" danger icon={<Delete style={{ fontSize: 14 }} />} />
+            </Popconfirm>
+          </Space>
+        ),
+      },
+    ];
+  };
+
+  const getInvestmentColumns = (): TableColumnsType<FinancialSource> => {
+    const baseCols = getBaseColumns();
+    const actionCol = baseCols.pop(); // 移除最后一列（操作）
+
+    return [
+      ...baseCols,
+      {
+        title: '预期收益率',
+        dataIndex: 'expectedReturn',
+        key: 'expectedReturn',
+        width: 100,
+        render: (value: number | undefined) => value !== undefined ? `${value}%` : '—',
+      },
+      {
+        title: '投资类型',
+        dataIndex: 'investmentType',
+        key: 'investmentType',
+        width: 100,
+        render: (value: InvestmentType | undefined) =>
+          value ? INVESTMENT_TYPE_OPTIONS.find(i => i.value === value)?.label : '—',
+      },
+      actionCol!,
+    ];
+  };
+
+  const getLoanColumns = (): TableColumnsType<FinancialSource> => {
+    const baseCols = getBaseColumns();
+    const actionCol = baseCols.pop();
+
+    return [
+      ...baseCols,
+      {
+        title: '本金',
+        dataIndex: 'principal',
+        key: 'principal',
+        width: 120,
+        render: (value: number | undefined, record: FinancialSource) =>
+          value !== undefined ? formatAmount(value, record.currency) : '—',
+      },
+      {
+        title: '利率',
+        dataIndex: 'interestRate',
+        key: 'interestRate',
+        width: 80,
+        render: (value: number | undefined) => value !== undefined ? `${value}%` : '—',
+      },
+      {
+        title: '还款方式',
+        dataIndex: 'interestType',
+        key: 'interestType',
+        width: 100,
+        render: (value: InterestType | undefined) =>
+          value ? INTEREST_TYPE_LABELS[value] : '—',
+      },
+      actionCol!,
+    ];
+  };
+
+  // 渲染 Collapse 面板
+  const renderSourceTable = (
+    sources: FinancialSource[],
+    type: FinancialSourceType,
+    icon: React.ReactNode,
+    title: string,
+  ) => {
+    const getColumns = () => {
+      switch (type) {
+        case 'investment': return getInvestmentColumns();
+        case 'loan': return getLoanColumns();
+        default: return getBaseColumns();
+      }
+    };
+
+    return (
+      <Panel
+        key={type}
+        header={
+          <span>
+            {icon}
+            <Text strong style={{ marginLeft: 8 }}>{title}配置</Text>
+            <Text type="secondary" style={{ marginLeft: 8 }}>({sources.length})</Text>
+          </span>
+        }
+        extra={
+          <Button
+            type="primary"
+            size="small"
+            icon={<Plus style={{ fontSize: 14 }} />}
+            onClick={(e) => { e.stopPropagation(); openAddModal(type); }}
+          >
+            添加
+          </Button>
+        }
+      >
+        {sources.length === 0 ? (
+          <Empty description={`暂无${title}配置，点击上方按钮添加`} />
+        ) : (
+          <Table
+            columns={getColumns()}
+            dataSource={sources}
+            rowKey="id"
+            pagination={false}
+            size="small"
+          />
+        )}
+      </Panel>
+    );
   };
 
   // 渲染表单
@@ -403,41 +458,7 @@ export const FinancialConfig = () => {
     </Form>
   );
 
-  // 渲染来源列表
-  const renderSourceList = (sources: FinancialSource[], type: FinancialSourceType, icon: React.ReactNode) => {
-    const typeNames: Record<FinancialSourceType, string> = { income: '收入', expense: '支出', investment: '投资', loan: '贷款' };
-    return (
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <Space>
-            {icon}
-            <Title level={4} style={{ margin: 0 }}>{typeNames[type]}配置</Title>
-          </Space>
-          <Button type="primary" icon={<Plus style={{ fontSize: 14 }} />} onClick={() => openAddModal(type)}>
-            添加
-          </Button>
-        </div>
-        {sources.length === 0 ? (
-          <Empty description={`暂无${typeNames[type]}配置，点击上方按钮添加`} />
-        ) : (
-          <Row gutter={[16, 16]}>
-            {sources.map((source) => (
-              <Col xs={24} sm={12} lg={8} key={source.id}>
-                <SourceCard
-                  source={source}
-                  formatAmount={formatAmount}
-                  openEditModal={openEditModal}
-                  handleDelete={handleDelete}
-                />
-              </Col>
-            ))}
-          </Row>
-        )}
-      </div>
-    );
-  };
-
-  // 渲染汇总卡片
+  // 渲染汇总
   const renderSummaryCard = (title: string, _subtitle: string, data: Record<string, number>, icon: React.ReactNode, color: string) => (
     <Card style={{ borderRadius: 8 }}>
       <Space align="center" style={{ marginBottom: 16 }}>
@@ -479,17 +500,16 @@ export const FinancialConfig = () => {
         </Col>
       </Row>
 
-      {/* 收入配置 */}
-      {renderSourceList(incomeSources, 'income', <TrendingUp style={{ fontSize: 20, color: '#52c41a' }} />)}
-
-      {/* 支出配置 */}
-      {renderSourceList(expenseSources, 'expense', <TrendingDown style={{ fontSize: 20, color: '#ff4d4f' }} />)}
-
-      {/* 投资配置 */}
-      {renderSourceList(investmentSources, 'investment', <PiggyBank style={{ fontSize: 20, color: '#722ed1' }} />)}
-
-      {/* 贷款配置 */}
-      {renderSourceList(loanSources, 'loan', <CreditCard style={{ fontSize: 20, color: '#fa8c16' }} />)}
+      {/* 财务来源配置 - Collapse + Table 布局 */}
+      <Collapse
+        defaultActiveKey={['income', 'expense', 'investment', 'loan']}
+        style={{ background: '#fff' }}
+      >
+        {renderSourceTable(incomeSources, 'income', <TrendingUp style={{ fontSize: 16, color: '#52c41a' }} />, '收入')}
+        {renderSourceTable(expenseSources, 'expense', <TrendingDown style={{ fontSize: 16, color: '#ff4d4f' }} />, '支出')}
+        {renderSourceTable(investmentSources, 'investment', <PiggyBank style={{ fontSize: 16, color: '#722ed1' }} />, '投资')}
+        {renderSourceTable(loanSources, 'loan', <CreditCard style={{ fontSize: 16, color: '#fa8c16' }} />, '贷款')}
+      </Collapse>
 
       {/* 添加弹窗 */}
       <Modal
