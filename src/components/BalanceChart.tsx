@@ -7,7 +7,7 @@ import { useStatistics } from '../hooks/useStatistics';
 export const BalanceChart = () => {
   const { language } = useLanguage();
   const { effectiveTheme } = useTheme();
-  const { monthlyDataWithPrediction, dailyDataWithPrediction } = useStatistics();
+  const { dailyDataWithPrediction } = useStatistics();
 
   const isDark = effectiveTheme === 'dark';
   const textColor = isDark ? '#9ca3af' : '#6b7280';
@@ -15,45 +15,32 @@ export const BalanceChart = () => {
   const splitLineColor = isDark ? '#374151' : '#f3f4f6';
   const tooltipBg = isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)';
   const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
-  const tooltipText = isDark ? '#e5e7eb' : '#374151';
 
-  const formatMonth = (month: string) => {
-    const [year, m] = month.split('-');
-    const monthNum = parseInt(m);
-    if (language === 'zh') {
-      return `${year}年${monthNum}月`;
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // 获取今天的日期字符串
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  // X轴标签：仅在每月1日显示月份
+  const xAxisLabels = dailyDataWithPrediction.map(day => {
+    const dayNum = parseInt(day.date.substring(8, 10));
+    if (dayNum === 1) {
+      const month = parseInt(day.date.substring(5, 7));
+      return language === 'zh' ? `${month}月` : monthNames[month - 1];
     }
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${monthNames[monthNum - 1]} ${year}`;
-  };
-
-  // Group daily data by month for tooltip detail
-  const dailyByMonth: Record<string, typeof dailyDataWithPrediction> = {};
-  dailyDataWithPrediction.forEach(day => {
-    const month = day.date.substring(0, 7);
-    if (!dailyByMonth[month]) dailyByMonth[month] = [];
-    dailyByMonth[month].push(day);
+    return ''; // 其他日期不显示标签
   });
 
-  // 构建数据系列：处理当前月的实际/预测边界
-  // 过去月份：实线（actual）
-  // 当前月：实线和虚线共享边界点（balanceAtBoundary = 今天的结余）
-  // 未来月份：虚线（predicted）
-  const actualData = monthlyDataWithPrediction.map((item) => {
-    if (item.isActual || item.isPartialActual) {
-      // 过去月份或当前月：显示结余
-      return item.isPartialActual ? (item.balanceAtBoundary ?? item.balance) : item.balance;
-    }
-    return null;
-  });
+  // 实际数据系列：今天及之前（实线）
+  const actualData = dailyDataWithPrediction.map(day =>
+    day.date <= todayStr ? day.balance : null
+  );
 
-  const predictedData = monthlyDataWithPrediction.map((item) => {
-    if (item.isPartialActual || !item.isActual) {
-      // 当前月或未来月份：显示结余
-      return item.isPartialActual ? (item.balanceAtBoundary ?? item.balance) : item.balance;
-    }
-    return null;
-  });
+  // 预测数据系列：今天及之后（虚线，从今天开始作为过渡点）
+  const predictedData = dailyDataWithPrediction.map(day =>
+    day.date >= todayStr ? day.balance : null
+  );
 
   const option = {
     tooltip: {
@@ -62,14 +49,27 @@ export const BalanceChart = () => {
       borderColor: tooltipBorder,
       borderWidth: 1,
       textStyle: {
-        color: tooltipText,
+        color: isDark ? '#e5e7eb' : '#374151',
       },
       formatter: (params: { axisValue: string; marker: string; seriesName: string; value: number | null; dataIndex: number }[]) => {
         const validParams = params.filter((p) => p.value !== null);
         if (validParams.length === 0) return '';
-        const monthStr = monthlyDataWithPrediction[validParams[0].dataIndex]?.month;
-        const monthDays = monthStr ? dailyByMonth[monthStr] : [];
-        let result = `<div style="font-weight: 600; margin-bottom: 8px;">${validParams[0].axisValue}</div>`;
+        const dayData = dailyDataWithPrediction[validParams[0].dataIndex];
+        if (!dayData) return '';
+
+        // 格式化日期显示
+        const dateParts = dayData.date.split('-');
+        const dateLabel = language === 'zh'
+          ? `${dateParts[0]}年${parseInt(dateParts[1])}月${parseInt(dateParts[2])}日`
+          : `${monthNames[parseInt(dateParts[1]) - 1]} ${parseInt(dateParts[2])}, ${dateParts[0]}`;
+
+        const statusLabel = dayData.isActual
+          ? (language === 'zh' ? '实际数据' : 'Actual')
+          : (language === 'zh' ? '预测数据' : 'Predicted');
+
+        let result = `<div style="font-weight: 600; margin-bottom: 8px;">${dateLabel}</div>`;
+        result += `<div style="font-size: 12px; color: ${textColor}; margin-bottom: 4px;">${statusLabel}</div>`;
+
         validParams.forEach((item) => {
           const value = item.value ?? 0;
           result += `<div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
@@ -77,17 +77,13 @@ export const BalanceChart = () => {
             <span>${item.seriesName}: ¥${value.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
           </div>`;
         });
-        // Show daily breakdown for the hovered month
-        if (monthDays.length > 0) {
-          result += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid ${tooltipBorder};">`;
-          result += `<div style="font-size: 12px; color: ${textColor}; margin-bottom: 4px;">${language === 'zh' ? '每日明细' : 'Daily Detail'}</div>`;
-          monthDays.forEach(day => {
-            const dateLabel = day.date.substring(5); // MM-DD
-            const marker = day.isActual ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#52c41a;margin-right:4px;"></span>' : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#faad14;margin-right:4px;"></span>';
-            result += `<div style="font-size: 12px; margin: 2px 0;">${marker}${dateLabel}: +¥${day.income.toFixed(2)} / -¥${day.expense.toFixed(2)}</div>`;
-          });
-          result += '</div>';
-        }
+
+        // 显示当日收支明细
+        result += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid ${tooltipBorder};">`;
+        result += `<div style="font-size: 12px;">${language === 'zh' ? '当日收支' : 'Daily Flow'}</div>`;
+        result += `<div style="font-size: 12px; margin: 2px 0;">+¥${dayData.income.toFixed(2)} / -¥${dayData.expense.toFixed(2)}</div>`;
+        result += '</div>';
+
         return result;
       },
     },
@@ -111,7 +107,7 @@ export const BalanceChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: monthlyDataWithPrediction.map((item) => formatMonth(item.month)),
+      data: xAxisLabels,
       axisLine: {
         lineStyle: {
           color: axisLineColor,
@@ -123,6 +119,7 @@ export const BalanceChart = () => {
       axisLabel: {
         color: textColor,
         fontSize: 12,
+        interval: 0, // 显示所有标签（但大部分是空字符串）
       },
     },
     yAxis: {
@@ -172,10 +169,12 @@ export const BalanceChart = () => {
           },
         },
         symbol: 'circle',
-        symbolSize: 6,
+        symbolSize: 4,
         emphasis: {
           scale: 1.5,
         },
+        // 隐藏大部分数据点符号，仅在每月1日和边界点显示
+        showSymbol: false,
       },
       {
         name: language === 'zh' ? '预测结余' : 'Predicted Balance',
@@ -192,22 +191,25 @@ export const BalanceChart = () => {
           opacity: 0.6,
         },
         symbol: 'circle',
-        symbolSize: 6,
+        symbolSize: 4,
         emphasis: {
           scale: 1.5,
         },
+        showSymbol: false,
       },
     ],
   };
 
-  if (monthlyDataWithPrediction.length === 0) {
+  if (dailyDataWithPrediction.length === 0) {
     return (
       <Card bordered={false}>
         <Empty
           description={
             <div>
-              <p>暂无数据</p>
-              <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>添加交易记录后将显示月度趋势图表</p>
+              <p>{language === 'zh' ? '暂无数据' : 'No Data'}</p>
+              <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+                {language === 'zh' ? '添加交易记录后将显示趋势图表' : 'Add records to see the trend chart'}
+              </p>
             </div>
           }
         />
