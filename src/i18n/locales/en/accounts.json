@@ -27,5 +27,6 @@
   "editAccountBalancePlaceholder": "Please enter balance",
   "editSuccess": "Account information updated successfully",
   "invalidBalance": "Please enter a valid balance amount",
-  "delete": "Delete"
+  "delete": "Delete",
+  "defaultAccountLabel": "Default"
 }
