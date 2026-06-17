@@ -314,7 +314,7 @@ export const Accounts = () => {
   const editingAccount = accounts.find(a => a.id === showEditModal);
 
   return (
-    <div style={{ padding: 24, backgroundColor: '#fff', minHeight: '100%' }}>
+    <div style={{ padding: 24 }}>
       {/* 页面标题和添加按钮 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0 }}>{t.accounts.title}</Title>
