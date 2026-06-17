@@ -11,6 +11,7 @@ const createMockStore = (): DataSchema => ({
   accounts: [{ ...DEFAULT_ACCOUNT }],
   incomeRules: [{ ...DEFAULT_INCOME_RULE }],
   financialSources: [],
+  budgetPlans: [],
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });
@@ -873,6 +874,7 @@ describe('RecordService', () => {
         accounts: [{ ...DEFAULT_ACCOUNT }],
         incomeRules: [{ ...DEFAULT_INCOME_RULE }],
         financialSources: [],
+        budgetPlans: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

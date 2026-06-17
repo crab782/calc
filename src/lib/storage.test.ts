@@ -575,6 +575,7 @@ describe('RecordDAO', () => {
         accounts: [DEFAULT_ACCOUNT],
         incomeRules: [{ ...DEFAULT_INCOME_RULE }],
         financialSources: [],
+        budgetPlans: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -656,6 +657,7 @@ describe('RecordDAO', () => {
         accounts: [],
         incomeRules: [],
         financialSources: [],
+        budgetPlans: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -689,6 +691,7 @@ describe('RecordDAO', () => {
         accounts: [],
         incomeRules: [],
         financialSources: [],
+        budgetPlans: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -722,6 +725,7 @@ describe('RecordDAO', () => {
         accounts: [],
         incomeRules: [],
         financialSources: [],
+        budgetPlans: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -751,6 +755,7 @@ describe('RecordDAO', () => {
         }] as Account[],
         incomeRules: [],
         financialSources: [],
+        budgetPlans: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
