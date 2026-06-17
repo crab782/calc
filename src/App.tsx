@@ -35,7 +35,7 @@ function App() {
         />
       )}
       <Layout style={{ flex: 1 }}>
-        <Content style={{ overflow: 'auto', backgroundColor: '#fff' }}>
+        <Content style={{ overflow: 'auto' }}>
           {!isSidebarOpen && (
             <Button
               type="primary"

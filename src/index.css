@@ -23,6 +23,15 @@ body {
   min-height: 100vh;
 }
 
+/* Ant Design Content layout */
+.ant-layout-content {
+  background: #ffffff;
+}
+
+.dark .ant-layout-content {
+  background: #141414 !important;
+}
+
 /* Ant Design dark mode overrides */
 .dark .ant-layout {
   background: #141414 !important;
