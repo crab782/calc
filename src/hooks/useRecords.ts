@@ -87,10 +87,10 @@ export const useRecords = () => {
     refresh();
   }, [refresh]);
 
-  const getRecentRecords = useCallback((limit: number = 10) => {
+  const getRecentRecords = useCallback((limit: number = 10): ExpenseRecord[] => {
     return [...records]
       .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, limit);
+      .slice(0, limit) as ExpenseRecord[];
   }, [records]);
 
   // 分类管理方法

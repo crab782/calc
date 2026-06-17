@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { Form, Input, Select, Button, Card, message, Typography } from 'antd';
 import { PlusCircle, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 import { generateEntries } from '../lib/record';
 import type { ExpenseRecord } from '../types/record';
+
+const { Title } = Typography;
 
 const CURRENCY_OPTIONS = [
   { value: 'CNY', label: 'CNY (¥)' },
@@ -13,27 +16,29 @@ const CURRENCY_OPTIONS = [
   { value: 'JPY', label: 'JPY (¥)' },
 ];
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  CNY: '¥',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+};
+
 // 交易类型配置
 const TRANSACTION_TYPES = [
-  { value: 'income', label: '收入', color: 'green' },
-  { value: 'expense', label: '支出', color: 'red' },
-  { value: 'investment', label: '投资', color: 'blue' },
-  { value: 'investment-mature', label: '投资到期', color: 'purple' },
-  { value: 'loan-receive', label: '贷款到账', color: 'orange' },
-  { value: 'loan-repay', label: '还贷', color: 'yellow' },
+  { value: 'income', label: '收入', color: '#22c55e' },
+  { value: 'expense', label: '支出', color: '#ef4444' },
+  { value: 'investment', label: '投资', color: '#3b82f6' },
+  { value: 'investment-mature', label: '投资到期', color: '#a855f7' },
+  { value: 'loan-receive', label: '贷款到账', color: '#f97316' },
+  { value: 'loan-repay', label: '还贷', color: '#eab308' },
 ] as const;
 
 export const AddRecord = () => {
   const { t } = useLanguage();
   const { addRecord, incomeCategories, expenseCategories } = useRecords();
+  const [form] = Form.useForm();
   const [type, setType] = useState<ExpenseRecord['type']>('expense');
-  const [amount, setAmount] = useState('');
-  const [principal, setPrincipal] = useState('');
-  const [interest, setInterest] = useState('');
-  const [category, setCategory] = useState('');
-  const [note, setNote] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [currency, setCurrency] = useState('CNY');
   const [saved, setSaved] = useState(false);
 
   // 判断是否需要本金/利息输入
@@ -44,18 +49,16 @@ export const AddRecord = () => {
     ? incomeCategories.map(c => c.name)
     : expenseCategories.map(c => c.name);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (values: any) => {
+    const { amount, principal, interest, category, note, date, currency } = values;
 
     // 验证逻辑
     if (needsPrincipalInterest) {
-      // 投资到期和还贷类型需要验证本金和利息
-      if (!principal || parseFloat(principal) <= 0 || !interest || parseFloat(interest) <= 0 || !category) {
+      if (!principal || principal <= 0 || !interest || interest <= 0 || !category) {
         return;
       }
     } else {
-      // 其他类型验证金额
-      if (!amount || parseFloat(amount) <= 0 || !category) {
+      if (!amount || amount <= 0 || !category) {
         return;
       }
     }
@@ -74,208 +77,164 @@ export const AddRecord = () => {
       type,
       amount: totalAmount,
       category,
-      note,
+      note: note || '',
       date,
       currency,
       entries,
     });
 
     // 重置表单
-    setAmount('');
-    setPrincipal('');
-    setInterest('');
-    setCategory('');
-    setNote('');
+    form.resetFields();
+    form.setFieldsValue({ date: new Date().toISOString().split('T')[0], currency: 'CNY' });
     setSaved(true);
+
+    message.success(t.addRecord.saved || '保存成功');
 
     setTimeout(() => {
       setSaved(false);
     }, 2000);
   };
 
+  const getCurrencySymbol = (currency: string) => {
+    return CURRENCY_SYMBOLS[currency] || '¥';
+  };
+
   return (
-    <div className="p-6 flex-1">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">{t.addRecord.title}</h1>
+    <div>
+      <Title level={2} style={{ marginBottom: 24 }}>{t.addRecord.title}</Title>
 
-      <div className="max-w-2xl mx-auto">
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.type}</label>
-            <div className="grid grid-cols-3 gap-3">
-              {TRANSACTION_TYPES.map((typeOption) => {
-                const colorClasses: Record<string, string> = {
-                  green: type === typeOption.value ? 'border-green-500 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700',
-                  red: type === typeOption.value ? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700',
-                  blue: type === typeOption.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700',
-                  purple: type === typeOption.value ? 'border-purple-500 bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700',
-                  orange: type === typeOption.value ? 'border-orange-500 bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' : 'border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700',
-                  yellow: type === typeOption.value ? 'border-yellow-500 bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400' : 'border-gray-200 dark:border-gray-700 hover:border-yellow-300 dark:hover:border-yellow-700',
-                };
-
-                return (
-                  <button
-                    key={typeOption.value}
-                    type="button"
-                    onClick={() => {
-                      setType(typeOption.value);
-                      setCategory('');
-                      setAmount('');
-                      setPrincipal('');
-                      setInterest('');
-                    }}
-                    className={`py-3 px-4 rounded-lg border-2 transition-colors ${colorClasses[typeOption.color]}`}
-                  >
-                    <span className="font-medium text-sm">{typeOption.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.currency}</label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800"
-            >
-              {CURRENCY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+      <Card style={{ maxWidth: 640, margin: '0 auto' }}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            date: new Date().toISOString().split('T')[0],
+            currency: 'CNY',
+          }}
+        >
+          {/* 交易类型选择 */}
+          <Form.Item label={t.addRecord.type}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {TRANSACTION_TYPES.map((typeOption) => (
+                <Button
+                  key={typeOption.value}
+                  type={type === typeOption.value ? 'primary' : 'default'}
+                  style={{
+                    borderColor: type === typeOption.value ? typeOption.color : undefined,
+                    backgroundColor: type === typeOption.value ? typeOption.color : undefined,
+                    color: type === typeOption.value ? '#fff' : undefined,
+                  }}
+                  onClick={() => {
+                    setType(typeOption.value as ExpenseRecord['type']);
+                    form.setFieldValue('category', undefined);
+                    form.setFieldValue('amount', undefined);
+                    form.setFieldValue('principal', undefined);
+                    form.setFieldValue('interest', undefined);
+                  }}
+                >
+                  {typeOption.label}
+                </Button>
               ))}
-            </select>
-          </div>
+            </div>
+          </Form.Item>
 
+          {/* 币种选择 */}
+          <Form.Item label={t.addRecord.currency} name="currency">
+            <Select options={CURRENCY_OPTIONS} />
+          </Form.Item>
+
+          {/* 金额输入 */}
           {needsPrincipalInterest ? (
-            // 投资到期和还贷：显示本金和利息两个输入框
             <>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">本金</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-                    {CURRENCY_OPTIONS.find(o => o.value === currency)?.label.match(/\(.+\)/)?.[1] || '¥'}
-                  </span>
-                  <input
-                    type="number"
-                    value={principal}
-                    onChange={(e) => setPrincipal(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">利息</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-                    {CURRENCY_OPTIONS.find(o => o.value === currency)?.label.match(/\(.+\)/)?.[1] || '¥'}
-                  </span>
-                  <input
-                    type="number"
-                    value={interest}
-                    onChange={(e) => setInterest(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
-              </div>
+              <Form.Item
+                label="本金"
+                name="principal"
+                rules={[{ required: true, message: '请输入本金' }]}
+              >
+                <Input
+                  type="number"
+                  prefix={getCurrencySymbol(form.getFieldValue('currency') || 'CNY')}
+                  placeholder="0.00"
+                />
+              </Form.Item>
+              <Form.Item
+                label="利息"
+                name="interest"
+                rules={[{ required: true, message: '请输入利息' }]}
+              >
+                <Input
+                  type="number"
+                  prefix={getCurrencySymbol(form.getFieldValue('currency') || 'CNY')}
+                  placeholder="0.00"
+                />
+              </Form.Item>
             </>
           ) : (
-            // 其他类型：显示单个金额输入框
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.amount}</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-                  {CURRENCY_OPTIONS.find(o => o.value === currency)?.label.match(/\(.+\)/)?.[1] || '¥'}
-                </span>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  step="0.01"
-                  min="0"
-                />
-              </div>
-            </div>
+            <Form.Item
+              label={t.addRecord.amount}
+              name="amount"
+              rules={[{ required: true, message: '请输入金额' }]}
+            >
+              <Input
+                type="number"
+                prefix={getCurrencySymbol(form.getFieldValue('currency') || 'CNY')}
+                placeholder="0.00"
+              />
+            </Form.Item>
           )}
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.category}</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800"
-            >
-              <option value="">{t.addRecord.selectCategory}</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* 分类选择 */}
+          <Form.Item
+            label={t.addRecord.category}
+            name="category"
+            rules={[{ required: true, message: t.addRecord.selectCategory }]}
+          >
+            <Select
+              placeholder={t.addRecord.selectCategory}
+              options={categories.map(cat => ({ label: cat, value: cat }))}
+            />
+          </Form.Item>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.date}</label>
+          {/* 日期选择 */}
+          <Form.Item
+            label={t.addRecord.date}
+            name="date"
+            rules={[{ required: true, message: '请选择日期' }]}
+          >
             <input
               type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="ant-input"
+              style={{ width: '100%', padding: '8px 11px', borderRadius: 6 }}
             />
-          </div>
+          </Form.Item>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t.addRecord.note}</label>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
+          {/* 备注 */}
+          <Form.Item label={t.addRecord.note} name="note">
+            <Input.TextArea
               placeholder={t.addRecord.notePlaceholder}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               rows={3}
             />
-          </div>
+          </Form.Item>
 
-          <button
-            type="submit"
-            disabled={
-              needsPrincipalInterest
-                ? !principal || parseFloat(principal) <= 0 || !interest || parseFloat(interest) <= 0 || !category
-                : !amount || parseFloat(amount) <= 0 || !category
-            }
-            className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-              saved
-                ? 'bg-green-500 text-white'
-                : needsPrincipalInterest
-                ? principal && parseFloat(principal) > 0 && interest && parseFloat(interest) > 0 && category
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                : amount && parseFloat(amount) > 0 && category
-                ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            {saved ? (
-              <>
-                <CheckCircle className="w-5 h-5" />
-                <span>{t.addRecord.saved}</span>
-              </>
-            ) : (
-              <>
-                <PlusCircle className="w-5 h-5" />
-                <span>{t.addRecord.addRecord}</span>
-              </>
-            )}
-          </button>
-        </form>
-      </div>
+          {/* 提交按钮 */}
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={saved ? <CheckCircle className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+              style={{
+                width: '100%',
+                backgroundColor: saved ? '#22c55e' : undefined,
+                borderColor: saved ? '#22c55e' : undefined,
+              }}
+              disabled={saved}
+            >
+              {saved ? (t.addRecord.saved || '已保存') : (t.addRecord.addRecord || '添加记录')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
     </div>
   );
 };

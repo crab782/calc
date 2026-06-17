@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Menu } from 'lucide-react';
+import { Menu as MenuIcon } from 'lucide-react';
+import { Layout, Button } from 'antd';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { AddRecord } from './pages/AddRecord';
@@ -9,12 +10,14 @@ import { Accounts } from './pages/Accounts';
 import { FinancialConfig } from './pages/FinancialConfig';
 import type { PageType } from './types';
 
+const { Content } = Layout;
+
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <Layout style={{ minHeight: '100vh', flexDirection: 'row' }}>
       {isSidebarOpen && (
         <Sidebar
           currentPage={currentPage}
@@ -22,24 +25,27 @@ function App() {
           onCollapse={() => setIsSidebarOpen(false)}
         />
       )}
-      <main className="flex-1 overflow-auto">
-        {!isSidebarOpen && (
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="fixed top-4 left-4 z-50 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            title="展开侧边栏"
-          >
-            <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </button>
-        )}
-        {currentPage === 'dashboard' && <Dashboard />}
-        {currentPage === 'add-record' && <AddRecord />}
-        {currentPage === 'history' && <History />}
-        {currentPage === 'settings' && <Settings />}
-        {currentPage === 'accounts' && <Accounts />}
-        {currentPage === 'financial-config' && <FinancialConfig />}
-      </main>
-    </div>
+      <Layout style={{ flex: 1 }}>
+        <Content style={{ overflow: 'auto' }}>
+          {!isSidebarOpen && (
+            <Button
+              type="primary"
+              onClick={() => setIsSidebarOpen(true)}
+              style={{ position: 'fixed', top: 16, left: 16, zIndex: 1050 }}
+              icon={<MenuIcon className="w-4 h-4" />}
+            />
+          )}
+          <div style={{ padding: '24px' }}>
+            {currentPage === 'dashboard' && <Dashboard />}
+            {currentPage === 'add-record' && <AddRecord />}
+            {currentPage === 'history' && <History />}
+            {currentPage === 'settings' && <Settings />}
+            {currentPage === 'accounts' && <Accounts />}
+            {currentPage === 'financial-config' && <FinancialConfig />}
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 }
 

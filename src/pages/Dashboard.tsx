@@ -1,10 +1,13 @@
 import { TrendingUp, TrendingDown, Wallet, Trash2, Globe } from 'lucide-react';
+import { Card, Row, Col, Button, Tag, List, Typography, Space, Empty } from 'antd';
 import { BalanceChart } from '../components/BalanceChart';
 import { ExpenseChart } from '../components/ExpenseChart';
 import { IncomeChart } from '../components/IncomeChart';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 import { useStatistics } from '../hooks/useStatistics';
+
+const { Text } = Typography;
 
 export const Dashboard = () => {
   const { t, language, toggleLanguage } = useLanguage();
@@ -13,129 +16,153 @@ export const Dashboard = () => {
 
   const recentRecords = getRecentRecords(10);
 
-  const statsCards = [
-    {
-      title: t.dashboard.totalIncome,
-      value: formatCurrency(statistics.totalIncome),
-      icon: TrendingUp,
-      color: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
-      iconBg: 'bg-green-100 dark:bg-green-900/30',
-    },
-    {
-      title: t.dashboard.totalExpense,
-      value: formatCurrency(statistics.totalExpense),
-      icon: TrendingDown,
-      color: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
-      iconBg: 'bg-red-100 dark:bg-red-900/30',
-    },
-    {
-      title: t.dashboard.balance,
-      value: formatCurrency(statistics.balance),
-      icon: Wallet,
-      color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
-      iconBg: 'bg-blue-100 dark:bg-blue-900/30',
-    },
-  ];
-
   return (
-    <div className="p-6 flex-1">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{t.dashboard.title}</h1>
-        <button
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 'bold', margin: 0 }}>{t.dashboard.title}</h1>
+        <Button
           onClick={toggleLanguage}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          title={language === 'zh' ? 'Switch to English' : '切换到中文'}
+          icon={<Globe className="w-4 h-4" />}
         >
-          <Globe className="w-4 h-4" />
-          <span>{language === 'zh' ? 'EN' : '中文'}</span>
-        </button>
+          {language === 'zh' ? 'EN' : '中文'}
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        {statsCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.title}
-              className={`${card.color} rounded-xl p-6 flex items-center gap-4`}
-            >
-              <div className={`${card.iconBg} p-3 rounded-lg`}>
-                <Icon className="w-6 h-6" />
+      <Row gutter={[16, 16]} style={{ marginBottom: 32 }}>
+        <Col xs={24} sm={8}>
+          <Card
+            bordered={false}
+            styles={{ body: { padding: '20px' } }}
+          >
+            <Space size={16}>
+              <div style={{
+                padding: 12,
+                borderRadius: 8,
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              }}>
+                <TrendingUp style={{ width: 24, height: 24, color: '#22c55e' }} />
               </div>
               <div>
-                <p className="text-sm opacity-70">{card.title}</p>
-                <p className="text-xl font-bold">{card.value}</p>
+                <Text type="secondary" style={{ fontSize: 14 }}>{t.dashboard.totalIncome}</Text>
+                <div style={{ fontSize: 24, fontWeight: 'bold', color: '#22c55e' }}>
+                  {formatCurrency(statistics.totalIncome)}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            </Space>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card
+            bordered={false}
+            styles={{ body: { padding: '20px' } }}
+          >
+            <Space size={16}>
+              <div style={{
+                padding: 12,
+                borderRadius: 8,
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              }}>
+                <TrendingDown style={{ width: 24, height: 24, color: '#ef4444' }} />
+              </div>
+              <div>
+                <Text type="secondary" style={{ fontSize: 14 }}>{t.dashboard.totalExpense}</Text>
+                <div style={{ fontSize: 24, fontWeight: 'bold', color: '#ef4444' }}>
+                  {formatCurrency(statistics.totalExpense)}
+                </div>
+              </div>
+            </Space>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card
+            bordered={false}
+            styles={{ body: { padding: '20px' } }}
+          >
+            <Space size={16}>
+              <div style={{
+                padding: 12,
+                borderRadius: 8,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              }}>
+                <Wallet style={{ width: 24, height: 24, color: '#3b82f6' }} />
+              </div>
+              <div>
+                <Text type="secondary" style={{ fontSize: 14 }}>{t.dashboard.balance}</Text>
+                <div style={{ fontSize: 24, fontWeight: 'bold', color: '#3b82f6' }}>
+                  {formatCurrency(statistics.balance)}
+                </div>
+              </div>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
 
-      <div className="mb-8 space-y-6">
+      <div style={{ marginBottom: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
         <BalanceChart />
         <ExpenseChart />
         <IncomeChart />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t.dashboard.recentTransactions}</h2>
-        </div>
-        <div className="divide-y divide-gray-100 dark:divide-gray-700">
-          {recentRecords.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-              <Wallet className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>{t.dashboard.noRecords}</p>
-              <p className="text-sm mt-1">{t.dashboard.addFirstRecord}</p>
-            </div>
-          ) : (
-            recentRecords.map((record) => (
-              <div
-                key={record.id}
-                className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        record.type === 'income'
-                          ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                      }`}
-                    >
-                      {record.type === 'income' ? t.dashboard.income : t.dashboard.expense}
-                    </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{record.category}</span>
-                  </div>
-                  <p className="text-gray-800 dark:text-gray-200 font-medium mt-1">
-                    {record.note || record.category}
-                  </p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                    {formatDate(record.date)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span
-                    className={`font-semibold ${
-                      record.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                    }`}
-                  >
-                    {record.type === 'income' ? '+' : '-'}
-                    {formatCurrency(record.amount)}
-                  </span>
-                  <button
-                    onClick={() => deleteRecord(record.id)}
-                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title={t.dashboard.deleteRecord}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+      <Card
+        title={t.dashboard.recentTransactions}
+        bordered={false}
+        styles={{ body: { padding: 0 } }}
+      >
+        {recentRecords.length === 0 ? (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div>
+                <p>{t.dashboard.noRecords}</p>
+                <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{t.dashboard.addFirstRecord}</p>
               </div>
-            ))
-          )}
-        </div>
-      </div>
+            }
+            style={{ padding: '48px 0' }}
+          />
+        ) : (
+          <List
+            dataSource={recentRecords}
+            renderItem={(record) => (
+              <List.Item
+                style={{ padding: '12px 24px' }}
+                actions={[
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => deleteRecord(record.id)}
+                    title={t.dashboard.deleteRecord}
+                  />,
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <Space>
+                      <Tag color={record.type === 'income' ? 'green' : 'red'}>
+                        {record.type === 'income' ? t.dashboard.income : t.dashboard.expense}
+                      </Tag>
+                      <Text type="secondary">{record.category}</Text>
+                      <Text strong>{record.note || record.category}</Text>
+                    </Space>
+                  }
+                  description={formatDate(record.date)}
+                />
+                <Text
+                  strong
+                  style={{
+                    color: record.type === 'income' ? '#22c55e' : '#ef4444',
+                    fontSize: 16,
+                  }}
+                >
+                  {record.type === 'income' ? '+' : '-'}
+                  {formatCurrency(record.amount)}
+                </Text>
+              </List.Item>
+            )}
+          />
+        )}
+      </Card>
     </div>
   );
 };

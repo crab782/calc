@@ -1,4 +1,5 @@
 import ReactECharts from 'echarts-for-react';
+import { Card, Empty } from 'antd';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useStatistics } from '../hooks/useStatistics';
@@ -169,27 +170,28 @@ export const BalanceChart = () => {
 
   if (monthlyDataWithPrediction.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          <p>暂无数据</p>
-          <p className="text-sm mt-1">添加交易记录后将显示月度趋势图表</p>
-        </div>
-      </div>
+      <Card bordered={false}>
+        <Empty
+          description={
+            <div>
+              <p>暂无数据</p>
+              <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>添加交易记录后将显示月度趋势图表</p>
+            </div>
+          }
+        />
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-        {language === 'zh' ? '结余趋势' : 'Balance Trend'}
-      </h2>
-      <div className="h-80">
+    <Card title={language === 'zh' ? '结余趋势' : 'Balance Trend'} bordered={false}>
+      <div style={{ height: 320 }}>
         <ReactECharts
           option={option}
           style={{ width: '100%', height: '100%' }}
           opts={{ renderer: 'canvas' }}
         />
       </div>
-    </div>
+    </Card>
   );
 };

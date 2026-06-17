@@ -1,9 +1,13 @@
 import { useMemo } from 'react';
+import { Card, Table, Tag, Typography, Empty } from 'antd';
 import { History as HistoryIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 import { useStatistics } from '../hooks/useStatistics';
 import type { ExpenseRecord } from '../types/record';
+import type { ColumnsType } from 'antd/es/table';
+
+const { Title, Text } = Typography;
 
 interface GroupedRecords {
   [key: string]: {
@@ -22,11 +26,10 @@ export const History = () => {
   const groupedRecords = useMemo(() => {
     const grouped: GroupedRecords = {};
 
-    // 按实际日期从新到旧排序
     const sortedRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
 
     sortedRecords.forEach((record) => {
-      const monthKey = record.date.substring(0, 7); // YYYY-MM
+      const monthKey = record.date.substring(0, 7);
 
       if (!grouped[monthKey]) {
         grouped[monthKey] = {
@@ -48,123 +51,122 @@ export const History = () => {
     return grouped;
   }, [records]);
 
-  // 格式化月份显示
   const formatMonth = (monthKey: string) => {
     const [year, month] = monthKey.split('-');
     return `${year}年${parseInt(month)}月`;
   };
 
-  // 获取排序后的月份列表（从新到旧）
   const sortedMonths = useMemo(() => {
     return Object.keys(groupedRecords).sort((a, b) => b.localeCompare(a));
   }, [groupedRecords]);
 
-  return (
-    <div className="p-6 flex-1 overflow-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <HistoryIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{t.history.title}</h1>
+  const columns: ColumnsType<ExpenseRecord> = useMemo(() => [
+    {
+      title: t.history.time,
+      dataIndex: 'date',
+      key: 'date',
+      render: (date: string) => formatDate(date),
+    },
+    {
+      title: t.history.category,
+      dataIndex: 'category',
+      key: 'category',
+    },
+    {
+      title: t.history.amount,
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount: number, record: ExpenseRecord) => (
+        <Text strong style={{ color: record.type === 'income' ? '#22c55e' : '#ef4444' }}>
+          {record.type === 'income' ? '+' : '-'}{formatCurrency(amount)}
+        </Text>
+      ),
+    },
+    {
+      title: t.history.type,
+      dataIndex: 'type',
+      key: 'type',
+      render: (type: string) => (
+        <Tag color={type === 'income' ? 'green' : 'red'}>
+          {type === 'income' ? t.history.incomeType : t.history.expenseType}
+        </Tag>
+      ),
+    },
+    {
+      title: t.history.description,
+      dataIndex: 'note',
+      key: 'note',
+      render: (note: string) => note || '-',
+    },
+  ], [formatCurrency, formatDate, t]);
+
+  if (sortedMonths.length === 0) {
+    return (
+      <div>
+        <Title level={2} style={{ marginBottom: 24 }}>
+          <HistoryIcon className="w-8 h-8 inline-block mr-2" style={{ verticalAlign: 'middle' }} />
+          {t.history.title}
+        </Title>
+        <Card bordered={false}>
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div>
+                <p>{t.history.noRecords}</p>
+                <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{t.history.addFirstRecord}</p>
+              </div>
+            }
+            style={{ padding: '48px 0' }}
+          />
+        </Card>
       </div>
+    );
+  }
 
-      {sortedMonths.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <HistoryIcon className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-          <p className="text-gray-500 dark:text-gray-400">{t.history.noRecords}</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">{t.history.addFirstRecord}</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {sortedMonths.map((month) => {
-            const monthData = groupedRecords[month];
+  return (
+    <div>
+      <Title level={2} style={{ marginBottom: 24 }}>
+        <HistoryIcon className="w-8 h-8 inline-block mr-2" style={{ verticalAlign: 'middle', color: '#1677ff' }} />
+        {t.history.title}
+      </Title>
 
-            return (
-              <div key={month} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {/* 月份标题栏 */}
-                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                      {formatMonth(month)}
-                    </h2>
-                    <div className="flex items-center gap-6">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{t.history.income}:</span>
-                        <span className="font-semibold text-green-600 dark:text-green-400">
-                          +{formatCurrency(monthData.totalIncome)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{t.history.expense}:</span>
-                        <span className="font-semibold text-red-600 dark:text-red-400">
-                          -{formatCurrency(monthData.totalExpense)}
-                        </span>
-                      </div>
-                    </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {sortedMonths.map((month) => {
+          const monthData = groupedRecords[month];
+
+          return (
+            <Card
+              key={month}
+              bordered={false}
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>{formatMonth(month)}</span>
+                  <div style={{ display: 'flex', gap: 24 }}>
+                    <span>
+                      <TrendingUp className="w-4 h-4 inline-block mr-1" style={{ color: '#22c55e', verticalAlign: 'middle' }} />
+                      <Text type="secondary" style={{ marginRight: 4 }}>{t.history.income}:</Text>
+                      <Text strong style={{ color: '#22c55e' }}>+{formatCurrency(monthData.totalIncome)}</Text>
+                    </span>
+                    <span>
+                      <TrendingDown className="w-4 h-4 inline-block mr-1" style={{ color: '#ef4444', verticalAlign: 'middle' }} />
+                      <Text type="secondary" style={{ marginRight: 4 }}>{t.history.expense}:</Text>
+                      <Text strong style={{ color: '#ef4444' }}>-{formatCurrency(monthData.totalExpense)}</Text>
+                    </span>
                   </div>
                 </div>
-
-                {/* 交易记录表格 */}
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t.history.time}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t.history.category}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t.history.amount}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t.history.type}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t.history.description}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                      {monthData.records.map((record) => (
-                        <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                            {formatDate(record.date)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                            {record.category}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
-                            <span className={record.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-                              {record.type === 'income' ? '+' : '-'}
-                              {formatCurrency(record.amount)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                record.type === 'income'
-                                  ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                              }`}
-                            >
-                              {record.type === 'income' ? t.history.incomeType : t.history.expenseType}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                            {record.note || '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              }
+            >
+              <Table
+                columns={columns}
+                dataSource={monthData.records}
+                rowKey="id"
+                pagination={false}
+                size="middle"
+              />
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };

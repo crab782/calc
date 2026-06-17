@@ -16,15 +16,128 @@ body {
 }
 
 .dark body {
-  background-color: #1a1a1a;
+  background-color: #141414;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* 主题切换过渡动画 */
+/* Ant Design dark mode overrides */
+.dark .ant-layout {
+  background: #141414 !important;
+}
+
+.dark .ant-layout-sider {
+  background: #1f1f1f !important;
+}
+
+.dark .ant-menu {
+  background: #1f1f1f !important;
+}
+
+.dark .ant-card {
+  background: #1f1f1f !important;
+}
+
+/* Ensure smooth theme transitions */
 .theme-transition,
 .theme-transition * {
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ant Design table in dark mode */
+.dark .ant-table {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dark .ant-table-thead > tr > th {
+  background: #1f1f1f !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .ant-table-tbody > tr > td {
+  background: #1f1f1f !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #303030 !important;
+}
+
+.dark .ant-table-tbody > tr:hover > td {
+  background: #272727 !important;
+}
+
+.dark .ant-modal-content {
+  background: #1f1f1f !important;
+}
+
+.dark .ant-modal-header {
+  background: #1f1f1f !important;
+}
+
+.dark .ant-modal-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .ant-input,
+.dark .ant-input-number,
+.dark .ant-select-selector,
+.dark .ant-picker {
+  background: #2a2a2a !important;
+  border-color: #404040 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.dark .ant-select-dropdown,
+.dark .ant-picker-panel-container {
+  background: #2a2a2a !important;
+}
+
+.dark .ant-select-item {
+  background: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .ant-select-item-option-active {
+  background: #303030 !important;
+}
+
+.dark .ant-popover-inner {
+  background: #2a2a2a !important;
+}
+
+.dark .ant-popover-arrow {
+  filter: drop-shadow(0 0 0 #2a2a2a);
+}
+
+.dark .ant-message-notice-content {
+  background: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .ant-statistic-title {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.dark .ant-statistic-content {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .ant-descriptions-item-label {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.dark .ant-descriptions-item-content {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .ant-divider {
+  border-color: #303030 !important;
+}
+
+.dark .ant-empty-description {
+  color: rgba(255, 255, 255, 0.45) !important;
 }

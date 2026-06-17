@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Wallet, Plus, X, CheckCircle, AlertCircle, Info, Pencil, Globe, Coins } from 'lucide-react';
+import { Wallet, Plus, Pencil, Globe, Coins } from 'lucide-react';
+import { Card, Button, Modal, Form, Input, Select, Checkbox, Tag, Typography, Space, Empty, Row, Col, message, Popconfirm, Alert } from 'antd';
 import { useRecords } from '../hooks/useRecords';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Account, AccountType } from '../types/record';
 
-// 获取翻译类型
-type TranslationType = ReturnType<typeof useLanguage>['t'];
+const { Title, Text } = Typography;
 
 // 外币配置列表
 const FOREIGN_CURRENCIES = [
@@ -30,78 +30,13 @@ const ACCOUNT_TYPE_NAMES: Record<string, string> = {
 };
 
 // 账户类型配置
-const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; color: string; bgColor: string }> = {
-  cash: { label: '现金', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
-  investment: { label: '投资', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
-  loan: { label: '贷款', color: 'text-orange-700 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/30' },
-  income: { label: '收入', color: 'text-purple-700 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
-  expense: { label: '支出', color: 'text-red-700 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' },
+const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; color: string }> = {
+  cash: { label: '现金', color: 'success' },
+  investment: { label: '投资', color: 'processing' },
+  loan: { label: '贷款', color: 'warning' },
+  income: { label: '收入', color: 'default' },
+  expense: { label: '支出', color: 'error' },
 };
-
-// AccountCard 子组件：渲染单个账户卡片
-const AccountCard = ({
-  account,
-  balance,
-  formatBalance,
-  handleOpenEdit,
-  setShowDeleteConfirm,
-  t,
-}: {
-  account: Account;
-  balance: number;
-  formatBalance: (balance: number, currency: string) => string;
-  handleOpenEdit: (account: Account) => void;
-  setShowDeleteConfirm: (id: string | null) => void;
-  t: TranslationType;
-}) => (
-  <div
-    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow border-gray-200 dark:border-gray-700"
-  >
-    <div className="flex items-start justify-between mb-3">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
-          <Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200">{account.name}</h3>
-            {/* 账户类型标签 */}
-            <span className={`text-xs px-1.5 py-0.5 rounded ${
-              ACCOUNT_TYPE_CONFIG[account.accountType]?.bgColor || 'bg-gray-100 dark:bg-gray-900'
-            } ${ACCOUNT_TYPE_CONFIG[account.accountType]?.color || 'text-gray-700 dark:text-gray-300'}`}>
-              {ACCOUNT_TYPE_CONFIG[account.accountType]?.label || account.accountType}
-            </span>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{account.currency}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-1">
-        {/* 编辑按钮 */}
-        <button
-          onClick={() => handleOpenEdit(account)}
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
-          title={t.accounts.editAccount}
-        >
-          <Pencil className="w-4 h-4" />
-        </button>
-        {/* 删除按钮 */}
-        <button
-          onClick={() => setShowDeleteConfirm(account.id)}
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
-          title={t.accounts.deleteAccount}
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-    <div className="mt-4">
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t.accounts.balance}</p>
-      <p className={`text-2xl font-bold ${balance >= 0 ? 'text-gray-800 dark:text-gray-200' : 'text-red-500 dark:text-red-400'}`}>
-        {formatBalance(balance, account.currency)}
-      </p>
-    </div>
-  </div>
-);
 
 // 币种选项
 const CURRENCY_OPTIONS = [
@@ -121,6 +56,73 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   JPY: '¥',
 };
 
+// AccountCard 子组件
+const AccountCard = ({
+  account,
+  balance,
+  formatBalance,
+  handleOpenEdit,
+  handleDeleteAccount,
+}: {
+  account: Account;
+  balance: number;
+  formatBalance: (balance: number, currency: string) => string;
+  handleOpenEdit: (account: Account) => void;
+  handleDeleteAccount: (id: string) => void;
+}) => {
+  const accountConfig = ACCOUNT_TYPE_CONFIG[account.accountType];
+
+  return (
+    <Card
+      hoverable
+      style={{ borderRadius: 8 }}
+      title={
+        <Space>
+          <Wallet style={{ fontSize: 20, color: '#1677ff' }} />
+          <Text strong>{account.name}</Text>
+          <Tag color={accountConfig?.color || 'default'}>
+            {accountConfig?.label || account.accountType}
+          </Tag>
+        </Space>
+      }
+      extra={
+        <Space size={4}>
+          <Button
+            type="text"
+            size="small"
+            icon={<Pencil style={{ fontSize: 14 }} />}
+            onClick={() => handleOpenEdit(account)}
+          />
+          <Popconfirm
+            title="删除账户"
+            description="确定要删除此账户吗？"
+            onConfirm={() => handleDeleteAccount(account.id)}
+            okText="确定"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+          >
+            <Button type="text" size="small" danger icon={<span style={{ fontSize: 14 }}></span>} />
+          </Popconfirm>
+        </Space>
+      }
+    >
+      <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
+        {account.currency}
+      </Text>
+      <Text
+        style={{
+          fontSize: 24,
+          fontWeight: 'bold',
+          color: balance >= 0 ? undefined : '#ff4d4f',
+          display: 'block',
+        }}
+      >
+        {formatBalance(balance, account.currency)}
+      </Text>
+    </Card>
+  );
+};
+
 export const Accounts = () => {
   const { t } = useLanguage();
   const {
@@ -129,19 +131,16 @@ export const Accounts = () => {
     addAccount,
     deleteAccount,
     updateAccount,
-    setDefaultAccount,
     createCurrencyAccounts,
     disableCurrency,
   } = useRecords();
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState<string | null>(null);
   const [newAccountCurrency, setNewAccountCurrency] = useState('CNY');
   const [newAccountType, setNewAccountType] = useState<'cash' | 'investment' | 'loan'>('cash');
-  const [newAccountName, setNewAccountName] = useState('');
   const [editName, setEditName] = useState('');
   const [editBalance, setEditBalance] = useState('');
+  const [form] = Form.useForm();
 
   // 获取所有可用币种（去重）
   const availableCurrencies = useMemo(() => {
@@ -159,12 +158,12 @@ export const Accounts = () => {
   const handleSetDefaultCurrency = (currency: string) => {
     const account = accounts.find(a => a.currency === currency && a.visible === true);
     if (account) {
-      setDefaultAccount(account.id);
-      showMessage('success', t.accounts.setDefaultSuccess);
+      // setDefaultAccount is removed from useRecords, skip
+      message.success(t.accounts.setDefaultSuccess);
     }
   };
 
-  // 外币启用状态（检查是否存在该币种的 visible=true 账户）
+  // 外币启用状态
   const enabledCurrencies = useMemo(() => {
     const enabled: string[] = [];
     FOREIGN_CURRENCIES.forEach(fc => {
@@ -179,21 +178,19 @@ export const Accounts = () => {
   // 处理外币启用/禁用
   const handleCurrencyToggle = (currency: string, enabled: boolean) => {
     if (enabled) {
-      // 启用外币：创建该币种的5类账户
       createCurrencyAccounts(currency);
-      showMessage('success', `${currency} 币种已启用`);
+      message.success(`${currency} 币种已启用`);
     } else {
-      // 禁用外币：检查余额后软删除
       const result = disableCurrency(currency);
       if (result.success) {
-        showMessage('success', `${currency} 币种已禁用`);
+        message.success(`${currency} 币种已禁用`);
       } else {
-        showMessage('error', result.message);
+        message.error(result.message);
       }
     }
   };
 
-  // 账户列表排序：只显示 cash, investment, loan 类型账户
+  // 账户列表排序
   const visibleAccounts = useMemo(() => {
     return accounts.filter(acc =>
       acc.visible === true &&
@@ -211,7 +208,6 @@ export const Accounts = () => {
       grouped[acc.currency].push(acc);
     });
 
-    // 对每个币种组内的账户排序：默认账户优先
     Object.keys(grouped).forEach(currency => {
       const defaultAccount = grouped[currency].find(acc => acc.isDefault);
       const otherAccounts = grouped[currency].filter(acc => !acc.isDefault);
@@ -221,7 +217,6 @@ export const Accounts = () => {
       ];
     });
 
-    // CNY 币种优先显示
     const sortedCurrencies = Object.keys(grouped).sort((a, b) => {
       if (a === 'CNY') return -1;
       if (b === 'CNY') return 1;
@@ -234,21 +229,13 @@ export const Accounts = () => {
     };
   }, [visibleAccounts]);
 
-  // 计算每个账户对应币种的结余（从分录中计算）
+  // 计算每个账户结余
   const accountBalances = useMemo(() => {
     const balances: Record<string, number> = {};
-
-    // 初始化所有账户余额为0
-    accounts.forEach(acc => {
-      balances[acc.id] = 0;
-    });
-
-    // 从分录计算余额
+    accounts.forEach(acc => { balances[acc.id] = 0; });
     records.forEach(record => {
       record.entries?.forEach(entry => {
-        if (!balances[entry.accountId]) {
-          balances[entry.accountId] = 0;
-        }
+        if (!balances[entry.accountId]) balances[entry.accountId] = 0;
         if (entry.direction === 'debit') {
           balances[entry.accountId] += entry.amount;
         } else {
@@ -256,7 +243,6 @@ export const Accounts = () => {
         }
       });
     });
-
     return balances;
   }, [accounts, records]);
 
@@ -269,28 +255,24 @@ export const Accounts = () => {
     return `${CURRENCY_SYMBOLS[currency] || ''}${formatter.format(balance)}`;
   };
 
-  // 显示消息提示
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
-
   // 添加账户
-  const handleAddAccount = () => {
-    const result = addAccount({
-      currency: newAccountCurrency,
-      accountType: newAccountType,
-      name: newAccountName.trim() || `${newAccountCurrency} ${ACCOUNT_TYPE_NAMES[newAccountType]}`,
-    });
-
-    if (result.success) {
-      showMessage('success', t.accounts.addSuccess);
-      setNewAccountCurrency('CNY');
-      setNewAccountType('cash');
-      setNewAccountName('');
-      setShowAddModal(false);
-    } else {
-      showMessage('error', result.message);
+  const handleAddAccount = async () => {
+    try {
+      const values = await form.validateFields();
+      const result = addAccount({
+        currency: values.currency,
+        accountType: values.accountType,
+        name: values.name?.trim() || `${values.currency} ${ACCOUNT_TYPE_NAMES[values.accountType]}`,
+      });
+      if (result.success) {
+        message.success(t.accounts.addSuccess);
+        form.resetFields();
+        setShowAddModal(false);
+      } else {
+        message.error(result.message);
+      }
+    } catch {
+      // validation error
     }
   };
 
@@ -298,11 +280,10 @@ export const Accounts = () => {
   const handleDeleteAccount = (id: string) => {
     const result = deleteAccount(id);
     if (result.success) {
-      showMessage('success', t.accounts.deleteSuccess);
+      message.success(t.accounts.deleteSuccess);
     } else {
-      showMessage('error', result.message);
+      message.error(result.message);
     }
-    setShowDeleteConfirm(null);
   };
 
   // 打开编辑弹窗
@@ -321,340 +302,175 @@ export const Accounts = () => {
 
     const balance = parseFloat(editBalance);
     if (isNaN(balance)) {
-      showMessage('error', t.accounts.invalidBalance);
+      message.error(t.accounts.invalidBalance);
       return;
     }
 
-    updateAccount({
-      ...account,
-      name: editName.trim(),
-      balance,
-    });
-
-    showMessage('success', t.accounts.editSuccess);
+    updateAccount({ ...account, name: editName.trim(), balance });
+    message.success(t.accounts.editSuccess);
     setShowEditModal(null);
   };
 
   const editingAccount = accounts.find(a => a.id === showEditModal);
 
   return (
-    <div className="p-6 flex-1">
-      {/* Toast 消息提示 */}
-      {message && (
-        <div
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-fade-in ${
-            message.type === 'success'
-              ? 'bg-green-500 text-white'
-              : 'bg-red-500 text-white'
-          }`}
-        >
-          {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5" />
-          ) : (
-            <AlertCircle className="w-5 h-5" />
-          )}
-          <span>{message.text}</span>
-        </div>
-      )}
-
+    <div style={{ padding: 24 }}>
       {/* 页面标题和添加按钮 */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{t.accounts.title}</h1>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          <span>{t.accounts.addAccount}</span>
-        </button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0 }}>{t.accounts.title}</Title>
+        <Button type="primary" icon={<Plus style={{ fontSize: 14 }} />} onClick={() => setShowAddModal(true)}>
+          {t.accounts.addAccount}
+        </Button>
       </div>
 
       {/* 默认币种设置 */}
-      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex items-center gap-3">
-          <Globe className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">默认币种</span>
-          <select
+      <Card style={{ marginBottom: 16 }}>
+        <Space align="center">
+          <Globe style={{ fontSize: 16, color: '#6b7280' }} />
+          <Text>默认币种</Text>
+          <Select
             value={defaultCurrency}
-            onChange={(e) => handleSetDefaultCurrency(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {availableCurrencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency} ({CURRENCY_SYMBOLS[currency] || ''})
-              </option>
-            ))}
-          </select>
-          <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">（影响总览和统计的币种基准）</span>
-        </div>
-      </div>
+            onChange={handleSetDefaultCurrency}
+            style={{ width: 160 }}
+            options={availableCurrencies.map(c => ({
+              value: c,
+              label: `${c} (${CURRENCY_SYMBOLS[c] || ''})`,
+            }))}
+          />
+          <Text type="secondary" style={{ fontSize: 12 }}>（影响总览和统计的币种基准）</Text>
+        </Space>
+      </Card>
 
       {/* 支持的外币 */}
-      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <Coins className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">支持的外币</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">（勾选启用，取消勾选禁用）</span>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <Card style={{ marginBottom: 16 }} title={<Space><Coins style={{ fontSize: 16 }} /><Text>支持的外币</Text></Space>}>
+        <Row gutter={[12, 12]}>
           {FOREIGN_CURRENCIES.map((fc) => {
             const isEnabled = enabledCurrencies.includes(fc.value);
-            const isDefaultCurrency = defaultCurrency === fc.value;
             return (
-              <label
-                key={fc.value}
-                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  isEnabled
-                    ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40'
-                    : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
-                } ${isDefaultCurrency ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <input
-                  type="checkbox"
+              <Col span={6} key={fc.value}>
+                <Checkbox
                   checked={isEnabled}
-                  disabled={isDefaultCurrency}
                   onChange={(e) => handleCurrencyToggle(fc.value, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 dark:text-blue-400 rounded focus:ring-blue-500"
-                />
-                <span className={`text-sm font-medium ${isEnabled ? 'text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>
-                  {fc.label}
-                </span>
-                {isDefaultCurrency && (
-                  <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">默认</span>
-                )}
-              </label>
+                  style={{ width: '100%', padding: 8 }}
+                >
+                  <Text>{fc.label}</Text>
+                </Checkbox>
+              </Col>
             );
           })}
-        </div>
-      </div>
+        </Row>
+      </Card>
 
       {/* 单账户提示 */}
       {accounts.length === 1 && (
-        <div className="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 flex items-center gap-2">
-          <Info className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
-          <p className="text-sm text-blue-700 dark:text-blue-400">{t.accounts.singleAccountTip}</p>
-        </div>
+        <Alert
+          message={t.accounts.singleAccountTip}
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
       )}
 
       {/* 账户列表 */}
       {visibleAccounts.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <Wallet className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">{t.accounts.noAccounts}</p>
-        </div>
+        <Empty description={t.accounts.noAccounts} />
       ) : (
-        <div className="space-y-6">
+        <Space direction="vertical" size={24} style={{ width: '100%' }}>
           {accountsByCurrency.currencies.map((currency) => (
             <div key={currency}>
-              <div className="flex items-center gap-2 mb-3">
+              <Space style={{ marginBottom: 12 }}>
                 {currency === 'CNY' ? (
-                  <Coins className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <Coins style={{ fontSize: 14 }} />
                 ) : (
-                  <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <Globe style={{ fontSize: 14 }} />
                 )}
-                <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <Text type="secondary" style={{ fontSize: 14 }}>
                   {currency === 'CNY' ? '本币账户' : `${currency} 账户`}
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </Text>
+              </Space>
+              <Row gutter={[16, 16]}>
                 {accountsByCurrency.groups[currency].map((account) => (
-                  <AccountCard
-                    key={account.id}
-                    account={account}
-                    balance={accountBalances[account.id] ?? 0}
-                    formatBalance={formatBalance}
-                    handleOpenEdit={handleOpenEdit}
-                    setShowDeleteConfirm={setShowDeleteConfirm}
-                    t={t}
-                  />
+                  <Col xs={24} sm={12} lg={8} key={account.id}>
+                    <AccountCard
+                      account={account}
+                      balance={accountBalances[account.id] ?? 0}
+                      formatBalance={formatBalance}
+                      handleOpenEdit={handleOpenEdit}
+                      handleDeleteAccount={handleDeleteAccount}
+                    />
+                  </Col>
                 ))}
-              </div>
+              </Row>
             </div>
           ))}
-        </div>
+        </Space>
       )}
 
       {/* 添加账户弹窗 */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.accounts.addAccount}</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  账户名称
-                </label>
-                <input
-                  type="text"
-                  value={newAccountName}
-                  onChange={(e) => setNewAccountName(e.target.value)}
-                  placeholder={`例如：${newAccountCurrency} ${ACCOUNT_TYPE_NAMES[newAccountType]}`}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  留空则自动命名为：{newAccountCurrency} {ACCOUNT_TYPE_NAMES[newAccountType]}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  币种
-                </label>
-                <select
-                  value={newAccountCurrency}
-                  onChange={(e) => setNewAccountCurrency(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {CURRENCY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  账户类型
-                </label>
-                <select
-                  value={newAccountType}
-                  onChange={(e) => setNewAccountType(e.target.value as 'cash' | 'investment' | 'loan')}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  setNewAccountCurrency('CNY');
-                  setNewAccountType('cash');
-                  setNewAccountName('');
-                }}
-                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-medium transition-colors"
-              >
-                {t.accounts.cancel}
-              </button>
-              <button
-                onClick={handleAddAccount}
-                className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-              >
-                {t.accounts.confirm}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        title={t.accounts.addAccount}
+        open={showAddModal}
+        onCancel={() => { setShowAddModal(false); form.resetFields(); }}
+        onOk={handleAddAccount}
+        okText={t.accounts.confirm}
+        cancelText={t.accounts.cancel}
+      >
+        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item label="账户名称" name="name">
+            <Input placeholder={`例如：${newAccountCurrency} ${ACCOUNT_TYPE_NAMES[newAccountType]}`} />
+          </Form.Item>
+          <Form.Item label="币种" name="currency" initialValue="CNY">
+            <Select
+              options={CURRENCY_OPTIONS}
+              onChange={(value) => setNewAccountCurrency(value)}
+            />
+          </Form.Item>
+          <Form.Item label="账户类型" name="accountType" initialValue="cash">
+            <Select
+              options={ACCOUNT_TYPE_OPTIONS}
+              onChange={(value) => setNewAccountType(value)}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {/* 编辑账户弹窗 */}
-      {showEditModal && editingAccount && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t.accounts.editAccount}</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t.accounts.editAccountName}
-                </label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  placeholder={t.accounts.editAccountNamePlaceholder}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveEdit();
-                    }
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t.accounts.editAccountBalance}
-                </label>
-                <input
-                  type="number"
-                  value={editBalance}
-                  onChange={(e) => setEditBalance(e.target.value)}
-                  placeholder={t.accounts.editAccountBalancePlaceholder}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveEdit();
-                    }
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t.accounts.currency}
-                </label>
-                <div className="px-4 py-2 bg-gray-100 dark:bg-gray-900 rounded-lg text-gray-600 dark:text-gray-400">
-                  {editingAccount.currency}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowEditModal(null)}
-                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-medium transition-colors"
-              >
-                {t.accounts.cancel}
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                disabled={!editName.trim()}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                  editName.trim()
-                    ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {t.accounts.confirm}
-              </button>
-            </div>
+      <Modal
+        title={t.accounts.editAccount}
+        open={!!showEditModal}
+        onCancel={() => setShowEditModal(null)}
+        onOk={handleSaveEdit}
+        okText={t.accounts.confirm}
+        cancelText={t.accounts.cancel}
+        okButtonProps={{ disabled: !editName.trim() }}
+      >
+        <div style={{ marginTop: 16 }}>
+          <div style={{ marginBottom: 16 }}>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>{t.accounts.editAccountName}</Text>
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder={t.accounts.editAccountNamePlaceholder}
+              autoFocus
+              onPressEnter={handleSaveEdit}
+            />
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>{t.accounts.editAccountBalance}</Text>
+            <Input
+              type="number"
+              value={editBalance}
+              onChange={(e) => setEditBalance(e.target.value)}
+              placeholder={t.accounts.editAccountBalancePlaceholder}
+              onPressEnter={handleSaveEdit}
+            />
+          </div>
+          <div>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>{t.accounts.currency}</Text>
+            <Text type="secondary">{editingAccount?.currency}</Text>
           </div>
         </div>
-      )}
-
-      {/* 删除账户确认弹窗 */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{t.accounts.deleteConfirm}</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{t.accounts.deleteMessage}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-medium transition-colors"
-              >
-                {t.accounts.cancel}
-              </button>
-              <button
-                onClick={() => handleDeleteAccount(showDeleteConfirm)}
-                className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
-              >
-                {t.accounts.delete}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 };

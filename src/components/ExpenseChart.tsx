@@ -1,4 +1,5 @@
 import ReactECharts from 'echarts-for-react';
+import { Card, Empty } from 'antd';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useStatistics } from '../hooks/useStatistics';
@@ -169,27 +170,28 @@ export const ExpenseChart = () => {
 
   if (monthlyDataWithPrediction.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          <p>{t.chart.noData}</p>
-          <p className="text-sm mt-1">{t.chart.noDataHint}</p>
-        </div>
-      </div>
+      <Card bordered={false}>
+        <Empty
+          description={
+            <div>
+              <p>{t.chart.noData}</p>
+              <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{t.chart.noDataHint}</p>
+            </div>
+          }
+        />
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-        {language === 'zh' ? '支出趋势' : 'Expense Trend'}
-      </h2>
-      <div className="h-80">
+    <Card title={language === 'zh' ? '支出趋势' : 'Expense Trend'} bordered={false}>
+      <div style={{ height: 320 }}>
         <ReactECharts
           option={option}
           style={{ width: '100%', height: '100%' }}
           opts={{ renderer: 'canvas' }}
         />
       </div>
-    </div>
+    </Card>
   );
 };
