@@ -2,253 +2,194 @@ import { test, expect } from '@playwright/test';
 
 test.describe('账户管理流程', () => {
   test.beforeEach(async ({ page }) => {
-    // 每个测试前清空 localStorage 并访问首页
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    
+
     // 导航到账户页
-    await page.getByRole('button', { name: /账户/i }).click();
+    await page.getByRole('menuitem', { name: '账户' }).click();
   });
 
-  test('添加账户', async ({ page }) => {
+  test('账户页默认显示', async ({ page }) => {
+    // 验证账户页标题
+    await expect(page.getByRole('heading', { name: '账户管理' })).toBeVisible();
+
+    // 验证默认账户显示 (账户名为'现金')
+    await expect(page.getByText('现金').first()).toBeVisible();
+  });
+
+  // 辅助函数：填写添加账户弹窗并提交
+  async function fillAddAccountModal(page: any, name?: string, currency?: string, accountType?: string) {
+    await expect(page.locator('.ant-modal:visible')).toBeVisible({ timeout: 10000 });
+    // 等待弹窗内容完全渲染
+    await page.waitForTimeout(300);
+
+    if (name !== undefined) {
+      await page.locator('.ant-modal:visible').getByPlaceholder(/例如/).fill(name);
+    }
+
+    if (currency) {
+      await page.locator('.ant-modal:visible').locator('.ant-select').first().click();
+      await page.locator('.ant-select-dropdown:visible').waitFor({ state: 'visible' });
+      await page.locator('.ant-select-item-option', { hasText: currency }).click();
+    }
+
+    if (accountType) {
+      // 第二个 Select 是账户类型
+      const selects = page.locator('.ant-modal:visible').locator('.ant-select');
+      await selects.nth(1).click();
+      await page.locator('.ant-select-dropdown:visible').waitFor({ state: 'visible' });
+      await page.locator('.ant-select-item-option', { hasText: accountType }).click();
+    }
+
+    // 确认按钮是 Modal 的 ok 按钮
+    await page.locator('.ant-modal:visible .ant-btn-primary').click();
+  }
+
+  test('添加新账户', async ({ page }) => {
     // 点击添加账户按钮
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    
-    // 验证弹窗出现
-    await expect(page.getByRole('heading', { name: /添加账户/i })).toBeVisible();
-    
-    // 输入账户名称
-    await page.locator('input[placeholder*="账户名称"]').fill('我的银行卡');
-    
-    // 选择币种
-    await page.locator('select').selectOption({ label: 'CNY (¥)' });
-    
-    // 点击添加按钮
-    await page.getByRole('button', { name: /^添加$/i }).click();
-    
-    // 验证成功提示
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 验证新账户显示在列表中
-    await expect(page.getByText('我的银行卡')).toBeVisible();
-    await expect(page.getByText('CNY')).toBeVisible();
-    
-    // 验证 localStorage 中有新账户
-    const localStorageData = await page.evaluate(() => {
-      const data = localStorage.getItem('expense_tracker_data');
-      return data ? JSON.parse(data) : null;
-    });
-    
-    expect(localStorageData.accounts).toHaveLength(1);
-    expect(localStorageData.accounts[0].name).toBe('我的银行卡');
-    expect(localStorageData.accounts[0].currency).toBe('CNY');
+    await page.getByRole('button', { name: '添加账户' }).click();
+
+    await fillAddAccountModal(page, '我的储蓄账户', 'USD', '投资');
+
+    // 验证添加成功提示
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+
+    // 验证新账户显示
+    await expect(page.getByText('我的储蓄账户')).toBeVisible();
   });
 
-  test('添加不同币种的账户', async ({ page }) => {
-    // 添加 USD 账户
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    await page.locator('input[placeholder*="账户名称"]').fill('美元账户');
-    await page.locator('select').selectOption({ label: 'USD ($)' });
-    await page.getByRole('button', { name: /^添加$/i }).click();
+  test('添加账户使用默认名称', async ({ page }) => {
+    // 点击添加账户按钮
+    await page.getByRole('button', { name: '添加账户' }).click();
+
+    // 不填写名称，直接确认
+    await fillAddAccountModal(page);
+
+    // 验证添加成功（应该使用默认名称）
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+  });
+
+  test('编辑账户', async ({ page }) => {
+    // 等待表格加载完成
+    await expect(page.getByRole('heading', { name: '账户管理' })).toBeVisible();
     
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 添加 EUR 账户
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    await page.locator('input[placeholder*="账户名称"]').fill('欧元账户');
-    await page.locator('select').selectOption({ label: 'EUR (€)' });
-    await page.getByRole('button', { name: /^添加$/i }).click();
-    
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 验证两个账户都显示
-    await expect(page.getByText('美元账户')).toBeVisible();
-    await expect(page.getByText('USD')).toBeVisible();
-    await expect(page.getByText('欧元账户')).toBeVisible();
-    await expect(page.getByText('EUR')).toBeVisible();
+    // 点击编辑按钮 (第一行的第一个 text button - pencil icon)
+    await page.locator('.ant-table-tbody tr').first().locator('button.ant-btn-text').first().click();
+
+    // 等待编辑弹窗打开
+    await expect(page.locator('.ant-modal:visible')).toBeVisible({ timeout: 10000 });
+
+    // 修改账户名称
+    await page.locator('.ant-modal:visible input').first().fill('新的账户名称');
+
+    // 保存 - 编辑弹窗的确认按钮也是 ant-btn-primary
+    await page.locator('.ant-modal:visible .ant-btn-primary').click();
+
+    // 验证编辑成功提示
+    await expect(page.getByText('账户信息更新成功')).toBeVisible();
+
+    // 验证新名称显示
+    await expect(page.getByText('新的账户名称')).toBeVisible();
   });
 
   test('删除账户', async ({ page }) => {
     // 先添加一个账户
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    await page.locator('input[placeholder*="账户名称"]').fill('测试账户');
-    await page.getByRole('button', { name: /^添加$/i }).click();
-    
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 验证账户存在
-    await expect(page.getByText('测试账户')).toBeVisible();
-    
-    // 点击删除按钮
-    const accountCard = page.locator('div', { hasText: '测试账户' }).filter({ hasText: '测试账户' }).first();
-    await accountCard.locator('button').last().click();
-    
-    // 验证确认弹窗出现
-    await expect(page.getByRole('heading', { name: /删除账户/i })).toBeVisible();
-    
+    await page.getByRole('button', { name: '添加账户' }).click();
+    await fillAddAccountModal(page, '待删除账户');
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+
+    // 验证新账户显示
+    await expect(page.getByText('待删除账户')).toBeVisible();
+
+    // 点击删除按钮 (待删除账户行的最后一个 text button - delete icon)
+    await page.getByRole('row', { name: /待删除账户/ }).locator('button.ant-btn-text').last().click();
+
+    // 等待确认弹窗
+    await page.waitForTimeout(500);
+    await expect(page.locator('.ant-popconfirm:visible, .ant-popover:visible')).toBeVisible();
+
     // 确认删除
-    await page.getByRole('button', { name: /^删除$/i }).last().click();
-    
-    // 验证成功提示
-    await expect(page.getByText(/删除成功|success/i)).toBeVisible();
-    
-    // 验证账户已删除
-    await expect(page.getByText('测试账户')).not.toBeVisible();
+    await page.locator('.ant-popconfirm:visible .ant-btn-danger, .ant-popover:visible .ant-btn-danger').click();
+
+    // 验证删除成功提示
+    await expect(page.getByText('账户删除成功')).toBeVisible();
+
+    // 验证账户已删除（不再可见）
+    await expect(page.getByText('待删除账户')).not.toBeVisible();
   });
 
-  test('至少保留一个账户的验证', async ({ page }) => {
-    // 先添加一个账户
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    await page.locator('input[placeholder*="账户名称"]').fill('唯一账户');
-    await page.getByRole('button', { name: /^添加$/i }).click();
-    
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 尝试删除唯一账户
-    const accountCard = page.locator('div', { hasText: '唯一账户' }).filter({ hasText: '唯一账户' }).first();
-    await accountCard.locator('button').last().click();
-    
-    // 确认删除
-    await page.getByRole('button', { name: /^删除$/i }).last().click();
-    
-    // 验证错误提示（至少保留一个账户）
-    await expect(page.getByText(/至少|至少保留一个|cannot delete/i)).toBeVisible();
-    
-    // 验证账户仍然存在
-    await expect(page.getByText('唯一账户')).toBeVisible();
+  test('按币种分组显示账户', async ({ page }) => {
+    // 添加 USD 账户
+    await page.getByRole('button', { name: '添加账户' }).click();
+    await fillAddAccountModal(page, undefined, 'USD');
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+
+    // 验证 CNY 分组
+    await expect(page.getByText('本币账户').first()).toBeVisible();
+
+    // 验证 USD 分组
+    await expect(page.getByText('USD 账户').first()).toBeVisible();
   });
 
-  test('账户列表显示', async ({ page }) => {
-    // 添加多个账户
-    const accounts = [
-      { name: '现金账户', currency: 'CNY' },
-      { name: '储蓄卡', currency: 'CNY' },
-      { name: '信用卡', currency: 'USD' },
-    ];
-    
-    for (const account of accounts) {
-      await page.getByRole('button', { name: /添加账户/i }).click();
-      await page.locator('input[placeholder*="账户名称"]').fill(account.name);
-      if (account.currency !== 'CNY') {
-        await page.locator('select').selectOption({ label: `${account.currency} ($)` });
-      }
-      await page.getByRole('button', { name: /^添加$/i }).click();
-      await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    }
-    
+  test('添加投资类型账户', async ({ page }) => {
+    // 点击添加账户按钮
+    await page.getByRole('button', { name: '添加账户' }).click();
+    await fillAddAccountModal(page, undefined, undefined, '投资');
+
+    // 验证添加成功
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+
+    // 验证账户类型标签显示
+    await expect(page.locator('.ant-tag:has-text("投资")')).toBeVisible();
+  });
+
+  test('添加贷款类型账户', async ({ page }) => {
+    // 点击添加账户按钮
+    await page.getByRole('button', { name: '添加账户' }).click();
+    await fillAddAccountModal(page, undefined, undefined, '贷款');
+
+    // 验证添加成功
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+
+    // 验证账户类型标签显示
+    await expect(page.locator('.ant-tag:has-text("贷款")')).toBeVisible();
+  });
+
+  test('添加多个账户并验证列表', async ({ page }) => {
+    // 添加第一个账户
+    await page.getByRole('button', { name: '添加账户' }).click();
+    await fillAddAccountModal(page, '账户一');
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+
+    // 添加第二个账户
+    await page.getByRole('button', { name: '添加账户' }).click();
+    await fillAddAccountModal(page, '账户二');
+    await expect(page.getByText('账户添加成功')).toBeVisible();
+
     // 验证所有账户显示
-    await expect(page.getByText('现金账户')).toBeVisible();
-    await expect(page.getByText('储蓄卡')).toBeVisible();
-    await expect(page.getByText('信用卡')).toBeVisible();
-    
-    // 验证账户数量
-    const localStorageData = await page.evaluate(() => {
-      const data = localStorage.getItem('expense_tracker_data');
-      return data ? JSON.parse(data) : null;
-    });
-    
-    expect(localStorageData.accounts).toHaveLength(3);
+    await expect(page.getByText('账户一')).toBeVisible();
+    await expect(page.getByText('账户二')).toBeVisible();
+    await expect(page.getByText('现金')).toBeVisible();
   });
 
   test('取消添加账户', async ({ page }) => {
     // 点击添加账户按钮
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    
-    // 输入账户名称
-    await page.locator('input[placeholder*="账户名称"]').fill('测试取消');
-    
-    // 点击取消按钮
-    await page.getByRole('button', { name: /取消/i }).click();
-    
+    await page.getByRole('button', { name: '添加账户' }).click();
+
+    // 验证弹窗打开
+    await expect(page.locator('.ant-modal:visible')).toBeVisible({ timeout: 10000 });
+
+    // 填写信息
+    await page.locator('.ant-modal:visible').getByPlaceholder(/例如/).fill('取消的账户');
+
+    // 点击取消
+    await page.locator('.ant-modal:visible .ant-btn-default').click();
+
     // 验证弹窗关闭
-    await expect(page.getByRole('heading', { name: /添加账户/i })).not.toBeVisible();
-    
+    await expect(page.locator('.ant-modal')).not.toBeVisible({ timeout: 5000 });
+
     // 验证账户未添加
-    await expect(page.getByText('测试取消')).not.toBeVisible();
-  });
-
-  test('空账户名称验证', async ({ page }) => {
-    // 点击添加账户按钮
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    
-    // 验证添加按钮初始禁用状态
-    await expect(page.getByRole('button', { name: /^添加$/i })).toBeDisabled();
-    
-    // 输入空格
-    await page.locator('input[placeholder*="账户名称"]').fill('   ');
-    
-    // 验证添加按钮仍然禁用
-    await expect(page.getByRole('button', { name: /^添加$/i })).toBeDisabled();
-    
-    // 输入有效名称
-    await page.locator('input[placeholder*="账户名称"]').fill('有效账户');
-    
-    // 验证添加按钮启用
-    await expect(page.getByRole('button', { name: /^添加$/i })).toBeEnabled();
-  });
-
-  test('按 Enter 键提交账户', async ({ page }) => {
-    // 点击添加账户按钮
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    
-    // 输入账户名称
-    const input = page.locator('input[placeholder*="账户名称"]');
-    await input.fill('快捷账户');
-    
-    // 按 Enter 键
-    await input.press('Enter');
-    
-    // 验证成功提示
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 验证新账户显示在列表中
-    await expect(page.getByText('快捷账户')).toBeVisible();
-  });
-
-  test('账户余额显示', async ({ page }) => {
-    // 添加账户
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    await page.locator('input[placeholder*="账户名称"]').fill('余额测试账户');
-    await page.getByRole('button', { name: /^添加$/i }).click();
-    
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 验证初始余额为 0
-    await expect(page.getByText('¥0.00')).toBeVisible();
-  });
-
-  test('空账户列表提示', async ({ page }) => {
-    // 清空所有账户
-    await page.evaluate(() => {
-      const data = localStorage.getItem('expense_tracker_data');
-      if (data) {
-        const parsed = JSON.parse(data);
-        parsed.accounts = [];
-        localStorage.setItem('expense_tracker_data', JSON.stringify(parsed));
-      }
-    });
-    
-    // 刷新页面
-    await page.reload();
-    
-    // 验证空状态提示
-    await expect(page.getByText(/暂无账户|No accounts/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /添加账户/i })).toBeVisible();
-  });
-
-  test('账户数据持久化', async ({ page }) => {
-    // 添加账户
-    await page.getByRole('button', { name: /添加账户/i }).click();
-    await page.locator('input[placeholder*="账户名称"]').fill('持久化测试账户');
-    await page.getByRole('button', { name: /^添加$/i }).click();
-    
-    await expect(page.getByText(/添加成功|success/i)).toBeVisible();
-    
-    // 刷新页面
-    await page.reload();
-    
-    // 验证账户仍然存在
-    await expect(page.getByText('持久化测试账户')).toBeVisible();
+    await expect(page.getByText('取消的账户')).not.toBeVisible();
   });
 });

@@ -116,6 +116,24 @@ vi.mock('./storage', () => ({
       const currencyAccounts = mockStore.accounts.filter(a => a.currency === currency);
       return currencyAccounts.some(a => a.visible === true);
     },
+    // Financial sources methods
+    getFinancialSources: () => [...mockStore.financialSources],
+    getFinancialSourcesByType: (type: string) => mockStore.financialSources.filter(s => s.type === type),
+    addFinancialSource: (source: any) => {
+      mockStore.financialSources.push(source);
+      mockStore.updatedAt = Date.now();
+    },
+    updateFinancialSource: (id: string, updates: any) => {
+      const index = mockStore.financialSources.findIndex(s => s.id === id);
+      if (index >= 0) {
+        mockStore.financialSources[index] = { ...mockStore.financialSources[index], ...updates };
+        mockStore.updatedAt = Date.now();
+      }
+    },
+    deleteFinancialSource: (id: string) => {
+      mockStore.financialSources = mockStore.financialSources.filter(s => s.id !== id);
+      mockStore.updatedAt = Date.now();
+    },
   },
 }));
 
@@ -1048,17 +1066,17 @@ describe('RecordService', () => {
       // Act
       const result = service.addAccount(accountData);
 
-      // Assert - 新的 addAccount 返回结果对象
+      // Assert - 新的 addAccount 返回结果对象，使用随机ID
       expect(result.success).toBe(true);
       expect(result.account).toBeDefined();
-      expect(result.account!.id).toBe('USD-cash');
+      expect(result.account!.id).toMatch(/^acc-/);
       expect(result.account!.name).toBe('USD 现金');
       expect(result.account!.currency).toBe('USD');
       expect(result.account!.accountType).toBe('cash');
       expect(result.account!.createdAt).toBeDefined();
     });
 
-    it('应生成 {currency}-{accountType} 格式的 ID', () => {
+    it('应生成 acc- 前缀格式的 ID', () => {
       // Arrange
       const accountData = {
         currency: 'CNY',
@@ -1070,7 +1088,7 @@ describe('RecordService', () => {
 
       // Assert - 新的 ID 格式
       expect(result.success).toBe(true);
-      expect(result.account!.id).toMatch(/^CNY-(cash|investment|loan)$/);
+      expect(result.account!.id).toMatch(/^acc-/);
     });
   });
 
@@ -1719,7 +1737,7 @@ describe('RecordService', () => {
         }
         return balance;
       };
-      const cashBalance = calculateBalance('cash', mockStore.records);
+      const cashBalance = calculateBalance('CNY-cash', mockStore.records);
 
       // Assert - 现金账户余额 = 5000（借） - 100（贷） = 4900
       expect(cashBalance).toBe(4900);
@@ -1737,8 +1755,8 @@ describe('RecordService', () => {
         currency: 'CNY',
         createdAt: Date.now(),
         entries: [
-          { accountId: 'cash', accountName: '现金', direction: 'debit', amount: 5000 },
-          { accountId: 'income', accountName: '收入', direction: 'credit', amount: 5000 },
+          { accountId: 'CNY-cash', accountName: '现金', direction: 'debit', amount: 5000 },
+          { accountId: 'CNY-income', accountName: '收入', direction: 'credit', amount: 5000 },
         ],
       };
       mockStore.records.push(incomeRecord);
@@ -1998,11 +2016,11 @@ describe('RecordService', () => {
 
       // Assert
       // 现金：5000 + 1000（借） - 100 - 500（贷） = 5400
-      expect(calculateBalance('cash', mockStore.records)).toBe(5400);
+      expect(calculateBalance('CNY-cash', mockStore.records)).toBe(5400);
       // 收入：-5000 - 1000（贷） = -6000
-      expect(calculateBalance('income', mockStore.records)).toBe(-6000);
+      expect(calculateBalance('CNY-income', mockStore.records)).toBe(-6000);
       // 支出：100 + 500（借） = 600
-      expect(calculateBalance('expense', mockStore.records)).toBe(600);
+      expect(calculateBalance('CNY-expense', mockStore.records)).toBe(600);
     });
 
     it('应验证分录借贷平衡', () => {
@@ -2071,6 +2089,1003 @@ describe('RecordService', () => {
       records.forEach(record => {
         expect(validateBalance(record)).toBe(true);
       });
+    });
+  });
+
+  // ========== Task 1: 财务预测引擎单元测试 ==========
+
+  describe('generateDailyDataWithPrediction', () => {
+    it('应生成过去6个月到未来6个月的日级数据（约400天）', () => {
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // Assert
+      expect(dailyData.length).toBeGreaterThan(350);
+      expect(dailyData.length).toBeLessThan(420);
+
+      // 检查数据范围
+      const firstDate = dailyData[0].date;
+      const lastDate = dailyData[dailyData.length - 1].date;
+      const now = new Date();
+      const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+      const sixMonthsLater = new Date(now.getFullYear(), now.getMonth() + 7, 0);
+
+      const startDate = new Date(firstDate);
+      const endDate = new Date(lastDate);
+
+      expect(startDate.getFullYear()).toBe(sixMonthsAgo.getFullYear());
+      expect(startDate.getMonth()).toBe(sixMonthsAgo.getMonth());
+      expect(endDate.getFullYear()).toBe(sixMonthsLater.getFullYear());
+      expect(endDate.getMonth()).toBe(sixMonthsLater.getMonth());
+    });
+
+    it('应每天包含收入、支出、结余和日期信息', () => {
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // Assert
+      expect(dailyData.length).toBeGreaterThan(0);
+      dailyData.forEach(day => {
+        expect(day.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(typeof day.income).toBe('number');
+        expect(typeof day.expense).toBe('number');
+        expect(typeof day.balance).toBe('number');
+        expect(typeof day.isActual).toBe('boolean');
+      });
+    });
+
+    it('应正确聚合实际记录到日级数据', () => {
+      // Arrange
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+      service.addRecord({
+        type: 'income',
+        amount: 5000,
+        note: '工资',
+        category: 'inc-salary',
+        date: yesterdayStr,
+      });
+      service.addRecord({
+        type: 'expense',
+        amount: 100,
+        note: '午餐',
+        category: 'exp-food',
+        date: yesterdayStr,
+      });
+
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // Assert
+      const yesterdayData = dailyData.find(d => d.date === yesterdayStr);
+      expect(yesterdayData).toBeDefined();
+      expect(yesterdayData?.income).toBe(5000);
+      expect(yesterdayData?.expense).toBe(100);
+      expect(yesterdayData?.isActual).toBe(true);
+    });
+
+    it('结余计算应正确（前一天结余 + 当日收入 - 当日支出）', () => {
+      // Arrange
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const dayBeforeYesterday = new Date(today);
+      dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2);
+
+      const dayBeforeStr = `${dayBeforeYesterday.getFullYear()}-${String(dayBeforeYesterday.getMonth() + 1).padStart(2, '0')}-${String(dayBeforeYesterday.getDate()).padStart(2, '0')}`;
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+      service.addRecord({
+        type: 'income',
+        amount: 5000,
+        note: '工资',
+        category: 'inc-salary',
+        date: dayBeforeStr,
+      });
+      service.addRecord({
+        type: 'income',
+        amount: 1000,
+        note: '奖金',
+        category: 'inc-bonus',
+        date: yesterdayStr,
+      });
+
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // Assert
+      const dayBeforeData = dailyData.find(d => d.date === dayBeforeStr);
+      const yesterdayData = dailyData.find(d => d.date === yesterdayStr);
+
+      expect(dayBeforeData?.balance).toBe(5000);
+      expect(yesterdayData?.balance).toBe(6000);
+    });
+  });
+
+  describe('_isSourceActiveOnDay (通过财务来源触发测试)', () => {
+    it('日级财务来源应每天触发', () => {
+      // Arrange
+      const dailySource = {
+        id: 'daily-source',
+        type: 'income' as const,
+        name: '每日收入',
+        currency: 'CNY',
+        amount: 100,
+        period: 'daily' as const,
+        createdAt: Date.now(),
+      };
+      mockStore.financialSources.push(dailySource);
+
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // 统计未来30天内触发次数（应该有30次）
+      const today = new Date();
+      const futureDays = dailyData.filter(d => {
+        const date = new Date(d.date);
+        return date > today && d.income >= 100;
+      });
+
+      // Assert
+      expect(futureDays.length).toBeGreaterThan(0);
+    });
+
+    it('月度财务来源仅在指定日期触发（非平均分摊）', () => {
+      // Arrange
+      const today = new Date();
+      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const lastDayStr = `${lastDayOfMonth.getFullYear()}-${String(lastDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDayOfMonth.getDate()).padStart(2, '0')}`;
+
+      const monthlySource = {
+        id: 'monthly-source',
+        type: 'income' as const,
+        name: '月收入',
+        currency: 'CNY',
+        amount: 2000,
+        period: 'monthly' as const,
+        dayOfMonth: -1, // 每月最后一天
+        createdAt: Date.now(),
+      };
+      mockStore.financialSources.push(monthlySource);
+
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // 检查本月最后一天的收入
+      const lastDayData = dailyData.find(d => d.date === lastDayStr);
+
+      // Assert
+      expect(lastDayData?.income).toBeGreaterThanOrEqual(2000);
+
+      // 检查本月其他日期的收入（不应有2000）
+      const otherDaysInMonth = dailyData.filter(d => {
+        const date = new Date(d.date);
+        return date.getMonth() === today.getMonth() &&
+               date.getFullYear() === today.getFullYear() &&
+               d.date !== lastDayStr &&
+               d.income >= 2000;
+      });
+      expect(otherDaysInMonth.length).toBe(0);
+    });
+
+    it('周度财务来源仅在指定星期触发', () => {
+      // Arrange
+      const today = new Date();
+      const nextSaturday = new Date(today);
+      nextSaturday.setDate(today.getDate() + ((6 - today.getDay() + 7) % 7 || 7));
+      const saturdayStr = `${nextSaturday.getFullYear()}-${String(nextSaturday.getMonth() + 1).padStart(2, '0')}-${String(nextSaturday.getDate()).padStart(2, '0')}`;
+
+      const weeklySource = {
+        id: 'weekly-source',
+        type: 'income' as const,
+        name: '周收入',
+        currency: 'CNY',
+        amount: 500,
+        period: 'weekly' as const,
+        dayOfWeek: 6, // 周六
+        createdAt: Date.now(),
+      };
+      mockStore.financialSources.push(weeklySource);
+
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // 检查下一个周六的收入
+      const saturdayData = dailyData.find(d => d.date === saturdayStr);
+
+      // Assert
+      expect(saturdayData?.income).toBeGreaterThanOrEqual(500);
+    });
+
+    it('月度财务来源在指定日期（非最后一天）触发', () => {
+      // Arrange
+      const today = new Date();
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 15);
+      const targetStr = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-${String(nextMonth.getDate()).padStart(2, '0')}`;
+
+      const monthlySource = {
+        id: 'monthly-15th',
+        type: 'expense' as const,
+        name: '月租',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly' as const,
+        dayOfMonth: 15,
+        createdAt: Date.now(),
+      };
+      mockStore.financialSources.push(monthlySource);
+
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // 检查目标日期的支出
+      const targetData = dailyData.find(d => d.date === targetStr);
+
+      // Assert
+      expect(targetData?.expense).toBeGreaterThanOrEqual(1000);
+    });
+
+    it('一次性财务来源不在预测中触发', () => {
+      // Arrange
+      const onceSource = {
+        id: 'once-source',
+        type: 'income' as const,
+        name: '一次性收入',
+        currency: 'CNY',
+        amount: 10000,
+        period: 'once' as const,
+        createdAt: Date.now(),
+      };
+      mockStore.financialSources.push(onceSource);
+
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // 统计未来30天内是否有10000的收入
+      const today = new Date();
+      const futureLargeIncome = dailyData.filter(d => {
+        const date = new Date(d.date);
+        return date > today && d.income >= 10000;
+      });
+
+      // Assert
+      expect(futureLargeIncome.length).toBe(0);
+    });
+  });
+
+  describe('aggregateDailyToMonthly', () => {
+    it('应将日级数据正确聚合为月级数据', () => {
+      // Arrange - use dates within the prediction window (past 6 months to future 6 months)
+      const today = new Date();
+      const pastMonth = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+      const pastStr = `${pastMonth.getFullYear()}-${String(pastMonth.getMonth() + 1).padStart(2, '0')}-01`;
+      const pastStrEnd = `${pastMonth.getFullYear()}-${String(pastMonth.getMonth() + 1).padStart(2, '0')}-15`;
+      const expectedMonth = `${pastMonth.getFullYear()}-${String(pastMonth.getMonth() + 1).padStart(2, '0')}`;
+
+      service.addRecord({
+        type: 'income',
+        amount: 5000,
+        note: '工资',
+        category: 'inc-salary',
+        date: pastStr,
+      });
+      service.addRecord({
+        type: 'expense',
+        amount: 100,
+        note: '午餐',
+        category: 'exp-food',
+        date: pastStrEnd,
+      });
+
+      const dailyData = service.generateDailyDataWithPrediction();
+
+      // Act
+      const monthlyData = service.aggregateDailyToMonthly(dailyData);
+
+      // Assert
+      expect(monthlyData.length).toBeGreaterThan(0);
+      const monthData = monthlyData.find(m => m.month === expectedMonth);
+      expect(monthData?.income).toBeGreaterThanOrEqual(5000);
+      expect(monthData?.expense).toBeGreaterThanOrEqual(100);
+    });
+
+    it('当前月应标记为部分实际部分预测', () => {
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+      const monthlyData = service.aggregateDailyToMonthly(dailyData);
+
+      // Assert
+      const today = new Date();
+      const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+      const currentMonthData = monthlyData.find(m => m.month === currentMonth);
+
+      expect(currentMonthData?.isPartialActual).toBe(true);
+      expect(currentMonthData?.boundaryDay).toBe(today.getDate());
+      expect(currentMonthData?.balanceAtBoundary).toBeDefined();
+    });
+
+    it('过去月份应标记为完全实际', () => {
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+      const monthlyData = service.aggregateDailyToMonthly(dailyData);
+
+      // Assert
+      const today = new Date();
+      const pastMonth = today.getMonth() > 0
+        ? `${today.getFullYear()}-${String(today.getMonth()).padStart(2, '0')}`
+        : `${today.getFullYear() - 1}-12`;
+
+      const pastMonthData = monthlyData.find(m => m.month === pastMonth);
+      if (pastMonthData) {
+        expect(pastMonthData?.isActual).toBe(true);
+        expect(pastMonthData?.isPartialActual).toBeFalsy();
+      }
+    });
+
+    it('未来月份应标记为完全预测', () => {
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+      const monthlyData = service.aggregateDailyToMonthly(dailyData);
+
+      // Assert
+      const today = new Date();
+      const futureMonth = today.getMonth() < 11
+        ? `${today.getFullYear()}-${String(today.getMonth() + 2).padStart(2, '0')}`
+        : `${today.getFullYear() + 1}-01`;
+
+      const futureMonthData = monthlyData.find(m => m.month === futureMonth);
+      if (futureMonthData) {
+        expect(futureMonthData?.isActual).toBe(false);
+        expect(futureMonthData?.isPartialActual).toBeFalsy();
+      }
+    });
+
+    it('月级数据应按月份排序', () => {
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+      const monthlyData = service.aggregateDailyToMonthly(dailyData);
+
+      // Assert
+      for (let i = 1; i < monthlyData.length; i++) {
+        expect(monthlyData[i].month.localeCompare(monthlyData[i - 1].month)).toBeGreaterThan(0);
+      }
+    });
+
+    it('应覆盖约13个月的数据', () => {
+      // Act
+      const dailyData = service.generateDailyDataWithPrediction();
+      const monthlyData = service.aggregateDailyToMonthly(dailyData);
+
+      // Assert
+      expect(monthlyData.length).toBeGreaterThanOrEqual(12);
+      expect(monthlyData.length).toBeLessThanOrEqual(14);
+    });
+  });
+
+  // ========== Task 2: 财务来源管理单元测试 ==========
+
+  describe('getFinancialSources', () => {
+    it('应返回空数组当没有财务来源时', () => {
+      // Act
+      const sources = service.getFinancialSources();
+
+      // Assert
+      expect(sources).toEqual([]);
+    });
+
+    it('应返回所有财务来源', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '工资',
+        currency: 'CNY',
+        amount: 5000,
+        period: 'monthly',
+        dayOfMonth: -1,
+      });
+      service.addFinancialSource({
+        type: 'expense',
+        name: '房租',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly',
+        dayOfMonth: 1,
+      });
+
+      // Act
+      const sources = service.getFinancialSources();
+
+      // Assert
+      expect(sources).toHaveLength(2);
+    });
+  });
+
+  describe('getFinancialSourcesByType', () => {
+    it('应只返回指定类型的财务来源', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '工资',
+        currency: 'CNY',
+        amount: 5000,
+        period: 'monthly',
+      });
+      service.addFinancialSource({
+        type: 'income',
+        name: '奖金',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly',
+      });
+      service.addFinancialSource({
+        type: 'expense',
+        name: '房租',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly',
+      });
+
+      // Act
+      const incomeSources = service.getFinancialSourcesByType('income');
+      const expenseSources = service.getFinancialSourcesByType('expense');
+
+      // Assert
+      expect(incomeSources).toHaveLength(2);
+      expect(expenseSources).toHaveLength(1);
+      incomeSources.forEach(s => expect(s.type).toBe('income'));
+      expenseSources.forEach(s => expect(s.type).toBe('expense'));
+    });
+
+    it('应返回空数组当没有指定类型的来源时', () => {
+      // Act
+      const investmentSources = service.getFinancialSourcesByType('investment');
+
+      // Assert
+      expect(investmentSources).toEqual([]);
+    });
+  });
+
+  describe('generateFinancialSourceId', () => {
+    it('应生成以 fs- 开头的 ID', () => {
+      // Act
+      const id = service.generateFinancialSourceId();
+
+      // Assert
+      expect(id).toMatch(/^fs-/);
+    });
+
+    it('应生成唯一的 ID', () => {
+      // Act
+      const id1 = service.generateFinancialSourceId();
+      const id2 = service.generateFinancialSourceId();
+
+      // Assert
+      expect(id1).not.toBe(id2);
+    });
+  });
+
+  describe('addFinancialSource', () => {
+    it('应添加日级财务来源', () => {
+      // Arrange
+      const sourceData = {
+        type: 'income' as const,
+        name: '每日收入',
+        currency: 'CNY',
+        amount: 100,
+        period: 'daily' as const,
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.id).toBeDefined();
+      expect(newSource.name).toBe('每日收入');
+      expect(newSource.type).toBe('income');
+      expect(newSource.period).toBe('daily');
+      expect(newSource.createdAt).toBeDefined();
+    });
+
+    it('应添加周级财务来源', () => {
+      // Arrange
+      const sourceData = {
+        type: 'expense' as const,
+        name: '每周支出',
+        currency: 'CNY',
+        amount: 500,
+        period: 'weekly' as const,
+        dayOfWeek: 6,
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.period).toBe('weekly');
+      expect(newSource.dayOfWeek).toBe(6);
+    });
+
+    it('应添加月级财务来源（指定日期）', () => {
+      // Arrange
+      const sourceData = {
+        type: 'income' as const,
+        name: '月收入',
+        currency: 'CNY',
+        amount: 2000,
+        period: 'monthly' as const,
+        dayOfMonth: 15,
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.period).toBe('monthly');
+      expect(newSource.dayOfMonth).toBe(15);
+    });
+
+    it('应添加月级财务来源（最后一天）', () => {
+      // Arrange
+      const sourceData = {
+        type: 'income' as const,
+        name: '月末收入',
+        currency: 'CNY',
+        amount: 2000,
+        period: 'monthly' as const,
+        dayOfMonth: -1,
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.period).toBe('monthly');
+      expect(newSource.dayOfMonth).toBe(-1);
+    });
+
+    it('应添加年 级财务来源', () => {
+      // Arrange
+      const sourceData = {
+        type: 'income' as const,
+        name: '年度奖金',
+        currency: 'CNY',
+        amount: 10000,
+        period: 'yearly' as const,
+        dayOfMonth: 15,
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.period).toBe('yearly');
+      expect(newSource.dayOfMonth).toBe(15);
+    });
+
+    it('应添加投资财务来源', () => {
+      // Arrange
+      const sourceData = {
+        type: 'investment' as const,
+        name: '基金投资',
+        currency: 'CNY',
+        amount: 5000,
+        period: 'monthly' as const,
+        investmentType: 'recurring',
+        expectedReturn: 5,
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.type).toBe('investment');
+      expect(newSource.investmentType).toBe('recurring');
+      expect(newSource.expectedReturn).toBe(5);
+    });
+
+    it('应添加贷款财务来源', () => {
+      // Arrange
+      const sourceData = {
+        type: 'loan' as const,
+        name: '房贷',
+        currency: 'CNY',
+        amount: 3000,
+        period: 'monthly' as const,
+        principal: 500000,
+        interestRate: 4.5,
+        interestType: 'equal_payment',
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.type).toBe('loan');
+      expect(newSource.principal).toBe(500000);
+      expect(newSource.interestRate).toBe(4.5);
+    });
+
+    it('应使用提供的自定义 ID', () => {
+      // Arrange
+      const sourceData = {
+        id: 'custom-id',
+        type: 'income' as const,
+        name: '自定义ID来源',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly' as const,
+      };
+
+      // Act
+      const newSource = service.addFinancialSource(sourceData);
+
+      // Assert
+      expect(newSource.id).toBe('custom-id');
+    });
+  });
+
+  describe('updateFinancialSource', () => {
+    it('应更新财务来源的属性', () => {
+      // Arrange
+      const source = service.addFinancialSource({
+        type: 'income',
+        name: '原始名称',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly',
+      });
+
+      // Act
+      service.updateFinancialSource(source.id, {
+        name: '更新后的名称',
+        amount: 2000,
+      });
+
+      // Assert
+      const sources = service.getFinancialSources();
+      const updated = sources.find(s => s.id === source.id);
+      expect(updated?.name).toBe('更新后的名称');
+      expect(updated?.amount).toBe(2000);
+    });
+
+    it('应更新财务来源的周期和日期配置', () => {
+      // Arrange
+      const source = service.addFinancialSource({
+        type: 'income',
+        name: '测试来源',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'daily',
+      });
+
+      // Act
+      service.updateFinancialSource(source.id, {
+        period: 'weekly',
+        dayOfWeek: 1,
+      });
+
+      // Assert
+      const sources = service.getFinancialSources();
+      const updated = sources.find(s => s.id === source.id);
+      expect(updated?.period).toBe('weekly');
+      expect(updated?.dayOfWeek).toBe(1);
+    });
+
+    it('更新不存在的来源不应报错', () => {
+      // Act & Assert
+      expect(() => {
+        service.updateFinancialSource('non-existent', { name: 'test' });
+      }).not.toThrow();
+    });
+  });
+
+  describe('deleteFinancialSource', () => {
+    it('应删除指定的财务来源', () => {
+      // Arrange
+      const source = service.addFinancialSource({
+        type: 'income',
+        name: '待删除来源',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly',
+      });
+
+      // Act
+      const result = service.deleteFinancialSource(source.id);
+
+      // Assert
+      expect(result.success).toBe(true);
+      expect(service.getFinancialSources()).toHaveLength(0);
+    });
+
+    it('删除不存在的来源应返回成功', () => {
+      // Act
+      const result = service.deleteFinancialSource('non-existent');
+
+      // Assert
+      expect(result.success).toBe(true);
+    });
+  });
+
+  // ========== Task 2: 汇总计算方法单元测试 ==========
+
+  describe('calculateMonthlyIncome', () => {
+    it('应返回0当没有收入来源时', () => {
+      // Act
+      const income = service.calculateMonthlyIncome();
+
+      // Assert
+      expect(income).toBe(0);
+    });
+
+    it('应正确计算月收入（月级来源）', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '月薪',
+        currency: 'CNY',
+        amount: 5000,
+        period: 'monthly',
+      });
+
+      // Act
+      const income = service.calculateMonthlyIncome();
+
+      // Assert
+      expect(income).toBe(5000);
+    });
+
+    it('应正确计算月收入（日级来源转换）', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '每日收入',
+        currency: 'CNY',
+        amount: 100,
+        period: 'daily',
+      });
+
+      // Act
+      const income = service.calculateMonthlyIncome();
+
+      // Assert
+      expect(income).toBe(3000); // 100 * 30
+    });
+
+    it('应正确计算月收入（周级来源转换）', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '每周收入',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'weekly',
+      });
+
+      // Act
+      const income = service.calculateMonthlyIncome();
+
+      // Assert
+      expect(income).toBe(4000); // 1000 * 4
+    });
+
+    it('应正确计算月收入（年 级来源转换）', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '年度奖金',
+        currency: 'CNY',
+        amount: 12000,
+        period: 'yearly',
+      });
+
+      // Act
+      const income = service.calculateMonthlyIncome();
+
+      // Assert
+      expect(income).toBe(1000); // 12000 / 12
+    });
+
+    it('应汇总多个收入来源', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '月薪',
+        currency: 'CNY',
+        amount: 5000,
+        period: 'monthly',
+      });
+      service.addFinancialSource({
+        type: 'income',
+        name: '每日兼职',
+        currency: 'CNY',
+        amount: 100,
+        period: 'daily',
+      });
+
+      // Act
+      const income = service.calculateMonthlyIncome();
+
+      // Assert
+      expect(income).toBe(8000); // 5000 + 100 * 30
+    });
+  });
+
+  describe('calculateMonthlyExpense', () => {
+    it('应返回0当没有支出来源时', () => {
+      // Act
+      const expense = service.calculateMonthlyExpense();
+
+      // Assert
+      expect(expense).toBe(0);
+    });
+
+    it('应正确计算月支出', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'expense',
+        name: '房租',
+        currency: 'CNY',
+        amount: 2000,
+        period: 'monthly',
+      });
+      service.addFinancialSource({
+        type: 'expense',
+        name: '每日餐饮',
+        currency: 'CNY',
+        amount: 50,
+        period: 'daily',
+      });
+
+      // Act
+      const expense = service.calculateMonthlyExpense();
+
+      // Assert
+      expect(expense).toBe(3500); // 2000 + 50 * 30
+    });
+  });
+
+  describe('calculateMonthlyBalance', () => {
+    it('应正确计算月结余（收入 - 支出）', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '月薪',
+        currency: 'CNY',
+        amount: 8000,
+        period: 'monthly',
+      });
+      service.addFinancialSource({
+        type: 'expense',
+        name: '总支出',
+        currency: 'CNY',
+        amount: 3000,
+        period: 'monthly',
+      });
+
+      // Act
+      const balance = service.calculateMonthlyBalance();
+
+      // Assert
+      expect(balance).toBe(5000);
+    });
+
+    it('应处理负结余', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'income',
+        name: '低收入',
+        currency: 'CNY',
+        amount: 2000,
+        period: 'monthly',
+      });
+      service.addFinancialSource({
+        type: 'expense',
+        name: '高支出',
+        currency: 'CNY',
+        amount: 5000,
+        period: 'monthly',
+      });
+
+      // Act
+      const balance = service.calculateMonthlyBalance();
+
+      // Assert
+      expect(balance).toBe(-3000);
+    });
+  });
+
+  describe('generateMonthlyDataWithPrediction', () => {
+    it('应返回月级预测数据', () => {
+      // Act
+      const monthlyData = service.generateMonthlyDataWithPrediction();
+
+      // Assert
+      expect(monthlyData.length).toBeGreaterThan(0);
+      monthlyData.forEach(item => {
+        expect(item.month).toMatch(/^\d{4}-\d{2}$/);
+        expect(typeof item.income).toBe('number');
+        expect(typeof item.expense).toBe('number');
+        expect(typeof item.balance).toBe('number');
+        expect(typeof item.isActual).toBe('boolean');
+      });
+    });
+
+    it('应包含约13个月的预测数据', () => {
+      // Act
+      const monthlyData = service.generateMonthlyDataWithPrediction();
+
+      // Assert
+      expect(monthlyData.length).toBeGreaterThanOrEqual(12);
+      expect(monthlyData.length).toBeLessThanOrEqual(14);
+    });
+  });
+
+  describe('calculateExpectedInvestmentReturn', () => {
+    it('应返回0当没有投资来源时', () => {
+      // Act
+      const returnValue = service.calculateExpectedInvestmentReturn();
+
+      // Assert
+      expect(returnValue).toBe(0);
+    });
+
+    it('应计算定投的预期月收益', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'investment',
+        name: '基金定投',
+        currency: 'CNY',
+        amount: 1000,
+        period: 'monthly',
+        investmentType: 'recurring',
+        expectedReturn: 6, // 6% 年化收益率
+      });
+
+      // Act
+      const returnValue = service.calculateExpectedInvestmentReturn();
+
+      // Assert
+      // 月收益 = 1000 * (6% / 12) = 5
+      expect(returnValue).toBeCloseTo(5, 1);
+    });
+  });
+
+  describe('calculateMonthlyLoanPayment', () => {
+    it('应返回0当没有贷款来源时', () => {
+      // Act
+      const payment = service.calculateMonthlyLoanPayment();
+
+      // Assert
+      expect(payment).toBe(0);
+    });
+
+    it('应计算等额本息的月还款额', () => {
+      // Arrange
+      service.addFinancialSource({
+        type: 'loan',
+        name: '房贷',
+        currency: 'CNY',
+        amount: 0,
+        period: 'monthly',
+        principal: 1000000,
+        interestRate: 4.5,
+        interestType: 'equal-payment',
+      });
+
+      // Act
+      const payment = service.calculateMonthlyLoanPayment();
+
+      // Assert
+      expect(payment).toBeGreaterThan(0);
+      // 100万，4.5%年利率，monthly period means getLoanMonths returns 1
+      // monthlyRate = 4.5/100/12 = 0.00375
+      // temp = (1.00375)^1 = 1.00375
+      // payment = 1000000 * 0.00375 * 1.00375 / 0.00375 = 1003750
+      expect(payment).toBeCloseTo(1003750, 0);
     });
   });
 });

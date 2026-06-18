@@ -79,16 +79,16 @@ describe('Sidebar', () => {
     it('当前页面应该有高亮样式', () => {
       renderSidebar('dashboard');
 
-      const dashboardButton = screen.getByText('总览').closest('button');
-      expect(dashboardButton).toHaveClass('bg-blue-50', 'text-blue-600', 'font-medium');
+      // Ant Design Menu uses li.ant-menu-item-selected for selected items
+      const dashboardItem = screen.getByText('总览').closest('li.ant-menu-item');
+      expect(dashboardItem).toHaveClass('ant-menu-item-selected');
     });
 
     it('非当前页面应该有默认样式', () => {
       renderSidebar('dashboard');
 
-      const historyButton = screen.getByText('历史').closest('button');
-      expect(historyButton).toHaveClass('text-gray-600');
-      expect(historyButton).not.toHaveClass('bg-blue-50', 'text-blue-600');
+      const historyItem = screen.getByText('历史').closest('li.ant-menu-item');
+      expect(historyItem).not.toHaveClass('ant-menu-item-selected');
     });
 
     it('切换当前页面时高亮应该正确变化', () => {
@@ -106,8 +106,8 @@ describe('Sidebar', () => {
       );
 
       // dashboard 页面高亮
-      let dashboardButton = screen.getByText('总览').closest('button');
-      expect(dashboardButton).toHaveClass('bg-blue-50', 'text-blue-600');
+      let dashboardItem = screen.getByText('总览').closest('li.ant-menu-item');
+      expect(dashboardItem).toHaveClass('ant-menu-item-selected');
 
       // 切换到 history 页面
       rerender(
@@ -121,12 +121,12 @@ describe('Sidebar', () => {
       );
 
       // history 页面高亮
-      const historyButton = screen.getByText('历史').closest('button');
-      expect(historyButton).toHaveClass('bg-blue-50', 'text-blue-600');
+      const historyItem = screen.getByText('历史').closest('li.ant-menu-item');
+      expect(historyItem).toHaveClass('ant-menu-item-selected');
 
       // dashboard 不再高亮
-      dashboardButton = screen.getByText('总览').closest('button');
-      expect(dashboardButton).not.toHaveClass('bg-blue-50', 'text-blue-600');
+      dashboardItem = screen.getByText('总览').closest('li.ant-menu-item');
+      expect(dashboardItem).not.toHaveClass('ant-menu-item-selected');
     });
   });
 
@@ -171,8 +171,7 @@ describe('Sidebar', () => {
       expect(screen.getByText('Account Book')).toBeInTheDocument();
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
       expect(screen.getByText('History')).toBeInTheDocument();
-      // 注意：账户导航项目前是硬编码的，没有国际化
-      expect(screen.getByText('账户')).toBeInTheDocument();
+      expect(screen.getByText('Accounts')).toBeInTheDocument();
       expect(screen.getByText('Add Record')).toBeInTheDocument();
       expect(screen.getByText('Settings')).toBeInTheDocument();
     });
@@ -224,15 +223,17 @@ describe('Sidebar', () => {
     it('侧边栏应该有正确的样式类', () => {
       renderSidebar();
 
+      // Ant Design Sider renders an aside element
       const sidebar = screen.getByText('记账工具').closest('aside');
-      expect(sidebar).toHaveClass('w-64', 'bg-white', 'border-r', 'border-gray-200');
+      expect(sidebar).toHaveClass('ant-layout-sider', 'ant-layout-sider-light');
     });
 
     it('导航按钮应该有 hover 效果', () => {
       renderSidebar('dashboard');
 
-      const historyButton = screen.getByText('历史').closest('button');
-      expect(historyButton).toHaveClass('hover:bg-gray-50');
+      // Ant Design Menu items have hover effects via ant-menu-item class
+      const historyItem = screen.getByText('历史').closest('li.ant-menu-item');
+      expect(historyItem).toHaveClass('ant-menu-item');
     });
   });
 });

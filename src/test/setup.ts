@@ -33,3 +33,38 @@ Object.defineProperty(window, 'localStorage', {
 beforeEach(() => {
   localStorage.clear()
 })
+
+// Mock window.matchMedia for Ant Design responsive components
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }),
+})
+
+// Mock ResizeObserver for Ant Design components
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+window.ResizeObserver = MockResizeObserver
+
+// Mock IntersectionObserver for Ant Design components
+class MockIntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  readonly root: Element | null = null
+  readonly rootMargin: string = '0px'
+  readonly thresholds: ReadonlyArray<number> = []
+  takeRecords(): IntersectionObserverEntry[] { return [] }
+}
+window.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver
