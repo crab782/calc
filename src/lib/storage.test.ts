@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { RecordDAO } from './storage';
+import { RecordDAO } from './storage/index';
 import type { ExpenseRecord, DataSchema, Category, Account } from '../types/record';
 import { CURRENT_VERSION, INCOME_CATEGORIES, EXPENSE_CATEGORIES, DEFAULT_ACCOUNT, DEFAULT_INCOME_RULE } from '../types/record';
 

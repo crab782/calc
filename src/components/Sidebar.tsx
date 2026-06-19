@@ -10,27 +10,26 @@ import {
   Banknote,
 } from 'lucide-react';
 import { Layout, Menu, Button } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
-import type { PageType } from '../types';
 
 const { Sider } = Layout;
 
 interface SidebarProps {
-  currentPage: PageType;
-  onPageChange: (page: PageType) => void;
   onCollapse: () => void;
 }
 
-export const Sidebar = ({ currentPage, onPageChange, onCollapse }: SidebarProps) => {
+export const Sidebar = ({ onCollapse }: SidebarProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { accounts } = useRecords();
 
-  // 获取默认币种
   const defaultCurrency = accounts.find(a => a.isDefault)?.currency || 'CNY';
-
-  // 检查是否启用了多币种（有非默认币种且可见的账户）
   const hasMultiCurrency = accounts.some(a => a.currency !== defaultCurrency && a.visible);
+
+  const currentPage = location.pathname.slice(1) || 'dashboard';
 
   const menuItems = [
     { key: 'dashboard', label: t.sidebar.dashboard, icon: <LayoutDashboard className="w-[16px] h-[16px]" /> },
@@ -73,7 +72,7 @@ export const Sidebar = ({ currentPage, onPageChange, onCollapse }: SidebarProps)
         mode="inline"
         selectedKeys={[currentPage]}
         items={menuItems as any}
-        onClick={({ key }) => onPageChange(key as PageType)}
+        onClick={({ key }) => navigate(key === 'dashboard' ? '/' : `/${key}`)}
         style={{ borderRight: 'none' }}
       />
     </Sider>

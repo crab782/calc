@@ -1,11 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Typography, Space } from 'antd';
 import { TrendingUp, BarChart3, PiggyBank, ArrowRight } from 'lucide-react';
 
 const { Title, Text } = Typography;
-
-interface BudgetPlanProps {
-  onNavigate: (type: string) => void;
-}
 
 const budgetTypes = [
   {
@@ -31,7 +28,9 @@ const budgetTypes = [
   },
 ];
 
-export const BudgetPlan = ({ onNavigate }: BudgetPlanProps) => {
+export const BudgetPlan = () => {
+  const navigate = useNavigate();
+
   return (
     <div>
       <Title level={4} style={{ marginBottom: 16 }}>预算计划</Title>
@@ -43,7 +42,7 @@ export const BudgetPlan = ({ onNavigate }: BudgetPlanProps) => {
           <Col xs={24} sm={12} md={8} key={type.key}>
             <Card
               hoverable
-              onClick={() => onNavigate(type.key)}
+              onClick={() => navigate(`/budget-calculator?type=${type.key}`)}
               style={{
                 borderRadius: 12,
                 height: '100%',
