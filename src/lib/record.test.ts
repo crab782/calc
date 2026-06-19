@@ -20,7 +20,7 @@ const createMockStore = (): DataSchema => ({
 
 let mockStore: DataSchema;
 
-vi.mock('./storage', () => ({
+vi.mock('./storage/index', () => ({
   recordDAO: {
     findAll: () => [...mockStore.records],
     findById: (id: string) => mockStore.records.find(r => r.id === id),

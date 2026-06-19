@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Button, Input, Space, Typography, Table, message, Alert, Tag } from 'antd';
 import { RefreshCw, Save, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRecords } from '../hooks/useRecords';
 import { DEFAULT_EXCHANGE_RATES, EXCHANGE_RATE_APIS } from '../types/record';
-import type { PageType } from '../types';
 
 const { Title, Text } = Typography;
 
@@ -15,7 +15,8 @@ interface ExchangeRateRow {
   editRate?: string;
 }
 
-export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) => {
+export const ExchangeRate = () => {
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const {
     exchangeRates,
@@ -30,13 +31,11 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
   const [editingRates, setEditingRates] = useState<Record<string, string>>({});
   const [isFetching, setIsFetching] = useState(false);
 
-  // 获取默认币种
   const defaultCurrency = useMemo(() => {
     const defaultAccount = accounts.find(a => a.isDefault);
     return defaultAccount?.currency || 'CNY';
   }, [accounts]);
 
-  // 获取已启用的外币列表（非默认币种的可见账户）
   const enabledCurrencies = useMemo(() => {
     const currencies = new Set<string>();
     accounts.forEach(a => {
@@ -44,12 +43,10 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
         currencies.add(a.currency);
       }
     });
-    // 添加自定义币种
     customCurrencies.forEach(c => currencies.add(c.code));
     return Array.from(currencies).sort();
   }, [accounts, defaultCurrency, customCurrencies]);
 
-  // 构建表格数据
   const tableData: ExchangeRateRow[] = useMemo(() => {
     return enabledCurrencies.map(currency => ({
       key: currency,
@@ -59,7 +56,6 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
     }));
   }, [enabledCurrencies, exchangeRates, editingRates]);
 
-  // 获取汇率来源文本
   const getSourceText = (source: string) => {
     switch (source) {
       case 'manual':
@@ -71,16 +67,13 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
     }
   };
 
-  // 格式化更新时间
   const formatLastUpdate = (timestamp: number) => {
     if (!timestamp) return '-';
     return new Date(timestamp).toLocaleString('zh-CN');
   };
 
-  // 检查是否启用了多币种
   const hasMultiCurrency = enabledCurrencies.length > 0;
 
-  // 处理编辑
   const handleStartEdit = () => {
     const initial: Record<string, string> = {};
     enabledCurrencies.forEach(currency => {
@@ -90,7 +83,6 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
     setIsEditing(true);
   };
 
-  // 处理保存
   const handleSave = () => {
     const rates: Record<string, number> = {};
     for (const [currency, value] of Object.entries(editingRates)) {
@@ -107,13 +99,11 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
     setEditingRates({});
   };
 
-  // 处理取消编辑
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditingRates({});
   };
 
-  // 处理从 API 获取
   const handleFetchFromAPI = async () => {
     const canFetch = canFetchRatesFromAPI();
     if (!canFetch.allowed) {
@@ -173,7 +163,7 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <Space>
-          <Button type="text" icon={<ArrowLeft className="w-4 h-4" />} onClick={() => onBack('settings')}>
+          <Button type="text" icon={<ArrowLeft className="w-4 h-4" />} onClick={() => navigate('/settings')}>
             {'返回'}
           </Button>
           <Title level={4} style={{ margin: 0 }}>{t.exchangeRate.title}</Title>
@@ -189,7 +179,6 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
         />
       ) : (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
-          {/* 汇率信息卡片 */}
           <Card
             title={t.exchangeRate.title}
             extra={
@@ -260,7 +249,6 @@ export const ExchangeRate = ({ onBack }: { onBack: (page: PageType) => void }) =
             </Space>
           </Card>
 
-          {/* 汇率表格 */}
           <Card bordered={false}>
             <Table
               dataSource={tableData}

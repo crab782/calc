@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Menu as MenuIcon } from 'lucide-react';
 import { Layout, Button } from 'antd';
 import { Sidebar } from './components/Sidebar';
@@ -11,53 +12,47 @@ import { Accounts } from './pages/Accounts';
 import { FinancialConfig } from './pages/FinancialConfig';
 import { BudgetPlan } from './pages/BudgetPlan';
 import { BudgetCalculator } from './pages/BudgetCalculator';
-import type { PageType } from './types';
 
 const { Content } = Layout;
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [budgetType, setBudgetType] = useState<string>('balance');
-
-  const handleBudgetNavigate = (type: string) => {
-    setBudgetType(type);
-    setCurrentPage('budget-calculator');
-  };
 
   return (
-    <Layout style={{ minHeight: '100vh', flexDirection: 'row' }}>
-      {isSidebarOpen && (
-        <Sidebar
-          currentPage={currentPage}
-          onPageChange={(page) => { setCurrentPage(page); if (page === 'budget-calculator') setBudgetType('balance'); }}
-          onCollapse={() => setIsSidebarOpen(false)}
-        />
-      )}
-      <Layout style={{ flex: 1 }}>
-        <Content style={{ overflow: 'auto' }}>
-          {!isSidebarOpen && (
-            <Button
-              type="primary"
-              onClick={() => setIsSidebarOpen(true)}
-              style={{ position: 'fixed', top: 16, left: 16, zIndex: 1050 }}
-              icon={<MenuIcon className="w-4 h-4" />}
-            />
-          )}
-          <div style={{ padding: '24px' }}>
-            {currentPage === 'dashboard' && <Dashboard />}
-            {currentPage === 'add-record' && <AddRecord />}
-            {currentPage === 'history' && <History />}
-            {currentPage === 'settings' && <Settings />}
-            {currentPage === 'exchange-rate' && <ExchangeRate onBack={(page) => setCurrentPage(page)} />}
-            {currentPage === 'accounts' && <Accounts />}
-            {currentPage === 'financial-config' && <FinancialConfig />}
-            {currentPage === 'budget-plan' && <BudgetPlan onNavigate={handleBudgetNavigate} />}
-            {currentPage === 'budget-calculator' && <BudgetCalculator budgetType={budgetType} onBack={() => setCurrentPage('budget-plan')} />}
-          </div>
-        </Content>
+    <BrowserRouter basename="/calc">
+      <Layout style={{ minHeight: '100vh', flexDirection: 'row' }}>
+        {isSidebarOpen && (
+          <Sidebar
+            onCollapse={() => setIsSidebarOpen(false)}
+          />
+        )}
+        <Layout style={{ flex: 1 }}>
+          <Content style={{ overflow: 'auto' }}>
+            {!isSidebarOpen && (
+              <Button
+                type="primary"
+                onClick={() => setIsSidebarOpen(true)}
+                style={{ position: 'fixed', top: 16, left: 16, zIndex: 1050 }}
+                icon={<MenuIcon className="w-4 h-4" />}
+              />
+            )}
+            <div style={{ padding: '24px' }}>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/add-record" element={<AddRecord />} />
+                <Route path="/history" element={<History />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/exchange-rate" element={<ExchangeRate />} />
+                <Route path="/accounts" element={<Accounts />} />
+                <Route path="/financial-config" element={<FinancialConfig />} />
+                <Route path="/budget-plan" element={<BudgetPlan />} />
+                <Route path="/budget-calculator" element={<BudgetCalculator />} />
+              </Routes>
+            </div>
+          </Content>
+        </Layout>
       </Layout>
-    </Layout>
+    </BrowserRouter>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Select, Slider, Button, Typography, Space, message, Empty, Table } from 'antd';
 import { ArrowLeft, Download, TrendingUp, BarChart3, PiggyBank } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
@@ -19,12 +20,10 @@ const budgetTypeIcons: Record<string, React.ReactNode> = {
   savings: <PiggyBank size={20} />,
 };
 
-interface BudgetCalculatorProps {
-  budgetType: string;
-  onBack: () => void;
-}
-
-export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) => {
+export const BudgetCalculator = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const budgetType = searchParams.get('type') || 'balance';
   const { accounts, calculateBudget, exportBudgetToCSV } = useRecords();
 
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
@@ -65,7 +64,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
     message.success('导出成功');
   }, [calculationResult, exportBudgetToCSV]);
 
-  // ECharts 折线图配置
   const lineChartOption = useMemo(() => {
     if (calculationResult.length === 0) return {};
     const colors = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#eb2f96', '#13c2c2'];
@@ -92,7 +90,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
     };
   }, [calculationResult]);
 
-  // ECharts 柱状图配置
   const barChartOption = useMemo(() => {
     if (calculationResult.length === 0) return {};
     const colors = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#eb2f96', '#13c2c2'];
@@ -118,7 +115,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
     };
   }, [calculationResult]);
 
-  // ECharts 饼图配置
   const pieChartOption = useMemo(() => {
     if (calculationResult.length === 0) return {};
     const colors = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#eb2f96', '#13c2c2'];
@@ -151,7 +147,7 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
           type="text"
           size="small"
           icon={<ArrowLeft size={18} />}
-          onClick={onBack}
+          onClick={() => navigate('/budget-plan')}
         >
           返回预算计划
         </Button>
@@ -164,11 +160,9 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
       </div>
 
       <Row gutter={[24, 24]}>
-        {/* 配置面板 */}
         <Col xs={24} lg={8}>
           <Card title="配置参数" style={{ borderRadius: 8 }}>
             <Space direction="vertical" style={{ width: '100%' }} size="large">
-              {/* 账户选择 */}
               <div>
                 <Text strong style={{ display: 'block', marginBottom: 8 }}>选择账户 (最多3个)</Text>
                 <Select
@@ -188,7 +182,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
                 />
               </div>
 
-              {/* 周期单位 */}
               <div>
                 <Text strong style={{ display: 'block', marginBottom: 8 }}>周期单位</Text>
                 <Select
@@ -205,7 +198,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
                 />
               </div>
 
-              {/* 周期数 */}
               <div>
                 <Text strong style={{ display: 'block', marginBottom: 8 }}>
                   周期数: {periodCount} {periodUnit === 'month' ? '个月' : '年'}
@@ -223,7 +215,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
                 />
               </div>
 
-              {/* 操作按钮 */}
               <Space style={{ width: '100%' }} direction="vertical">
                 <Button type="primary" onClick={handleCalculate} style={{ width: '100%' }}>
                   开始计算
@@ -236,7 +227,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
           </Card>
         </Col>
 
-        {/* 结果展示 */}
         <Col xs={24} lg={16}>
           {calculationResult.length === 0 ? (
             <Card style={{ borderRadius: 8 }}>
@@ -244,7 +234,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
             </Card>
           ) : (
             <Space direction="vertical" style={{ width: '100%' }} size={24}>
-              {/* 图表 */}
               <Card title="预算趋势" style={{ borderRadius: 8 }}>
                 <ReactECharts option={lineChartOption} style={{ height: 400 }} />
               </Card>
@@ -257,7 +246,6 @@ export const BudgetCalculator = ({ budgetType, onBack }: BudgetCalculatorProps) 
                 <ReactECharts option={pieChartOption} style={{ height: 400 }} />
               </Card>
 
-              {/* 数据表格 */}
               <Card title="详细数据" style={{ borderRadius: 8 }}>
                 {calculationResult.map((result) => (
                   <div key={result.accountId} style={{ marginBottom: 16 }}>
