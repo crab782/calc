@@ -1,16 +1,2 @@
-export interface Record {
-  id: string;
-  type: 'income' | 'expense';
-  amount: number;
-  note: string;
-  category: string;
-  date: string;
-}
-
-export interface Statistics {
-  totalIncome: number;
-  totalExpense: number;
-  balance: number;
-}
-
-export type PageType = 'dashboard' | 'add-record' | 'history' | 'settings' | 'accounts' | 'financial-config' | 'exchange-rate' | 'budget-plan' | 'budget-calculator';
+// Types are now defined in domain modules
+// This file is kept for backward compatibility during migration

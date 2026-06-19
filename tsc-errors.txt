@@ -1,0 +1,1 @@
+src/domain/shared/number-format.ts(31,10): error TS6133: 'intB' is declared but its value is never read.

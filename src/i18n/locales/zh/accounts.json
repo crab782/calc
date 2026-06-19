@@ -28,5 +28,12 @@
   "editSuccess": "账户信息更新成功",
   "invalidBalance": "请输入有效的余额数值",
   "delete": "删除",
-  "defaultAccountLabel": "默认"
+  "defaultAccountLabel": "默认",
+  "type": "类型",
+  "action": "操作",
+  "accountType": {
+    "cash": "现金",
+    "investment": "投资",
+    "loan": "贷款"
+  }
 }

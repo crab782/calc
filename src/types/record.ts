@@ -1,3 +1,5 @@
+import type { BudgetProfileType } from '../domain/budget/types';
+
 // 分录接口：用于记录每笔交易涉及的账户和金额
 export interface Entry {
   accountId: string;
@@ -90,6 +92,8 @@ export interface BudgetPlan {
   accountIds: string[];  // 最多3个账户
   periodUnit: BudgetPeriodUnit;
   periodCount: number;   // 月份1-60或年份1-5
+  profileType?: BudgetProfileType;
+  description?: string;
   createdAt: number;
 }
 

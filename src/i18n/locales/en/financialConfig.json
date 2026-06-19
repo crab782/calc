@@ -58,5 +58,27 @@
   "nameRequired": "Please enter a name",
   "amountRequired": "Please enter a valid amount",
   "principalRequired": "Please enter a valid principal",
-  "interestRateRequired": "Please enter a valid interest rate"
+  "interestRateRequired": "Please enter a valid interest rate",
+  "monthlyAmount": "Monthly Amount",
+  "dayOfMonth": "Day of Month",
+  "dayOfWeek": "Day of Week",
+  "selectDayOfMonth": "Select day of month",
+  "selectDayOfWeek": "Select day of week",
+  "lastDayOfMonth": "Last Day",
+  "dayOfMonthLabel": "Day {{day}}",
+  "dayOfWeekLabels": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  },
+  "income": "Income",
+  "expense": "Expense",
+  "investment": "Investment",
+  "loan": "Loan",
+  "noSourceData": "No {{type}} config, click the button above to add",
+  "action": "Action"
 }

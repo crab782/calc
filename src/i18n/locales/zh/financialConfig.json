@@ -58,5 +58,27 @@
   "nameRequired": "请输入名称",
   "amountRequired": "请输入有效金额",
   "principalRequired": "请输入有效的本金",
-  "interestRateRequired": "请输入有效的利率"
+  "interestRateRequired": "请输入有效的利率",
+  "monthlyAmount": "月度金额",
+  "dayOfMonth": "每月几号",
+  "dayOfWeek": "每周几",
+  "selectDayOfMonth": "选择每月几号",
+  "selectDayOfWeek": "选择每周几",
+  "lastDayOfMonth": "最后一天",
+  "dayOfMonthLabel": "{{day}}日",
+  "dayOfWeekLabels": {
+    "0": "周日",
+    "1": "周一",
+    "2": "周二",
+    "3": "周三",
+    "4": "周四",
+    "5": "周五",
+    "6": "周六"
+  },
+  "income": "收入",
+  "expense": "支出",
+  "investment": "投资",
+  "loan": "贷款",
+  "noSourceData": "暂无{{type}}配置，点击上方按钮添加",
+  "action": "操作"
 }

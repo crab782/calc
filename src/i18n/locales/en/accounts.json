@@ -28,5 +28,12 @@
   "editSuccess": "Account information updated successfully",
   "invalidBalance": "Please enter a valid balance amount",
   "delete": "Delete",
-  "defaultAccountLabel": "Default"
+  "defaultAccountLabel": "Default",
+  "type": "Type",
+  "action": "Action",
+  "accountType": {
+    "cash": "Cash",
+    "investment": "Investment",
+    "loan": "Loan"
+  }
 }

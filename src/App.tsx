@@ -1,63 +1,57 @@
-import { useState } from 'react';
-import { Menu as MenuIcon } from 'lucide-react';
-import { Layout, Button } from 'antd';
-import { Sidebar } from './components/Sidebar';
-import { Dashboard } from './pages/Dashboard';
-import { AddRecord } from './pages/AddRecord';
-import { History } from './pages/History';
-import { Settings } from './pages/Settings';
-import { ExchangeRate } from './pages/ExchangeRate';
-import { Accounts } from './pages/Accounts';
-import { FinancialConfig } from './pages/FinancialConfig';
-import { BudgetPlan } from './pages/BudgetPlan';
-import { BudgetCalculator } from './pages/BudgetCalculator';
-import type { PageType } from './types';
+import { ConfigProvider, theme as antdTheme } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
+import { BrowserRouter } from 'react-router-dom';
+import { AppProvider } from './app/providers/app-provider';
+import { AppRouter } from './app/router';
+import { ErrorBoundary } from './app/shared/components/error-boundary';
+import { useTheme } from './app/providers/theme-provider';
 
-const { Content } = Layout;
-
-function App() {
-  const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [budgetType, setBudgetType] = useState<string>('balance');
-
-  const handleBudgetNavigate = (type: string) => {
-    setBudgetType(type);
-    setCurrentPage('budget-calculator');
-  };
+function AppContent() {
+  const { effectiveTheme } = useTheme();
 
   return (
-    <Layout style={{ minHeight: '100vh', flexDirection: 'row' }}>
-      {isSidebarOpen && (
-        <Sidebar
-          currentPage={currentPage}
-          onPageChange={(page) => { setCurrentPage(page); if (page === 'budget-calculator') setBudgetType('balance'); }}
-          onCollapse={() => setIsSidebarOpen(false)}
-        />
-      )}
-      <Layout style={{ flex: 1 }}>
-        <Content style={{ overflow: 'auto' }}>
-          {!isSidebarOpen && (
-            <Button
-              type="primary"
-              onClick={() => setIsSidebarOpen(true)}
-              style={{ position: 'fixed', top: 16, left: 16, zIndex: 1050 }}
-              icon={<MenuIcon className="w-4 h-4" />}
-            />
-          )}
-          <div style={{ padding: '24px' }}>
-            {currentPage === 'dashboard' && <Dashboard />}
-            {currentPage === 'add-record' && <AddRecord />}
-            {currentPage === 'history' && <History />}
-            {currentPage === 'settings' && <Settings />}
-            {currentPage === 'exchange-rate' && <ExchangeRate onBack={(page) => setCurrentPage(page)} />}
-            {currentPage === 'accounts' && <Accounts />}
-            {currentPage === 'financial-config' && <FinancialConfig />}
-            {currentPage === 'budget-plan' && <BudgetPlan onNavigate={handleBudgetNavigate} />}
-            {currentPage === 'budget-calculator' && <BudgetCalculator budgetType={budgetType} onBack={() => setCurrentPage('budget-plan')} />}
-          </div>
-        </Content>
-      </Layout>
-    </Layout>
+    <ConfigProvider
+      locale={zhCN}
+      theme={{
+        token: {
+          colorPrimary: '#1677ff',
+          borderRadius: 8,
+          fontSize: 14,
+        },
+        algorithm: effectiveTheme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        components: {
+          Layout: {
+            bodyBg: effectiveTheme === 'dark' ? '#141414' : '#f5f5f5',
+            headerBg: effectiveTheme === 'dark' ? '#1f1f1f' : '#ffffff',
+            siderBg: effectiveTheme === 'dark' ? '#1f1f1f' : '#ffffff',
+            triggerBg: effectiveTheme === 'dark' ? '#1f1f1f' : '#ffffff',
+          },
+          Card: {
+            colorBgContainer: effectiveTheme === 'dark' ? '#1f1f1f' : '#ffffff',
+          },
+          Menu: {
+            colorBgContainer: effectiveTheme === 'dark' ? '#1f1f1f' : '#ffffff',
+          },
+          Table: {
+            colorBgContainer: effectiveTheme === 'dark' ? '#1f1f1f' : '#ffffff',
+          },
+        },
+      }}
+    >
+      <ErrorBoundary>
+        <AppRouter />
+      </ErrorBoundary>
+    </ConfigProvider>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </BrowserRouter>
   );
 }
 
