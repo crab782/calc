@@ -125,11 +125,6 @@ export const useRecords = () => {
     refreshAccounts()
   }
 
-  const setDefaultAccount = (id: string) => {
-    recordService.setDefaultAccount(id)
-    refreshAccounts()
-  }
-
   // Income rule management
   const addIncomeRule = (incomeRule: Omit<IncomeRule, 'id' | 'createdAt'> & { id?: string }): IncomeRule => {
     const newIncomeRule = recordService.addIncomeRule(incomeRule)
@@ -271,6 +266,13 @@ export const useRecords = () => {
     return result
   }
 
+  const showIncomeExpenseAccounts = ref<boolean>(recordService.getShowIncomeExpenseAccounts())
+
+  const toggleIncomeExpenseAccounts = (value: boolean) => {
+    recordService.setShowIncomeExpenseAccounts(value)
+    showIncomeExpenseAccounts.value = value
+  }
+
   return {
     records,
     addRecord,
@@ -289,7 +291,6 @@ export const useRecords = () => {
     addAccount,
     deleteAccount,
     updateAccount,
-    setDefaultAccount,
     refreshAccounts,
     incomeRules,
     addIncomeRule,
@@ -324,5 +325,7 @@ export const useRecords = () => {
     addCustomCurrency,
     deleteCustomCurrency,
     enableCurrency,
+    showIncomeExpenseAccounts,
+    toggleIncomeExpenseAccounts,
   }
 }

@@ -7,7 +7,7 @@ function createDefaultAccounts(currency: string = 'CNY'): Account[] {
   const now = Date.now();
   return [
     { id: `${currency}-cash`, name: '现金', currency, accountType: 'cash', balance: 0, createdAt: now, isDefault: currency === 'CNY', visible: true },
-    { id: `${currency}-investment`, name: '投资', currency, accountType: 'investment', balance: 0, createdAt: now, isDefault: false, visible: true },
+    { id: `${currency}-investment`, name: '储存', currency, accountType: 'investment', balance: 0, createdAt: now, isDefault: false, visible: true },
     { id: `${currency}-loan`, name: '贷款', currency, accountType: 'loan', balance: 0, createdAt: now, isDefault: false, visible: true },
     { id: `${currency}-expense`, name: '支出', currency, accountType: 'expense', balance: 0, createdAt: now, isDefault: false, visible: false },
     { id: `${currency}-income`, name: '收入', currency, accountType: 'income', balance: 0, createdAt: now, isDefault: false, visible: false },
@@ -47,6 +47,7 @@ export class SchemaManager {
         lastUpdatedAt: Date.now(),
         source: 'default',
       },
+      showIncomeExpenseAccounts: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -55,6 +56,16 @@ export class SchemaManager {
   saveSchema(schema: DataSchema): void {
     schema.updatedAt = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(schema));
+  }
+
+  getShowIncomeExpenseAccounts(): boolean {
+    return this.getSchema().showIncomeExpenseAccounts ?? false;
+  }
+
+  setShowIncomeExpenseAccounts(value: boolean): void {
+    const schema = this.getSchema();
+    schema.showIncomeExpenseAccounts = value;
+    this.saveSchema(schema);
   }
 
   migrateSchema(schema: DataSchema): DataSchema {

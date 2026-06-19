@@ -135,11 +135,6 @@ export const useRecords = () => {
     refreshAccounts();
   }, [refreshAccounts]);
 
-  const setDefaultAccount = useCallback((id: string) => {
-    recordService.setDefaultAccount(id);
-    refreshAccounts();
-  }, [refreshAccounts]);
-
   // 收入规则管理方法
   const addIncomeRule = useCallback((incomeRule: Omit<IncomeRule, 'id' | 'createdAt'> & { id?: string }): IncomeRule => {
     const newIncomeRule = recordService.addIncomeRule(incomeRule);
@@ -299,7 +294,6 @@ export const useRecords = () => {
     addAccount,
     deleteAccount,
     updateAccount,
-    setDefaultAccount,
     refreshAccounts,
     incomeRules,
     addIncomeRule,

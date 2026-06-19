@@ -100,6 +100,23 @@
           </span>
         </el-card>
 
+        <!-- Debug -->
+        <el-card>
+          <template #header>
+            <span class="card-title">Debug</span>
+          </template>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <el-space align="center">
+              <el-icon><Tools /></el-icon>
+              <span>显示复式记账账户（收入/支出）</span>
+            </el-space>
+            <el-switch
+              :model-value="showIncomeExpenseAccounts"
+              @change="toggleIncomeExpenseAccounts"
+            />
+          </div>
+        </el-card>
+
         <!-- Data Management -->
         <el-card>
           <template #header>
@@ -265,7 +282,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Download, Upload, Delete, Plus, Sunny, Moon, Monitor, MapLocation, Coin, Close, CirclePlus } from '@element-plus/icons-vue'
+import { Download, Upload, Delete, Plus, Sunny, Moon, Monitor, MapLocation, Coin, Close, CirclePlus, Tools } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { Component } from 'vue'
 import { useLanguage } from '../composables/useLanguage'
@@ -275,7 +292,7 @@ import { recordService } from '../lib/record'
 
 const { t, language, toggleLanguage } = useLanguage()
 const { theme, setTheme } = useTheme()
-const { count, refresh, incomeCategories, expenseCategories, addCategory, deleteCategory, accounts, enableCurrency, disableCurrency, customCurrencies, addCustomCurrency, deleteCustomCurrency } = useRecords()
+const { count, refresh, incomeCategories, expenseCategories, addCategory, deleteCategory, accounts, enableCurrency, disableCurrency, customCurrencies, addCustomCurrency, deleteCustomCurrency, showIncomeExpenseAccounts, toggleIncomeExpenseAccounts } = useRecords()
 
 const showConfirmClear = ref(false)
 const showAddCategory = ref<'income' | 'expense' | null>(null)

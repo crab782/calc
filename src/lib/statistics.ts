@@ -1,4 +1,4 @@
-import type { FinancialSource } from '../types/record';
+import type { FinancialSource, FinancialPeriod } from '../types/record';
 import type { RecordDAO } from './storage/index';
 
 export interface Statistics {
@@ -17,7 +17,12 @@ export interface MonthlyDataWithPrediction {
   month: string;
   income: number;
   expense: number;
+  savings: number;
+  loanPayment: number;
   balance: number;
+  balanceBeforeSavings: number;
+  balanceAfterSavings: number;
+  netAssets: number;
   isActual: boolean;
   isPartialActual?: boolean;
   boundaryDay?: number;
@@ -28,7 +33,12 @@ export interface DailyData {
   date: string;
   income: number;
   expense: number;
+  savings: number;
+  loanPayment: number;
   balance: number;
+  balanceBeforeSavings: number;
+  balanceAfterSavings: number;
+  netAssets: number;
   isActual: boolean;
 }
 
@@ -74,8 +84,8 @@ export function getMonthlyData(dao: RecordDAO): MonthlyData[] {
 
 function getDefaultAccountCurrency(dao: RecordDAO): string {
   const accounts = dao.getAccounts();
-  const defaultAccount = accounts.find(a => a.isDefault);
-  return defaultAccount ? defaultAccount.currency : (accounts.length > 0 ? accounts[0].currency : 'CNY');
+  const firstAccount = accounts.find(a => a.visible);
+  return firstAccount ? firstAccount.currency : (accounts.length > 0 ? accounts[0].currency : 'CNY');
 }
 
 function formatDateISO(date: Date): string {
@@ -116,6 +126,52 @@ function isSourceActiveOnDay(source: FinancialSource, date: Date, dayOfWeek: num
   }
 }
 
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function getMonthlyLoanPayment(source: FinancialSource): number {
+  const principal = source.principal || source.amount;
+  const interestRate = source.interestRate || 0;
+  const interestType = source.interestType || 'equal-payment';
+
+  if (interestRate === 0) {
+    return principal;
+  }
+
+  const monthlyRate = interestRate / 100 / 12;
+
+  switch (interestType) {
+    case 'equal-payment': {
+      const months = getLoanMonths(source.period);
+      if (months <= 0) return 0;
+      const temp = Math.pow(1 + monthlyRate, months);
+      return (principal * monthlyRate * temp) / (temp - 1);
+    }
+    case 'equal-principal': {
+      const months = getLoanMonths(source.period);
+      if (months <= 0) return 0;
+      return principal / months + principal * monthlyRate;
+    }
+    case 'interest-first': {
+      return principal * monthlyRate;
+    }
+    default:
+      return 0;
+  }
+}
+
+function getLoanMonths(period: FinancialPeriod): number {
+  switch (period) {
+    case 'daily': return 1 / 30;
+    case 'weekly': return 1 / 4;
+    case 'monthly': return 1;
+    case 'yearly': return 12;
+    case 'once': return 0;
+    default: return 0;
+  }
+}
+
 export function generateDailyDataWithPrediction(dao: RecordDAO): DailyData[] {
   const records = dao.findAll();
   const now = new Date();
@@ -148,12 +204,28 @@ export function generateDailyDataWithPrediction(dao: RecordDAO): DailyData[] {
   const incomeSources = dao.getFinancialSourcesByType('income').filter(s => s.currency === currency);
   const expenseSources = dao.getFinancialSourcesByType('expense').filter(s => s.currency === currency);
 
+  const investmentSources = dao.getFinancialSourcesByType('investment').filter(s => s.currency === currency);
+  const loanSources = dao.getFinancialSourcesByType('loan').filter(s => s.currency === currency);
+
+  // Pre-calculate monthly loan payment for each loan source
+  const loanMonthlyPayments = new Map<string, number>();
+  loanSources.forEach(s => {
+    loanMonthlyPayments.set(s.id, getMonthlyLoanPayment(s));
+  });
+
   const result: DailyData[] = [];
   let runningBalance = 0;
+  let runningBalanceBeforeSavings = 0;
+  let runningBalanceAfterSavings = 0;
+  let cumulativeSavings = 0;
+  let cumulativeLoan = 0;
 
   const sortedActualDays = Object.keys(actualDailyData).filter(day => day < dates[0]).sort();
   for (const day of sortedActualDays) {
-    runningBalance += actualDailyData[day].income - actualDailyData[day].expense;
+    const diff = actualDailyData[day].income - actualDailyData[day].expense;
+    runningBalance += diff;
+    runningBalanceBeforeSavings += diff;
+    runningBalanceAfterSavings += diff;
   }
 
   const todayStr = formatDateISO(now);
@@ -165,6 +237,8 @@ export function generateDailyDataWithPrediction(dao: RecordDAO): DailyData[] {
 
     let income = 0;
     let expense = 0;
+    let savings = 0;
+    let loanPayment = 0;
 
     if (hasActualData) {
       income = actualDailyData[date].income;
@@ -172,6 +246,7 @@ export function generateDailyDataWithPrediction(dao: RecordDAO): DailyData[] {
     } else if (isFuture) {
       const d = parseDateISO(date);
       const dayOfWeek = d.getDay();
+      const daysInMonth = getDaysInMonth(d.getFullYear(), d.getMonth());
 
       incomeSources.forEach(source => {
         if (isSourceActiveOnDay(source, d, dayOfWeek)) {
@@ -180,14 +255,51 @@ export function generateDailyDataWithPrediction(dao: RecordDAO): DailyData[] {
       });
 
       expenseSources.forEach(source => {
-        if (isSourceActiveOnDay(source, d, dayOfWeek)) {
+        if (source.period === 'monthly') {
+          expense += source.amount / daysInMonth;
+        } else if (isSourceActiveOnDay(source, d, dayOfWeek)) {
           expense += source.amount;
+        }
+      });
+
+      // Savings / investment contributions
+      investmentSources.forEach(source => {
+        if (source.period === 'monthly') {
+          savings += source.amount / daysInMonth;
+        } else if (isSourceActiveOnDay(source, d, dayOfWeek)) {
+          savings += source.amount;
+        }
+      });
+
+      // Loan payments
+      loanSources.forEach(source => {
+        const monthlyPayment = loanMonthlyPayments.get(source.id) || 0;
+        if (source.period === 'monthly') {
+          loanPayment += monthlyPayment / daysInMonth;
+        } else if (isSourceActiveOnDay(source, d, dayOfWeek)) {
+          loanPayment += monthlyPayment;
         }
       });
     }
 
     runningBalance += income - expense;
-    result.push({ date, income, expense, balance: runningBalance, isActual: !isFuture });
+    runningBalanceBeforeSavings += income - expense - loanPayment;
+    runningBalanceAfterSavings += income - expense - savings - loanPayment;
+    cumulativeSavings += savings;
+    cumulativeLoan += loanPayment;
+
+    result.push({
+      date,
+      income,
+      expense,
+      savings,
+      loanPayment,
+      balance: runningBalance,
+      balanceBeforeSavings: runningBalanceBeforeSavings,
+      balanceAfterSavings: runningBalanceAfterSavings,
+      netAssets: runningBalance + cumulativeSavings - cumulativeLoan,
+      isActual: !isFuture,
+    });
   }
 
   return result;
@@ -203,7 +315,12 @@ export function aggregateDailyToMonthly(dailyData: DailyData[]): MonthlyDataWith
     month: string;
     income: number;
     expense: number;
+    savings: number;
+    loanPayment: number;
     balance: number;
+    balanceBeforeSavings: number;
+    balanceAfterSavings: number;
+    netAssets: number;
     isActual: boolean;
     isPartialActual?: boolean;
     boundaryDay?: number;
@@ -213,11 +330,20 @@ export function aggregateDailyToMonthly(dailyData: DailyData[]): MonthlyDataWith
   dailyData.forEach(day => {
     const month = day.date.substring(0, 7);
     if (!monthlyMap[month]) {
-      monthlyMap[month] = { month, income: 0, expense: 0, balance: 0, isActual: true };
+      monthlyMap[month] = {
+        month, income: 0, expense: 0, savings: 0, loanPayment: 0,
+        balance: 0, balanceBeforeSavings: 0, balanceAfterSavings: 0, netAssets: 0,
+        isActual: true,
+      };
     }
     monthlyMap[month].income += day.income;
     monthlyMap[month].expense += day.expense;
+    monthlyMap[month].savings += day.savings;
+    monthlyMap[month].loanPayment += day.loanPayment;
     monthlyMap[month].balance = day.balance;
+    monthlyMap[month].balanceBeforeSavings = day.balanceBeforeSavings;
+    monthlyMap[month].balanceAfterSavings = day.balanceAfterSavings;
+    monthlyMap[month].netAssets = day.netAssets;
 
     if (month === currentMonth) {
       monthlyMap[month].isActual = false;

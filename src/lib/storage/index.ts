@@ -32,7 +32,6 @@ export class RecordDAO extends SchemaManager {
   addAccount(account: Account): void { this._accounts.addAccount(account); }
   deleteAccount(id: string): void { this._accounts.deleteAccount(id); }
   updateAccount(account: Account): void { this._accounts.updateAccount(account); }
-  setDefaultAccount(id: string): void { this._accounts.setDefaultAccount(id); }
   createCurrencyAccounts(currency: string): Account[] { return this._accounts.createCurrencyAccounts(currency); }
   getCurrencyBalance(currency: string): number { return this._accounts.getCurrencyBalance(currency); }
   disableCurrency(currency: string): { success: boolean; message: string } { return this._accounts.disableCurrency(currency); }

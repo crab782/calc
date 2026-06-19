@@ -77,10 +77,6 @@ export function updateAccount(dao: RecordDAO, account: Account): void {
   dao.updateAccount(account);
 }
 
-export function setDefaultAccount(dao: RecordDAO, id: string): void {
-  dao.setDefaultAccount(id);
-}
-
 export function getOrCreateAccountByCurrency(dao: RecordDAO, currency: string): Account[] {
   return dao.createCurrencyAccounts(currency);
 }

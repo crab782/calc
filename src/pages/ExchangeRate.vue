@@ -115,7 +115,7 @@ const editingRates = ref<Record<string, string>>({})
 const isFetching = ref(false)
 
 const defaultCurrency = computed(() => {
-  const defaultAccount = accounts.value.find(a => a.isDefault)
+  const defaultAccount = accounts.value.find(a => a.visible)
   return defaultAccount?.currency || 'CNY'
 })
 

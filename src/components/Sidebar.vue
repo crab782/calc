@@ -89,7 +89,7 @@ const { t } = useLanguage()
 const { accounts } = useRecords()
 
 const defaultCurrency = computed(() =>
-  accounts.value.find(a => a.isDefault)?.currency || 'CNY'
+  accounts.value.find(a => a.visible)?.currency || 'CNY'
 )
 
 const hasMultiCurrency = computed(() =>

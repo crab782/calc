@@ -54,6 +54,7 @@
       <BalanceChart />
       <ExpenseChart />
       <IncomeChart />
+      <NetAssetsChart />
     </div>
 
     <el-card class="recent-card" :body-style="{ padding: 0 }">
@@ -111,6 +112,7 @@ import { ElMessage } from 'element-plus'
 import BalanceChart from '../components/BalanceChart.vue'
 import ExpenseChart from '../components/ExpenseChart.vue'
 import IncomeChart from '../components/IncomeChart.vue'
+import NetAssetsChart from '../components/NetAssetsChart.vue'
 import { useLanguage } from '../composables/useLanguage'
 import { useRecords } from '../composables/useRecords'
 import { useStatistics } from '../composables/useStatistics'

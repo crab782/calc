@@ -27,7 +27,6 @@ import {
   addAccount as addAccountFn,
   deleteAccount as deleteAccountFn,
   updateAccount as updateAccountFn,
-  setDefaultAccount as setDefaultAccountFn,
   getOrCreateAccountByCurrency,
   createCurrencyAccounts,
   getCurrencyBalance,
@@ -94,8 +93,8 @@ export class RecordService {
 
   getDefaultAccountCurrency(): string {
     const accounts = this.dao.getAccounts();
-    const defaultAccount = accounts.find(a => a.isDefault);
-    return defaultAccount ? defaultAccount.currency : (accounts.length > 0 ? accounts[0].currency : 'CNY');
+    const firstAccount = accounts.find(a => a.visible);
+    return firstAccount ? firstAccount.currency : (accounts.length > 0 ? accounts[0].currency : 'CNY');
   }
 
   formatDate(dateString: string): string {
@@ -226,12 +225,14 @@ export class RecordService {
   getAccountBalance(accountId: string): number { return getAccountBalance(this.dao, accountId); }
   deleteAccount(id: string): { success: boolean; message: string } { return deleteAccountFn(this.dao, id); }
   updateAccount(account: Account): void { updateAccountFn(this.dao, account); }
-  setDefaultAccount(id: string): void { setDefaultAccountFn(this.dao, id); }
   getOrCreateAccountByCurrency(currency: string): Account[] { return getOrCreateAccountByCurrency(this.dao, currency); }
   createCurrencyAccounts(currency: string): Account[] { return createCurrencyAccounts(this.dao, currency); }
   getCurrencyBalance(currency: string): number { return getCurrencyBalance(this.dao, currency); }
   disableCurrency(currency: string): { success: boolean; message: string } { return disableCurrency(this.dao, currency); }
   isCurrencyEnabled(currency: string): boolean { return isCurrencyEnabled(this.dao, currency); }
+
+  getShowIncomeExpenseAccounts(): boolean { return this.dao.getShowIncomeExpenseAccounts(); }
+  setShowIncomeExpenseAccounts(value: boolean): void { this.dao.setShowIncomeExpenseAccounts(value); }
 
   getIncomeRules(): IncomeRule[] { return getIncomeRules(this.dao); }
   generateIncomeRuleId(): string { return generateIncomeRuleId(); }

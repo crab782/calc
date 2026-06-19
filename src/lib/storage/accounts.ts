@@ -42,14 +42,6 @@ export class AccountStore {
     }
   }
 
-  setDefaultAccount(id: string): void {
-    const schema = this.schema.getSchema();
-    schema.accounts.forEach(a => {
-      a.isDefault = a.id === id;
-    });
-    this.schema.saveSchema(schema);
-  }
-
   createCurrencyAccounts(currency: string): Account[] {
     const schema = this.schema.getSchema();
     const now = Date.now();
@@ -65,7 +57,7 @@ export class AccountStore {
 
     const newAccounts: Account[] = [
       { id: `${currency}-cash`, name: '现金', currency, accountType: 'cash', balance: 0, createdAt: now, isDefault: false, visible: true },
-      { id: `${currency}-investment`, name: '投资', currency, accountType: 'investment', balance: 0, createdAt: now, isDefault: false, visible: true },
+      { id: `${currency}-investment`, name: '储存', currency, accountType: 'investment', balance: 0, createdAt: now, isDefault: false, visible: true },
       { id: `${currency}-loan`, name: '贷款', currency, accountType: 'loan', balance: 0, createdAt: now, isDefault: false, visible: true },
       { id: `${currency}-expense`, name: '支出', currency, accountType: 'expense', balance: 0, createdAt: now, isDefault: false, visible: false },
       { id: `${currency}-income`, name: '收入', currency, accountType: 'income', balance: 0, createdAt: now, isDefault: false, visible: false },
@@ -109,8 +101,7 @@ export class AccountStore {
   disableCurrency(currency: string): { success: boolean; message: string } {
     const schema = this.schema.getSchema();
 
-    const defaultAccount = schema.accounts.find(a => a.isDefault);
-    if (defaultAccount && defaultAccount.currency === currency) {
+    if (currency === 'CNY') {
       return { success: false, message: '无法禁用默认币种' };
     }
 
