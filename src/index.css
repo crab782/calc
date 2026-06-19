@@ -23,30 +23,146 @@ body {
   min-height: 100vh;
 }
 
-/* Ant Design Content layout */
-.ant-layout-content {
-  background: #ffffff;
-}
-
-.dark .ant-layout-content {
+/* Element-Plus dark mode overrides */
+.dark .el-main {
   background: #141414 !important;
 }
 
-/* Ant Design dark mode overrides */
-.dark .ant-layout {
-  background: #141414 !important;
-}
-
-.dark .ant-layout-sider {
+.dark .el-aside {
   background: #1f1f1f !important;
 }
 
-.dark .ant-menu {
+.dark .el-menu {
   background: #1f1f1f !important;
 }
 
-.dark .ant-card {
+.dark .el-card {
   background: #1f1f1f !important;
+  border-color: #303030 !important;
+}
+
+.dark .el-card__header {
+  border-bottom-color: #303030 !important;
+}
+
+.dark .el-table {
+  background: #1f1f1f !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .el-table th.el-table__cell {
+  background: #1f1f1f !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #303030 !important;
+}
+
+.dark .el-table td.el-table__cell {
+  background: #1f1f1f !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #303030 !important;
+}
+
+.dark .el-table tr:hover > td.el-table__cell {
+  background: #272727 !important;
+}
+
+.dark .el-table__header th {
+  background: #1f1f1f !important;
+}
+
+.dark .el-table--border::after,
+.dark .el-table--group::after {
+  background-color: #303030 !important;
+}
+
+.dark .el-dialog {
+  background: #1f1f1f !important;
+}
+
+.dark .el-dialog__header {
+  border-bottom-color: #303030 !important;
+}
+
+.dark .el-dialog__title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .el-input__wrapper {
+  background: #2a2a2a !important;
+  box-shadow: 0 0 0 1px #404040 inset !important;
+}
+
+.dark .el-input__inner {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .el-select-dropdown {
+  background: #2a2a2a !important;
+  border-color: #404040 !important;
+}
+
+.dark .el-select-dropdown__item {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .el-select-dropdown__item:hover {
+  background: #303030 !important;
+}
+
+.dark .el-select-dropdown__item.selected {
+  color: var(--el-color-primary) !important;
+}
+
+.dark .el-popover {
+  background: #2a2a2a !important;
+  border-color: #404040 !important;
+}
+
+.dark .el-message-box {
+  background: #1f1f1f !important;
+  border-color: #303030 !important;
+}
+
+.dark .el-message-box__title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark .el-message-box__content {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.dark .el-divider {
+  border-color: #303030 !important;
+}
+
+.dark .el-empty__description {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.dark .el-collapse-item__header {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background: #1f1f1f !important;
+  border-bottom-color: #303030 !important;
+}
+
+.dark .el-collapse-item__wrap {
+  background: #1f1f1f !important;
+  border-bottom-color: #303030 !important;
+}
+
+.dark .el-collapse {
+  border-color: #303030 !important;
+  background: #1f1f1f !important;
+}
+
+.dark .el-slider__runway {
+  background-color: #374151 !important;
+}
+
+.dark .el-textarea__inner {
+  background: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 0 0 1px #404040 inset !important;
 }
 
 /* Ensure smooth theme transitions */
@@ -55,98 +171,53 @@ body {
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
-/* Ant Design table in dark mode */
-.dark .ant-table {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.dark .ant-table-thead > tr > th {
-  background: #1f1f1f !important;
+/* Menu item text color in dark mode */
+.dark .el-menu-item {
   color: rgba(255, 255, 255, 0.85) !important;
 }
 
-.dark .ant-table-tbody > tr > td {
-  background: #1f1f1f !important;
+.dark .el-menu-item:hover {
+  background-color: #272727 !important;
+}
+
+.dark .el-menu-item.is-active {
+  color: var(--el-color-primary) !important;
+  background-color: rgba(64, 150, 255, 0.1) !important;
+}
+
+/* Aside in dark mode */
+.dark .el-aside {
+  border-right-color: #303030 !important;
+}
+
+/* Message in dark mode */
+.dark .el-message {
+  background: #2a2a2a !important;
+  border-color: #404040 !important;
+}
+
+.dark .el-message .el-message__content {
   color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Alert in dark mode */
+.dark .el-alert {
   border-color: #303030 !important;
 }
 
-.dark .ant-table-tbody > tr:hover > td {
-  background: #272727 !important;
+/* Date picker in dark mode */
+.dark .el-picker__popper {
+  background: #2a2a2a !important;
+  border-color: #404040 !important;
 }
 
-.dark .ant-modal-content {
-  background: #1f1f1f !important;
-}
-
-.dark .ant-modal-header {
-  background: #1f1f1f !important;
-}
-
-.dark .ant-modal-title {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-.dark .ant-input,
-.dark .ant-input-number,
-.dark .ant-select-selector,
-.dark .ant-picker {
+.dark .el-picker-panel {
   background: #2a2a2a !important;
   border-color: #404040 !important;
   color: rgba(255, 255, 255, 0.85) !important;
 }
 
-.dark .ant-input::placeholder {
-  color: rgba(255, 255, 255, 0.45) !important;
-}
-
-.dark .ant-select-dropdown,
-.dark .ant-picker-panel-container {
-  background: #2a2a2a !important;
-}
-
-.dark .ant-select-item {
-  background: #2a2a2a !important;
+/* Checkbox in dark mode */
+.dark .el-checkbox__label {
   color: rgba(255, 255, 255, 0.85) !important;
-}
-
-.dark .ant-select-item-option-active {
-  background: #303030 !important;
-}
-
-.dark .ant-popover-inner {
-  background: #2a2a2a !important;
-}
-
-.dark .ant-popover-arrow {
-  filter: drop-shadow(0 0 0 #2a2a2a);
-}
-
-.dark .ant-message-notice-content {
-  background: #2a2a2a !important;
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-.dark .ant-statistic-title {
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-
-.dark .ant-statistic-content {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-.dark .ant-descriptions-item-label {
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-
-.dark .ant-descriptions-item-content {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-.dark .ant-divider {
-  border-color: #303030 !important;
-}
-
-.dark .ant-empty-description {
-  color: rgba(255, 255, 255, 0.45) !important;
 }
