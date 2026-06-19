@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="settings-page">
     <div class="settings-header">
       <h4 class="settings-title">{{ t.settings.title }}</h4>
       <el-button size="small" @click="toggleLanguage">
@@ -10,125 +10,136 @@
 
     <input ref="fileInputRef" type="file" accept=".json" @change="handleFileSelect" class="hidden-input" />
 
-    <el-space direction="vertical" :size="24" class="settings-space">
-      <!-- Appearance -->
-      <el-card :title="t.settings.appearance">
-        <div class="theme-grid">
-          <el-button
-            v-for="option in themeOptions"
-            :key="option.key"
-            :type="theme === option.key ? 'primary' : 'default'"
-            @click="setTheme(option.key)"
-            class="theme-btn"
-          >
-            <el-icon :size="24">
-              <component :is="option.icon" />
-            </el-icon>
-            <span>{{ option.label }}</span>
-          </el-button>
-        </div>
-      </el-card>
-
-      <!-- Category Management -->
-      <el-card :title="t.settings.categoryManagement">
-        <el-space direction="vertical" :size="24" class="category-section">
-          <!-- Income Categories -->
-          <div>
-            <strong class="section-label">{{ t.settings.incomeCategories }}</strong>
-            <div class="tag-group">
-              <el-tag
-                v-for="category in incomeCategories"
-                :key="category.id"
-                type="success"
-                closable
-                @close="showDeleteConfirm = category.id"
-              >
-                {{ category.name }}
-              </el-tag>
-              <el-button size="small" type="primary" plain @click="showAddCategory = 'income'">
-                <el-icon><Plus /></el-icon>
-                {{ t.settings.addIncomeCategory }}
-              </el-button>
-            </div>
-          </div>
-
-          <!-- Expense Categories -->
-          <div>
-            <strong class="section-label">{{ t.settings.expenseCategories }}</strong>
-            <div class="tag-group">
-              <el-tag
-                v-for="category in expenseCategories"
-                :key="category.id"
-                type="danger"
-                closable
-                @close="showDeleteConfirm = category.id"
-              >
-                {{ category.name }}
-              </el-tag>
-              <el-button size="small" type="primary" plain @click="showAddCategory = 'expense'">
-                <el-icon><Plus /></el-icon>
-                {{ t.settings.addExpenseCategory }}
-              </el-button>
-            </div>
-          </div>
-        </el-space>
-      </el-card>
-
-      <!-- Currency Management -->
-      <el-card :title="t.settings.currencyManagement">
-        <template #header>
-          <div class="card-header-between">
-            <span>{{ t.settings.currencyManagement }}</span>
-            <el-button @click="showCurrencyModal = true">
-              <el-icon><Coin /></el-icon>
-              {{ t.settings.manageCurrencies }}
-            </el-button>
-          </div>
-        </template>
-        <span class="secondary-text">
-          {{ t.settings.foreignCurrencies }}: {{ enabledForeignCurrencies }}
-          <template v-if="customCurrencies.length > 0">
-            , {{ t.settings.customCurrencies }}: {{ customCurrencies.map(c => c.code).join(', ') }}
+    <div class="settings-content">
+      <div class="settings-cards">
+        <!-- Appearance -->
+        <el-card>
+          <template #header>
+            <span class="card-title">{{ t.settings.appearance }}</span>
           </template>
-        </span>
-      </el-card>
-
-      <!-- Data Management -->
-      <el-card :title="t.settings.dataManagement">
-        <el-space direction="vertical" :size="16" class="data-section">
-          <div class="record-count-row">
-            <span class="secondary-text">{{ t.settings.currentRecords }}</span>
-            <strong class="record-count">{{ count }}</strong>
+          <div class="theme-grid">
+            <el-button
+              v-for="option in themeOptions"
+              :key="option.key"
+              :type="theme === option.key ? 'primary' : 'default'"
+              @click="setTheme(option.key)"
+              class="theme-btn"
+            >
+              <el-icon :size="24">
+                <component :is="option.icon" />
+              </el-icon>
+              <span>{{ option.label }}</span>
+            </el-button>
           </div>
-          <el-space class="full-width">
-            <el-button type="primary" @click="handleExport" class="half-btn">
-              <el-icon><Download /></el-icon>
-              {{ t.settings.exportData }}
-            </el-button>
-            <el-button type="primary" @click="handleImportClick" class="half-btn">
-              <el-icon><Upload /></el-icon>
-              {{ t.settings.importData }}
-            </el-button>
-          </el-space>
-          <el-divider style="margin: 8px 0" />
-          <el-popconfirm
-            :title="t.settings.clearConfirm"
-            :description="t.settings.clearMessage"
-            @confirm="handleClearData"
-            confirm-button-type="danger"
-          >
-            <template #reference>
-              <el-button type="danger" size="small">
-                <el-icon><Delete /></el-icon>
-                {{ t.settings.clearData }}
+        </el-card>
+
+        <!-- Category Management -->
+        <el-card>
+          <template #header>
+            <span class="card-title">{{ t.settings.categoryManagement }}</span>
+          </template>
+          <div class="category-section">
+            <!-- Income Categories -->
+            <div class="category-block">
+              <strong class="section-label">{{ t.settings.incomeCategories }}</strong>
+              <div class="tag-group">
+                <el-tag
+                  v-for="category in incomeCategories"
+                  :key="category.id"
+                  type="success"
+                  closable
+                  @close="showDeleteConfirm = category.id"
+                >
+                  {{ category.name }}
+                </el-tag>
+                <el-button size="small" type="primary" plain @click="showAddCategory = 'income'">
+                  <el-icon><Plus /></el-icon>
+                  {{ t.settings.addIncomeCategory }}
+                </el-button>
+              </div>
+            </div>
+
+            <!-- Expense Categories -->
+            <div class="category-block">
+              <strong class="section-label">{{ t.settings.expenseCategories }}</strong>
+              <div class="tag-group">
+                <el-tag
+                  v-for="category in expenseCategories"
+                  :key="category.id"
+                  type="danger"
+                  closable
+                  @close="showDeleteConfirm = category.id"
+                >
+                  {{ category.name }}
+                </el-tag>
+                <el-button size="small" type="primary" plain @click="showAddCategory = 'expense'">
+                  <el-icon><Plus /></el-icon>
+                  {{ t.settings.addExpenseCategory }}
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </el-card>
+
+        <!-- Currency Management -->
+        <el-card>
+          <template #header>
+            <div class="card-header-between">
+              <span class="card-title">{{ t.settings.currencyManagement }}</span>
+              <el-button @click="showCurrencyModal = true">
+                <el-icon><Coin /></el-icon>
+                {{ t.settings.manageCurrencies }}
               </el-button>
+            </div>
+          </template>
+          <span class="secondary-text">
+            {{ t.settings.foreignCurrencies }}: {{ enabledForeignCurrencies }}
+            <template v-if="customCurrencies.length > 0">
+              , {{ t.settings.customCurrencies }}: {{ customCurrencies.map(c => c.code).join(', ') }}
             </template>
-          </el-popconfirm>
-        </el-space>
-      </el-card>
+          </span>
+        </el-card>
+
+        <!-- Data Management -->
+        <el-card>
+          <template #header>
+            <span class="card-title">{{ t.settings.dataManagement }}</span>
+          </template>
+          <div class="data-section">
+            <div class="record-count-row">
+              <span class="secondary-text">{{ t.settings.currentRecords }}</span>
+              <strong class="record-count">{{ count }}</strong>
+            </div>
+            <div class="data-buttons">
+              <el-button type="primary" @click="handleExport" class="half-btn">
+                <el-icon><Download /></el-icon>
+                {{ t.settings.exportData }}
+              </el-button>
+              <el-button type="primary" @click="handleImportClick" class="half-btn">
+                <el-icon><Upload /></el-icon>
+                {{ t.settings.importData }}
+              </el-button>
+            </div>
+            <el-divider style="margin: 8px 0" />
+            <el-popconfirm
+              :title="t.settings.clearConfirm"
+              :description="t.settings.clearMessage"
+              @confirm="handleClearData"
+              confirm-button-type="danger"
+            >
+              <template #reference>
+                <el-button type="danger" size="small">
+                  <el-icon><Delete /></el-icon>
+                  {{ t.settings.clearData }}
+                </el-button>
+              </template>
+            </el-popconfirm>
+          </div>
+        </el-card>
+      </div>
 
       <!-- Info Alert -->
-      <el-alert :title="t.settings.importExportInfo" type="info" :closable="false" show-icon>
+      <el-alert :title="t.settings.importExportInfo" type="info" :closable="false" show-icon class="info-alert">
         <ul class="info-list">
           <li>{{ t.settings.info1 }}</li>
           <li>{{ t.settings.info2 }}</li>
@@ -136,7 +147,7 @@
           <li>{{ t.settings.info4 }}</li>
         </ul>
       </el-alert>
-    </el-space>
+    </div>
 
     <!-- Currency Modal -->
     <el-dialog
@@ -440,60 +451,113 @@ const themeOptions: ThemeOption[] = [
 </script>
 
 <style scoped>
+.settings-page {
+  width: 100%;
+}
+
 .settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 }
+
 .settings-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
 }
+
 .hidden-input {
   display: none;
 }
-.settings-space {
-  width: 100%;
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
+
+.settings-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-cards .el-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
+
 .theme-btn {
   height: auto;
-  padding: 16px;
+  padding: 20px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-.category-section {
   width: 100%;
 }
+
+.category-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .section-label {
   display: block;
-  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
 }
+
 .tag-group {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
+
 .card-header-between {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .secondary-text {
   color: #909399;
+  font-size: 14px;
 }
+
 .data-section {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
+.data-buttons {
+  display: flex;
+  gap: 12px;
+}
+
 .record-count-row {
   display: flex;
   justify-content: space-between;
@@ -502,29 +566,42 @@ const themeOptions: ThemeOption[] = [
   background: var(--el-fill-color-light);
   border-radius: 8px;
 }
+
 .record-count {
   font-size: 20px;
 }
-.full-width {
-  width: 100%;
-}
+
 .half-btn {
   flex: 1;
 }
+
+.info-alert {
+  width: 100%;
+}
+
 .info-list {
   margin: 0;
   padding-left: 16px;
+  font-size: 13px;
 }
+
 .currency-modal-content {
   margin-top: 16px;
 }
+
 .currency-checkbox-group {
   width: 100%;
   margin-bottom: 24px;
 }
+
 .flex-1 {
   flex: 1;
 }
+
+.full-width {
+  width: 100%;
+}
+
 .full-width-btn {
   width: 100%;
 }

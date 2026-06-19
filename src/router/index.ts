@@ -3,54 +3,54 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/',
+    path: '/calc/',
     name: 'Dashboard',
     component: () => import('../pages/Dashboard.vue'),
   },
   {
-    path: '/add-record',
+    path: '/calc/add-record',
     name: 'AddRecord',
     component: () => import('../pages/AddRecord.vue'),
   },
   {
-    path: '/history',
+    path: '/calc/history',
     name: 'History',
     component: () => import('../pages/History.vue'),
   },
   {
-    path: '/settings',
+    path: '/calc/settings',
     name: 'Settings',
     component: () => import('../pages/Settings.vue'),
   },
   {
-    path: '/exchange-rate',
+    path: '/calc/exchange-rate',
     name: 'ExchangeRate',
     component: () => import('../pages/ExchangeRate.vue'),
   },
   {
-    path: '/accounts',
+    path: '/calc/accounts',
     name: 'Accounts',
     component: () => import('../pages/Accounts.vue'),
   },
   {
-    path: '/financial-config',
+    path: '/calc/financial-config',
     name: 'FinancialConfig',
     component: () => import('../pages/FinancialConfig.vue'),
   },
   {
-    path: '/budget-plan',
+    path: '/calc/budget-plan',
     name: 'BudgetPlan',
     component: () => import('../pages/BudgetPlan.vue'),
   },
   {
-    path: '/budget-calculator',
+    path: '/calc/budget-calculator',
     name: 'BudgetCalculator',
     component: () => import('../pages/BudgetCalculator.vue'),
   },
 ]
 
 const router = createRouter({
-  history: createWebHistory('/calc'),
+  history: createWebHistory(),
   routes,
 })
 

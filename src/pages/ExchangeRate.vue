@@ -2,7 +2,7 @@
   <div>
     <div class="exchange-header">
       <el-space>
-        <el-button text @click="router.push('/settings')">
+        <el-button text @click="router.push('/calc/settings')">
           <el-icon><ArrowLeft /></el-icon>
         </el-button>
         <h4 class="exchange-title">{{ t.exchangeRate.title }}</h4>

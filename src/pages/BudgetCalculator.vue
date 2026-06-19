@@ -1,7 +1,7 @@
 <template>
   <div class="budget-calculator-page">
     <div class="page-header">
-      <el-button text size="small" @click="router.push('/budget-plan')">
+      <el-button text size="small" @click="router.push('/calc/budget-plan')">
         <el-icon><ArrowLeft /></el-icon>
         返回预算计划
       </el-button>

@@ -43,7 +43,7 @@ const budgetTypes = [
 ]
 
 const navigateToCalculator = (key: string) => {
-  router.push(`/budget-calculator?type=${key}`)
+  router.push(`/calc/budget-calculator?type=${key}`)
 }
 </script>
 
