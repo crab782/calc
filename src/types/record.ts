@@ -135,6 +135,7 @@ export interface DataSchema {
   budgetPlans: BudgetPlan[];
   customCurrencies: CustomCurrency[];
   exchangeRates: ExchangeRateData;
+  showIncomeExpenseAccounts?: boolean;
   createdAt: number;
   updatedAt: number;
 }
